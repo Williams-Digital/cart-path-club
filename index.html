@@ -75,12 +75,15 @@
       background-size: 256px 256px;
     }
 
-    /* ===================== LOADING SCREEN — CLUBHOUSE ===================== */
+    /* ===================== LOADING SCREEN — CLUBHOUSE AT GOLDEN HOUR ===================== */
     #loader {
       position: fixed;
       inset: 0;
       z-index: 99999;
-      background: #050E09;
+      /* Vertical sky gradient — dusk olive at top, deep Masters green at horizon, ground shadow at bottom */
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(212,175,55,0.10) 0%, transparent 60%),
+        linear-gradient(180deg, #2A3F2E 0%, #1F3425 25%, #152B1E 55%, #0D2A1E 85%, #091D14 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -98,26 +101,26 @@
       justify-content: center;
     }
 
-    /* Night sky / ambient glow behind clubhouse */
+    /* Warm cinematic vignette centered behind the sign — pulls the eye into the brand */
     .loader-scene::before {
       content: '';
       position: absolute;
-      top: 15%;
+      top: 10%;
       left: 50%;
       transform: translateX(-50%);
-      width: 500px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(191,155,59,0.06) 0%, transparent 70%);
+      width: 700px;
+      height: 500px;
+      background: radial-gradient(ellipse at center, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.06) 35%, transparent 70%);
       pointer-events: none;
     }
 
-    /* Ground plane */
+    /* Ground plane — softer fairway shadow, not pitch black */
     .clubhouse-ground {
       position: absolute;
       bottom: 0;
       width: 100%;
       height: 35%;
-      background: linear-gradient(180deg, #0A1F14 0%, #081A10 100%);
+      background: linear-gradient(180deg, #153A28 0%, #0E2A1C 100%);
     }
     .clubhouse-ground::before {
       content: '';
@@ -125,9 +128,9 @@
       top: 0;
       width: 100%;
       height: 1px;
-      background: linear-gradient(90deg, transparent 10%, rgba(42,94,70,0.25) 50%, transparent 90%);
+      background: linear-gradient(90deg, transparent 10%, rgba(191,155,59,0.35) 50%, transparent 90%);
     }
-    /* Cart path / driveway */
+    /* Cart path / driveway — warmer, catches light */
     .clubhouse-path {
       position: absolute;
       bottom: 0;
@@ -135,7 +138,7 @@
       transform: translateX(-50%);
       width: 200px;
       height: 100%;
-      background: linear-gradient(180deg, rgba(30,60,45,0.3) 0%, rgba(20,40,30,0.5) 100%);
+      background: linear-gradient(180deg, rgba(191,155,59,0.14) 0%, rgba(120,95,40,0.18) 100%);
       clip-path: polygon(35% 0%, 65% 0%, 80% 100%, 20% 100%);
     }
 
@@ -148,26 +151,27 @@
       width: min(400px, 85vw);
     }
 
-    /* Main building body */
+    /* Main building body — Masters green, readable against the dusk sky */
     .ch-building {
       width: 100%;
       height: 120px;
-      background: linear-gradient(180deg, #0D2A1E 0%, #0B2318 50%, #091D14 100%);
-      border: 1px solid rgba(42,94,70,0.2);
+      background: linear-gradient(180deg, #1A3F30 0%, #143528 50%, #0D2A1E 100%);
+      border: 1px solid rgba(191,155,59,0.25);
       border-bottom: none;
       position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.3);
     }
-    /* Roof / pediment */
+    /* Roof / pediment — slightly lit from the dusk sky above */
     .ch-roof {
       width: 110%;
       height: 40px;
       position: absolute;
       top: -40px;
       left: -5%;
-      background: linear-gradient(180deg, #0F2E20, #0B2318);
+      background: linear-gradient(180deg, #1F4A38, #143528);
       clip-path: polygon(0 100%, 50% 0, 100% 100%);
     }
-    /* Roof gold trim */
+    /* Roof gold trim — stronger, catches the golden hour light */
     .ch-roof::after {
       content: '';
       position: absolute;
@@ -175,9 +179,9 @@
       left: 0;
       width: 100%;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(191,155,59,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(212,175,55,0.65), transparent);
     }
-    /* Columns */
+    /* Columns — cream with a hint of gold, visible against the building */
     .ch-columns {
       position: absolute;
       bottom: 0;
@@ -190,10 +194,10 @@
     .ch-column {
       width: 6px;
       height: 100%;
-      background: linear-gradient(90deg, rgba(42,94,70,0.15), rgba(42,94,70,0.3), rgba(42,94,70,0.15));
+      background: linear-gradient(90deg, rgba(245,240,225,0.12), rgba(245,240,225,0.28), rgba(245,240,225,0.12));
       border-radius: 2px 2px 0 0;
     }
-    /* Windows — warm glow */
+    /* Windows — warm firelight glow (the most inviting element) */
     .ch-windows {
       position: absolute;
       top: 20px;
@@ -205,19 +209,28 @@
     .ch-window {
       width: 24px;
       height: 32px;
-      background: rgba(212,175,55,0.08);
-      border: 1px solid rgba(191,155,59,0.15);
+      background: rgba(255,200,100,0.55);
+      border: 1px solid rgba(212,175,55,0.6);
       border-radius: 2px 2px 0 0;
       position: relative;
-      animation: windowGlow 3s ease-in-out infinite;
+      box-shadow:
+        0 0 14px rgba(255,180,80,0.4),
+        inset 0 0 8px rgba(255,230,160,0.3);
+      animation: windowGlow 3.5s ease-in-out infinite;
     }
     .ch-window:nth-child(2) { animation-delay: 0.8s; }
     .ch-window:nth-child(3) { animation-delay: 1.6s; }
     @keyframes windowGlow {
-      0%, 100% { background: rgba(212,175,55,0.06); }
-      50% { background: rgba(212,175,55,0.12); }
+      0%, 100% {
+        background: rgba(255,200,100,0.45);
+        box-shadow: 0 0 10px rgba(255,180,80,0.3), inset 0 0 8px rgba(255,230,160,0.25);
+      }
+      50% {
+        background: rgba(255,210,120,0.7);
+        box-shadow: 0 0 20px rgba(255,180,80,0.55), inset 0 0 10px rgba(255,230,160,0.4);
+      }
     }
-    /* Door */
+    /* Door — deep green with a warm brass handle that catches light */
     .ch-door {
       position: absolute;
       bottom: 0;
@@ -225,8 +238,8 @@
       transform: translateX(-50%);
       width: 30px;
       height: 50px;
-      background: rgba(10,31,22,0.9);
-      border: 1px solid rgba(191,155,59,0.2);
+      background: linear-gradient(180deg, rgba(20,50,35,0.9), rgba(10,31,22,0.95));
+      border: 1px solid rgba(212,175,55,0.4);
       border-bottom: none;
       border-radius: 3px 3px 0 0;
     }
@@ -235,11 +248,11 @@
       position: absolute;
       top: 50%;
       right: 5px;
-      width: 3px;
-      height: 3px;
+      width: 4px;
+      height: 4px;
       border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 6px rgba(191,155,59,0.5);
+      background: #E8CC6E;
+      box-shadow: 0 0 10px rgba(232,204,110,0.8), 0 0 4px rgba(255,230,160,1);
     }
 
     /* ── THE SIGN ── */
@@ -256,7 +269,7 @@
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
-    /* Hanging bracket chains */
+    /* Hanging bracket chains — slightly stronger so they're visible in golden hour light */
     .ch-sign-bracket {
       display: flex;
       justify-content: center;
@@ -266,26 +279,27 @@
     .ch-chain {
       width: 1px;
       height: 20px;
-      background: linear-gradient(180deg, rgba(191,155,59,0.2), rgba(191,155,59,0.5));
+      background: linear-gradient(180deg, rgba(212,175,55,0.35), rgba(212,175,55,0.7));
     }
 
-    /* The actual sign board */
+    /* The actual sign board — brighter Masters green, stronger gold frame */
     .ch-sign {
-      background: linear-gradient(180deg, #0D2A1E, #0A2218);
-      border: 2px solid rgba(191,155,59,0.35);
+      background: linear-gradient(180deg, #1A3F30 0%, #143528 50%, #10302A 100%);
+      border: 2px solid rgba(212,175,55,0.6);
       border-radius: 3px;
       padding: 28px 48px 24px;
       position: relative;
       box-shadow:
-        0 8px 40px rgba(0,0,0,0.5),
-        inset 0 1px 0 rgba(191,155,59,0.1);
+        0 8px 40px rgba(0,0,0,0.45),
+        0 0 30px rgba(212,175,55,0.12),
+        inset 0 1px 0 rgba(212,175,55,0.25);
     }
-    /* Inner border detail */
+    /* Inner border detail — slightly more visible */
     .ch-sign::before {
       content: '';
       position: absolute;
       inset: 6px;
-      border: 1px solid rgba(191,155,59,0.12);
+      border: 1px solid rgba(212,175,55,0.22);
       border-radius: 2px;
       pointer-events: none;
     }
@@ -315,7 +329,7 @@
     .ch-sign-divider {
       width: 60px;
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(191,155,59,0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(212,175,55,0.65), transparent);
       margin: 10px auto;
       animation: signDetailFade 1s ease 1.8s both;
     }
@@ -324,7 +338,7 @@
       font-size: clamp(8px, 1.5vw, 11px);
       letter-spacing: 0.4em;
       text-transform: uppercase;
-      color: rgba(191,155,59,0.45);
+      color: rgba(212,175,55,0.75);
       animation: signDetailFade 1s ease 2s both;
     }
     @keyframes signDetailFade {
@@ -332,7 +346,7 @@
       to { opacity: 1; }
     }
 
-    /* Lamp above the sign */
+    /* Lamp above the sign — brass fixture, warm halo of light */
     .ch-lamp {
       position: absolute;
       top: -30px;
@@ -343,14 +357,15 @@
     .ch-lamp-fixture {
       width: 20px;
       height: 8px;
-      background: rgba(191,155,59,0.4);
+      background: linear-gradient(180deg, #E8CC6E, #B8943D);
       border-radius: 2px 2px 0 0;
       margin: 0 auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
     .ch-lamp-glow {
-      width: 80px;
-      height: 60px;
-      background: radial-gradient(ellipse at top, rgba(212,175,55,0.15) 0%, transparent 70%);
+      width: 110px;
+      height: 75px;
+      background: radial-gradient(ellipse at top, rgba(255,200,100,0.45) 0%, rgba(255,180,80,0.2) 40%, transparent 70%);
       margin: 0 auto;
       position: relative;
       top: -5px;
@@ -360,14 +375,16 @@
       top: 0;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
-      height: 4px;
-      background: rgba(212,175,55,0.6);
+      width: 5px;
+      height: 5px;
+      background: #FFE6A0;
       border-radius: 50%;
-      box-shadow: 0 0 12px 4px rgba(212,175,55,0.2);
+      box-shadow:
+        0 0 14px 4px rgba(255,200,100,0.6),
+        0 0 28px 8px rgba(255,180,80,0.25);
     }
 
-    /* Decorative trees flanking */
+    /* Decorative trees flanking — lighter silhouettes visible against the dusk sky */
     .ch-tree-left, .ch-tree-right {
       position: absolute;
       bottom: 34%;
@@ -375,12 +392,12 @@
     .ch-tree-left { left: 10%; }
     .ch-tree-right { right: 10%; }
     .ch-tree-silhouette {
-      width: 50px;
-      height: 80px;
-      background: radial-gradient(ellipse at center 70%, #0A1F14 0%, transparent 70%);
+      width: 60px;
+      height: 95px;
+      background: radial-gradient(ellipse at center 70%, rgba(10,31,20,0.85) 0%, rgba(15,40,25,0.5) 40%, transparent 75%);
     }
 
-    /* Loading text */
+    /* Loading text — readable cream with subtle gold warmth */
     .ch-loading-text {
       position: absolute;
       bottom: 12%;
@@ -388,14 +405,16 @@
       transform: translateX(-50%);
       font-family: var(--font-ui);
       font-size: 11px;
-      letter-spacing: 0.2em;
-      color: rgba(245,240,225,0.3);
-      animation: loaderPulse 2s ease-in-out infinite;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.72);
+      text-shadow: 0 1px 8px rgba(212,175,55,0.3), 0 2px 4px rgba(0,0,0,0.5);
+      animation: loaderPulse 2.5s ease-in-out infinite;
       animation-delay: 2s;
     }
     @keyframes loaderPulse {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 0.5; }
+      0%, 100% { opacity: 0.55; }
+      50%      { opacity: 0.9;  }
     }
     @keyframes loaderFadeOut {
       0% { opacity: 1; }
