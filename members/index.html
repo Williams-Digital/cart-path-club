@@ -1968,10 +1968,10 @@
         <div class="account-card">
           <h3>Your Concierge</h3>
           <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px; margin-bottom: 20px;">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--green-dark); border: 1px solid rgba(191,155,59,0.2); display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 16px; font-weight: 600; color: var(--gold);">MS</div>
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--green-dark); border: 1px solid rgba(191,155,59,0.3); display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 20px; font-weight: 400; color: var(--gold);">&#9993;</div>
             <div>
-              <div style="font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--cream);">Mayo Sowell</div>
-              <div style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35);">Managing Partner</div>
+              <div style="font-family: var(--font-ui); font-size: 14px; font-weight: 600; color: var(--cream);">hello@cartpathclub.com</div>
+              <div style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35);">Cart Path Club Concierge</div>
             </div>
           </div>
           <div class="account-actions">
@@ -2182,7 +2182,7 @@
     var refId = user.sub ? user.sub.substring(0, 8).toUpperCase() : 'MEMBER';
     document.getElementById('referral-link').textContent = 'williamsdigital.io/cartpath-apply?ref=' + refId;
 
-    // Admin: Show "View As" tier switcher for Dylan + Mayo
+    // Admin: Show "View As" tier switcher for admin users
     var adminEmails = ['dylan@williamsdigital.io', 'msowell@cartpathclub.com'];
     if (adminEmails.indexOf((user.email || '').toLowerCase()) !== -1) {
       showAdminTierSwitcher();
