@@ -95,6 +95,7 @@
       position: relative;
       width: 100%;
       height: 100vh;
+      height: 100svh;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -622,8 +623,11 @@
     .hero {
       position: relative;
       width: 100%;
+      /* Use small viewport height so iOS Safari address bar doesn't push
+         content off-screen. Fall back to 100vh for older browsers. */
       height: 100vh;
-      min-height: 700px;
+      height: 100svh;
+      min-height: 640px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -2254,6 +2258,12 @@
     }
 
     /* ===================== RESPONSIVE ===================== */
+
+    /* Defensive: prevent any descendant from forcing horizontal scroll */
+    img, svg, video, iframe { max-width: 100%; height: auto; }
+    /* Long unbroken strings (URLs, emails) shouldn't blow out the viewport */
+    p, h1, h2, h3, h4, li, a { word-wrap: break-word; overflow-wrap: break-word; }
+
     @media (max-width: 768px) {
       .nav { padding: 12px 20px; }
       .nav-links { display: none; }
@@ -2271,7 +2281,7 @@
         gap: 16px;
         border-bottom: 1px solid rgba(191,155,59,0.08);
       }
-      section { padding: 60px 20px; }
+      section { padding: 56px 20px; }
       .origin-grid { grid-template-columns: 1fr; gap: 32px; }
       .origin-stats { flex-direction: column; gap: 24px; }
       .athlete-grid { grid-template-columns: 1fr; }
@@ -2279,7 +2289,7 @@
       .exp-card { height: 300px; }
       .merch-grid { grid-template-columns: 1fr 1fr; }
       .membership-grid { grid-template-columns: 1fr; border-radius: 8px; }
-      .membership-card { border-right: none; border-bottom: 1px solid rgba(191,155,59,0.06); }
+      .membership-card { border-right: none; border-bottom: 1px solid rgba(191,155,59,0.06); padding: 36px 24px; }
       .membership-card:last-child { border-bottom: none; }
       .membership-card.featured { border-left: none; border-right: none; border-top: 1px solid rgba(191,155,59,0.15); border-bottom: 1px solid rgba(191,155,59,0.15); }
       .community-grid { grid-template-columns: 1fr; }
@@ -2287,9 +2297,48 @@
       .tier-badge-col { width: 100%; text-align: left; display: flex; gap: 16px; align-items: center; }
       .excl-stats { flex-wrap: wrap; gap: 20px; }
       .hero-tagline { font-size: 1.6rem; }
+
+      /* --- Gaps the audit caught --- */
+      .hero-content { padding: 0 20px; }
+      .hero-logo { margin-bottom: 32px; }
+      .hero-cta { padding: 14px 32px; font-size: 10px; }
+      .hero-sub { margin-bottom: 28px; }
+      .leaderboard-tournament-header { padding: 18px 20px 16px; }
+      .leaderboard-columns { padding: 12px 20px; grid-template-columns: 36px 1fr 70px 50px; font-size: 8px; }
+      .footer { padding: 40px 20px 32px; }
+      .footer-links { gap: 16px; }
+      /* Tournament meta row would otherwise wrap awkwardly */
+      .tournament-meta { gap: 12px; }
     }
+
     @media (max-width: 480px) {
+      section { padding: 48px 16px; }
+      .nav { padding: 12px 16px; }
       .merch-grid { grid-template-columns: 1fr; }
+      /* Tighter typography on small phones so headings don't wrap badly */
+      .hero-tagline { font-size: 1.35rem; line-height: 1.3; }
+      .hero-sub { font-size: 0.95rem; line-height: 1.65; }
+      .hero-cta { padding: 13px 28px; letter-spacing: 0.22em; }
+      .hero-logo { margin-bottom: 24px; }
+      .membership-price { font-size: 2.6rem; }
+      .membership-card { padding: 32px 20px; }
+      .leaderboard-columns { grid-template-columns: 32px 1fr 60px 44px; padding: 10px 16px; }
+      .leaderboard-tournament-header { padding: 16px; }
+      .tournament-info h3 { font-size: 1.1rem; }
+      .footer-links { gap: 12px; }
+      .footer-links a { font-size: 9px; }
+    }
+
+    /* Phones in landscape — hero must NOT lock to 640px or content vanishes */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .hero { min-height: 0; height: auto; padding: 80px 20px 60px; }
+      .hero-logo { margin-bottom: 20px; }
+      .hero-logo-text { font-size: 3rem; }
+      .hero-tagline { font-size: 1.4rem; margin-bottom: 14px; }
+      .hero-sub { margin-bottom: 22px; }
+      section { padding: 48px 20px; }
+      /* Loader scene shouldn't be locked to 100vh in landscape either */
+      .loader-scene { height: 100svh; min-height: 320px; }
     }
 
     /* ===================== LOCKED / PUBLIC VERSION ===================== */

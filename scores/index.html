@@ -989,20 +989,28 @@
             }
         }
 
+        /* Defensive: media never breaks the viewport */
+        img, svg, video { max-width: 100%; height: auto; }
+        p, h1, h2, h3, a { word-wrap: break-word; overflow-wrap: break-word; }
+
         @media (max-width: 768px) {
             .nav-inner { padding: 0 20px; }
+            .nav-links { gap: 20px; }
+            .nav-links a { font-size: 12px; }
 
             .hero {
-                padding: 100px 20px 60px;
+                padding: 96px 20px 56px;
+                min-height: 0;
             }
 
             .hero-inner {
                 flex-direction: column;
                 text-align: center;
-                gap: 40px;
+                gap: 32px;
             }
 
             .hero-tournament { font-size: 32px; }
+            .hero-course { font-size: 16px; }
 
             .hero-round { justify-content: center; }
 
@@ -1012,7 +1020,7 @@
             }
 
             .player-details { text-align: center; }
-            .player-score-hero { font-size: 64px; }
+            .player-score-hero { font-size: 56px; }
 
             .leaderboard-section,
             .tours-section,
@@ -1031,6 +1039,32 @@
             .augusta-arch-title {
                 font-size: 20px;
                 letter-spacing: 4px;
+            }
+
+            /* Tighter scoreboard cells so more is visible without horizontal scroll */
+            .augusta-table .col-name { width: 100px; }
+            .augusta-table .col-score { width: 44px; }
+            .augusta-table thead th { font-size: 11px; height: 28px; }
+            .augusta-table tbody td { height: 32px; font-size: 12px; }
+            .augusta-table tbody td.player-total { font-size: 15px; }
+
+            /* Visual cue that the scoreboard scrolls horizontally */
+            .board-scroll-wrapper {
+                position: relative;
+                box-shadow: inset -16px 0 16px -16px rgba(0,0,0,0.6);
+            }
+            .board-scroll-wrapper::after {
+                content: 'Swipe \\2192';
+                position: absolute;
+                top: 6px;
+                right: 8px;
+                font-family: var(--font-ui);
+                font-size: 9px;
+                font-weight: 600;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                color: rgba(0,0,0,0.4);
+                pointer-events: none;
             }
 
             .tours-grid {
@@ -1054,6 +1088,31 @@
             .majors-title {
                 font-size: 26px;
             }
+        }
+
+        @media (max-width: 480px) {
+            .nav-inner { padding: 0 16px; }
+            .nav-links { gap: 14px; }
+            .nav-links a { font-size: 11px; }
+            .hero { padding: 88px 16px 44px; }
+            .hero-tournament { font-size: 26px; }
+            .hero-course { font-size: 14px; }
+            .player-score-hero { font-size: 48px; }
+            .augusta-arch-title { font-size: 17px; letter-spacing: 3px; }
+            .leaderboard-section,
+            .tours-section,
+            .majors-section,
+            .features-section,
+            .cta-section { padding-left: 12px; padding-right: 12px; }
+            .section-title,
+            .majors-title { font-size: 22px; }
+        }
+
+        /* Phones in landscape */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .hero { padding: 80px 24px 32px; min-height: 0; }
+            .hero-inner { gap: 24px; }
+            .hero-tournament { font-size: 28px; }
         }
     </style>
 </head>

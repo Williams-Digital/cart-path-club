@@ -120,6 +120,7 @@
     /* ===================== HERO ===================== */
     .hero {
       min-height: 100vh;
+      min-height: 100svh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -564,9 +565,14 @@
       letter-spacing: 0.05em;
     }
 
+    /* Defensive guards */
+    img, svg, video { max-width: 100%; height: auto; }
+    p, h1, h2, h3, a { word-wrap: break-word; overflow-wrap: break-word; }
+
     /* ===================== RESPONSIVE ===================== */
     @media (max-width: 768px) {
       section { padding: 4rem 0; }
+      .container { padding: 0 1.25rem; }
 
       .features-grid {
         grid-template-columns: 1fr;
@@ -585,14 +591,29 @@
         width: 240px;
         height: 480px;
       }
-      .hero { min-height: 90vh; }
+      .hero { min-height: 88svh; padding: 3rem 1.25rem; }
+      .hero-buttons { flex-direction: column; gap: 12px; align-items: center; }
       .cta-section { padding: 5rem 0; }
+    }
+
+    @media (max-width: 480px) {
+      section { padding: 3rem 0; }
+      .container { padding: 0 1rem; }
+      .stats-grid { gap: 1.5rem 0.75rem; }
+      .phone-frame { width: 220px; height: 440px; }
+      .hero { padding: 2.5rem 1rem; }
     }
 
     @media (min-width: 769px) and (max-width: 1024px) {
       .features-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+    }
+
+    /* Phones in landscape */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .hero { min-height: 0; padding: 5rem 2rem 3rem; }
+      section { padding: 3rem 0; }
     }
   </style>
 </head>

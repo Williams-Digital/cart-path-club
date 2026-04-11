@@ -232,6 +232,39 @@
       opacity: 0.3;
       margin: 56px auto;
     }
+
+    /* Defensive guards */
+    img, svg, video { max-width: 100%; height: auto; }
+    p, h1, h2, h3, a, li { word-wrap: break-word; overflow-wrap: break-word; }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 768px) {
+      .header { padding: 64px 20px 32px; }
+      .container { padding: 40px 20px 72px; }
+      .intro { padding-left: 16px; font-size: 16px; margin-bottom: 40px; }
+      .section { margin-bottom: 40px; }
+      .section h2 { font-size: 20px; }
+      .contact-block { padding: 28px 20px; margin-top: 48px; }
+      .contact-block h2 { font-size: 20px; }
+      .footer { padding: 32px 20px; }
+      .divider { margin: 40px auto; }
+    }
+
+    @media (max-width: 480px) {
+      .header { padding: 56px 16px 28px; }
+      .header-logo { font-size: 12px; letter-spacing: 3px; }
+      .container { padding: 32px 16px 64px; }
+      .intro { padding-left: 14px; font-size: 15px; }
+      .section h2 { font-size: 18px; }
+      .section p,
+      .section ul li { font-size: 14px; }
+      .contact-block { padding: 24px 16px; }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      .header { padding: 40px 24px 24px; }
+      .container { padding: 32px 24px 56px; }
+    }
   </style>
 </head>
 <body>
