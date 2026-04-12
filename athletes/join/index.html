@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- noindex enforced via vercel.json for /athletes/:path* -->
+  <meta name="robots" content="noindex, nofollow">
+  <title>Join the Roster — CartPath</title>
+  <meta name="description" content="CartPath is a private golf community. Our roster connects accomplished professionals with the members who want to play alongside them.">
+
+  <link rel="icon" href="/assets/cartpath-shield.png" type="image/png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --green-deep: #060F0A;
+      --green-dark: #091D14;
+      --green-mid:  #10352A;
+      --gold:       #BF9B3B;
+      --gold-dark:  #A88630;
+      --gold-light: #D4B14E;
+      --cream:      #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-ui: 'Inter', system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+    body {
+      font-family: var(--font-body);
+      background: var(--green-deep);
+      color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise overlay matches the rest of the site */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+    }
+
+    /* Defensive responsive guards */
+    img, svg, video { max-width: 100%; height: auto; }
+    p, h1, h2, h3, label, a { word-wrap: break-word; overflow-wrap: break-word; }
+
+    /* ═══ Nav — minimal, single back-link only ═══ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(6, 15, 10, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(191, 155, 59, 0.08);
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo img {
+      height: 28px;
+      width: auto;
+      display: block;
+    }
+    .nav-back {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.5);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .nav-back:hover { color: var(--gold); }
+
+    /* ═══ Hero ═══ */
+    .hero {
+      padding: 140px 32px 60px;
+      text-align: center;
+      position: relative;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--cream);
+      line-height: 1.15;
+      letter-spacing: 0.01em;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      color: var(--gold);
+      font-style: italic;
+      font-weight: 500;
+    }
+    .hero-sub {
+      font-family: var(--font-body);
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      line-height: 1.8;
+      color: rgba(245, 240, 225, 0.65);
+      max-width: 580px;
+      margin: 0 auto;
+    }
+    .hero-rule {
+      width: 48px;
+      height: 1px;
+      background: rgba(191, 155, 59, 0.4);
+      margin: 32px auto 0;
+    }
+
+    /* ═══ The three-panel pitch ═══ */
+    .pitch {
+      max-width: 960px;
+      margin: 24px auto 0;
+      padding: 48px 32px 32px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .pitch-card {
+      background: linear-gradient(160deg, rgba(16, 53, 42, 0.35), rgba(9, 29, 20, 0.5));
+      border: 1px solid rgba(191, 155, 59, 0.12);
+      border-radius: 6px;
+      padding: 32px 24px;
+      text-align: left;
+    }
+    .pitch-card-number {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 18px;
+      opacity: 0.75;
+    }
+    .pitch-card-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 12px;
+      letter-spacing: 0.01em;
+    }
+    .pitch-card-body {
+      font-size: 14px;
+      line-height: 1.75;
+      color: rgba(245, 240, 225, 0.6);
+    }
+
+    /* ═══ Form section ═══ */
+    .form-section {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 32px 32px 120px;
+    }
+    .form-label-row {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .form-intro {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 400;
+      color: var(--cream);
+      text-align: center;
+      line-height: 1.35;
+      margin-bottom: 12px;
+    }
+    .form-intro-sub {
+      font-size: 14px;
+      color: rgba(245, 240, 225, 0.5);
+      text-align: center;
+      line-height: 1.8;
+      margin-bottom: 40px;
+    }
+
+    .form-card {
+      background: rgba(16, 53, 42, 0.25);
+      border: 1px solid rgba(191, 155, 59, 0.1);
+      border-radius: 8px;
+      padding: 40px 36px;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-group:last-of-type {
+      margin-bottom: 0;
+    }
+    .form-label {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.55);
+      margin-bottom: 8px;
+    }
+    .form-label .optional {
+      color: rgba(245, 240, 225, 0.25);
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      margin-left: 6px;
+    }
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      background: rgba(6, 15, 10, 0.6);
+      border: 1px solid rgba(191, 155, 59, 0.15);
+      border-radius: 4px;
+      padding: 14px 16px;
+      color: var(--cream);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.3s;
+      /* Pin at 16px to prevent iOS focus-zoom on mobile */
+    }
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      border-color: rgba(191, 155, 59, 0.5);
+    }
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-submit {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      border: none;
+      padding: 18px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+    .form-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(191, 155, 59, 0.25);
+    }
+    .form-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .form-fine {
+      text-align: center;
+      font-size: 11px;
+      color: rgba(245, 240, 225, 0.35);
+      margin-top: 18px;
+      line-height: 1.7;
+    }
+
+    .form-success {
+      background: rgba(109, 200, 109, 0.06);
+      border: 1px solid rgba(109, 200, 109, 0.2);
+      border-radius: 8px;
+      padding: 48px 36px;
+      text-align: center;
+    }
+    .form-success h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 16px;
+    }
+    .form-success p {
+      font-size: 14px;
+      line-height: 1.75;
+      color: rgba(245, 240, 225, 0.65);
+    }
+    .form-error-banner {
+      background: rgba(200, 60, 60, 0.08);
+      border: 1px solid rgba(200, 60, 60, 0.25);
+      border-radius: 4px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      color: #E08080;
+      font-size: 13px;
+      line-height: 1.6;
+      display: none;
+    }
+    .form-error-banner.show { display: block; }
+
+    /* ═══ Responsive ═══ */
+    @media (max-width: 768px) {
+      .nav-inner { padding: 12px 20px; }
+      .hero { padding: 120px 20px 48px; }
+      .pitch {
+        grid-template-columns: 1fr;
+        padding: 32px 20px 20px;
+        gap: 16px;
+      }
+      .pitch-card { padding: 28px 22px; }
+      .form-section { padding: 24px 20px 96px; }
+      .form-card { padding: 32px 24px; }
+      .form-row-2 { grid-template-columns: 1fr; gap: 0; }
+      .form-row-2 .form-group { margin-bottom: 24px; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-inner { padding: 10px 16px; }
+      .hero { padding: 104px 16px 40px; }
+      .pitch { padding: 28px 16px 16px; }
+      .form-section { padding: 20px 16px 80px; }
+      .form-card { padding: 28px 20px; }
+      .form-intro { font-size: 1.35rem; }
+      .form-input,
+      .form-textarea,
+      .form-select { font-size: 16px !important; }
+    }
+
+    @media (max-height: 500px) and (orientation: landscape) {
+      .hero { padding: 100px 24px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ NAV ═══ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <img src="/assets/cartpath-shield.png" alt="CartPath">
+      </a>
+      <a href="/" class="nav-back">&larr; Back to CartPath</a>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="hero-eyebrow">By Invitation &middot; For Professionals</div>
+    <h1>Join the <em>CartPath</em> Roster</h1>
+    <p class="hero-sub">
+      CartPath is a private community of executives, professionals, and the
+      athletes and coaches they play alongside. If golf is part of how you
+      build relationships and move through the world, there may be a place
+      for you on our roster.
+    </p>
+    <div class="hero-rule"></div>
+  </section>
+
+  <!-- ═══ WHY CARTPATH ═══ -->
+  <section class="pitch">
+    <div class="pitch-card">
+      <div class="pitch-card-number">I</div>
+      <div class="pitch-card-title">Curated, Not Crowded</div>
+      <div class="pitch-card-body">
+        Our roster is handpicked. We introduce our members to a small, carefully
+        chosen group of athletes and coaches &mdash; not a directory. Every name
+        on the list is someone we'd personally recommend.
+      </div>
+    </div>
+    <div class="pitch-card">
+      <div class="pitch-card-number">II</div>
+      <div class="pitch-card-title">We Handle the Logistics</div>
+      <div class="pitch-card-body">
+        Scheduling, travel, courses, contracts, payment &mdash; all of it runs
+        through us. You focus on the round. We handle the rest, and members
+        only reach you after we've already confirmed the match.
+      </div>
+    </div>
+    <div class="pitch-card">
+      <div class="pitch-card-number">III</div>
+      <div class="pitch-card-title">A Private Audience</div>
+      <div class="pitch-card-body">
+        CartPath members are CEOs, founders, and investors who value privacy
+        and discretion. Every relationship stays inside the walls of the club.
+        No social media, no press, just the game.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FORM ═══ -->
+  <section class="form-section">
+    <div class="form-label-row">Introduce Yourself</div>
+    <h2 class="form-intro">Tell us who you are.</h2>
+    <p class="form-intro-sub">
+      We read every message personally. If there's a fit, we'll reach out directly.
+    </p>
+
+    <div class="form-card" id="formContainer">
+
+      <div class="form-error-banner" id="errorBanner"></div>
+
+      <form id="athleteInterestForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name</label>
+          <input type="text" id="name" name="name" class="form-input" autocomplete="name" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-input" autocomplete="email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone <span class="optional">optional</span></label>
+            <input type="tel" id="phone" name="phone" class="form-input" autocomplete="tel">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="sport">Sport / Discipline</label>
+            <input type="text" id="sport" name="sport" class="form-input" placeholder="NFL, PGA Tour, NCAA coaching&hellip;">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="school">School / Team <span class="optional">optional</span></label>
+            <input type="text" id="school" name="school" class="form-input" placeholder="Auburn, Georgia, etc.">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="current_role">Current Role</label>
+          <input type="text" id="current_role" name="current_role" class="form-input" placeholder="Active player, ESPN analyst, retired, coaching&hellip;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="bio">Tell us about yourself</label>
+          <textarea id="bio" name="bio" class="form-textarea" placeholder="A few sentences about your career, your handicap, and what you're looking for on CartPath. No pressure &mdash; we'll follow up personally."></textarea>
+        </div>
+
+        <input type="hidden" id="proposed_tier" name="proposed_tier" value="3">
+
+        <button type="submit" class="form-submit" id="submitBtn">Send Introduction</button>
+        <p class="form-fine">
+          Your information is private and shared only with the CartPath team.
+          We'll be in touch within a few days.
+        </p>
+      </form>
+    </div>
+
+  </section>
+
+  <script>
+    // API base — athletes-api Lambda route
+    var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+
+    var form = document.getElementById('athleteInterestForm');
+    var container = document.getElementById('formContainer');
+    var submitBtn = document.getElementById('submitBtn');
+    var errorBanner = document.getElementById('errorBanner');
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.classList.add('show');
+      errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function hideError() {
+      errorBanner.classList.remove('show');
+      errorBanner.textContent = '';
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      hideError();
+
+      var payload = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        phone: form.phone.value.trim() || null,
+        sport: form.sport.value.trim() || null,
+        school: form.school.value.trim() || null,
+        current_role: form.current_role.value.trim() || null,
+        bio: form.bio.value.trim() || null,
+        proposed_tier: 3,
+      };
+
+      if (!payload.name || !payload.email) {
+        showError('Please include your name and email.');
+        return;
+      }
+
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email);
+      if (!emailOk) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Sending...';
+
+      try {
+        var res = await fetch(API_BASE + '/athlete-applications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        var data = null;
+        try { data = await res.json(); } catch (_) {}
+
+        if (!res.ok) {
+          // 429 = rate limit (same email submitted recently)
+          if (res.status === 429) {
+            showError('We just received your introduction. Please give us a moment — we\'ll be in touch.');
+          } else {
+            showError((data && data.error) || 'Something went wrong. Please email hello@cartpathclub.com directly.');
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Introduction';
+          return;
+        }
+
+        // Success — swap form with thank-you message
+        container.innerHTML =
+          '<div class="form-success">' +
+          '<h2>Thank you.</h2>' +
+          '<p>We\'ve received your introduction and we\'ll be in touch personally within a few days. Questions in the meantime? Reach out to <a href="mailto:hello@cartpathclub.com" style="color:var(--gold);text-decoration:none;">hello@cartpathclub.com</a>.</p>' +
+          '</div>';
+
+        // Scroll the success card into view
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) {
+        console.error(err);
+        // Network error — offer a mailto fallback so the applicant
+        // can still reach us even if our backend is momentarily down.
+        var mailtoBody = encodeURIComponent(
+          'Name: ' + payload.name + '\n' +
+          'Email: ' + payload.email + '\n' +
+          (payload.phone ? ('Phone: ' + payload.phone + '\n') : '') +
+          (payload.sport ? ('Sport: ' + payload.sport + '\n') : '') +
+          (payload.school ? ('School: ' + payload.school + '\n') : '') +
+          (payload.current_role ? ('Role: ' + payload.current_role + '\n') : '') +
+          (payload.bio ? ('\nAbout me:\n' + payload.bio + '\n') : '')
+        );
+        var mailtoSubject = encodeURIComponent('CartPath Roster — Introduction from ' + payload.name);
+        var mailtoLink = 'mailto:hello@cartpathclub.com?subject=' + mailtoSubject + '&body=' + mailtoBody;
+
+        errorBanner.innerHTML =
+          'We couldn\'t send that automatically. ' +
+          '<a href="' + mailtoLink + '" style="color:#BF9B3B;text-decoration:underline;">' +
+          'Click here to email us directly</a> ' +
+          '&mdash; your message is pre-filled.';
+        errorBanner.classList.add('show');
+        errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Introduction';
+      }
+    });
+  </script>
+
+</body>
+</html>
