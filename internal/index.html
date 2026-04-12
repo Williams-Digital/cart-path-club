@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>CartPath — Internal Reference</title>
+  <link rel="icon" href="/assets/cartpath-shield.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #060F0A;
+      --green-dark: #091D14;
+      --green-mid: #10352A;
+      --gold: #BF9B3B;
+      --cream: #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--green-deep);
+      color: var(--cream);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 120px;
+    }
+
+    /* Header */
+    .page-header {
+      text-align: center;
+      padding: 40px 0 48px;
+      border-bottom: 1px solid rgba(191,155,59,0.15);
+      margin-bottom: 48px;
+    }
+    .page-header img { height: 48px; margin-bottom: 16px; }
+    .page-header h1 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .page-header .subtitle {
+      font-size: 13px;
+      color: rgba(245,240,225,0.45);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .page-header .private-badge {
+      display: inline-block;
+      margin-top: 16px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(191,155,59,0.08);
+      border: 1px solid rgba(191,155,59,0.2);
+      padding: 6px 16px;
+      border-radius: 3px;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 56px;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .section-desc {
+      font-size: 14px;
+      color: rgba(245,240,225,0.55);
+      margin-bottom: 28px;
+      max-width: 680px;
+    }
+
+    /* Cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      background: rgba(16,53,42,0.3);
+      border: 1px solid rgba(191,155,59,0.1);
+      border-radius: 8px;
+      padding: 28px 24px;
+    }
+    .card.featured {
+      border-color: rgba(191,155,59,0.35);
+      background: rgba(191,155,59,0.04);
+    }
+    .card-eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .card-price {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .card-price-note {
+      font-size: 12px;
+      color: rgba(245,240,225,0.4);
+      margin-bottom: 16px;
+    }
+    .card-list {
+      list-style: none;
+      padding: 0;
+    }
+    .card-list li {
+      font-size: 13px;
+      color: rgba(245,240,225,0.65);
+      padding: 6px 0;
+      padding-left: 18px;
+      position: relative;
+    }
+    .card-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-size: 12px;
+    }
+    .card-list li.no::before {
+      content: '✕';
+      color: rgba(200,60,60,0.6);
+    }
+    .card-list li.no {
+      color: rgba(245,240,225,0.35);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 8px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(191,155,59,0.08);
+      font-size: 14px;
+    }
+    th {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.4);
+    }
+    td { color: rgba(245,240,225,0.75); }
+    td.gold { color: var(--gold); font-weight: 600; }
+    td.name { font-weight: 600; color: var(--cream); }
+    tr:last-child td { border-bottom: none; }
+
+    /* Info boxes */
+    .info-box {
+      background: rgba(191,155,59,0.04);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+    .info-box-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 8px;
+    }
+    .info-box p {
+      font-size: 13px;
+      color: rgba(245,240,225,0.6);
+      line-height: 1.7;
+    }
+
+    /* Flow diagram */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .flow-step {
+      background: rgba(16,53,42,0.4);
+      border: 1px solid rgba(191,155,59,0.12);
+      border-radius: 6px;
+      padding: 14px 18px;
+      text-align: center;
+      min-width: 140px;
+      flex: 1;
+    }
+    .flow-step-num {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+    .flow-step-label {
+      font-size: 12px;
+      color: var(--cream);
+      font-weight: 500;
+    }
+    .flow-step-desc {
+      font-size: 11px;
+      color: rgba(245,240,225,0.45);
+      margin-top: 4px;
+    }
+    .flow-arrow {
+      font-size: 18px;
+      color: rgba(191,155,59,0.4);
+      padding: 0 6px;
+    }
+
+    /* Divider */
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: rgba(191,155,59,0.3);
+      margin: 48px 0;
+    }
+
+    /* Quick ref badge */
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+    .badge-exec { color: var(--cream); border-color: rgba(245,240,225,0.3); background: rgba(245,240,225,0.06); }
+    .badge-chair { color: var(--gold); border-color: rgba(191,155,59,0.4); background: rgba(191,155,59,0.08); }
+    .badge-both { color: rgba(109,200,109,0.8); border-color: rgba(109,200,109,0.3); background: rgba(109,200,109,0.06); }
+
+    @media (max-width: 768px) {
+      .card-grid { grid-template-columns: 1fr; }
+      .card-grid.three { grid-template-columns: 1fr; }
+      .flow { flex-direction: column; align-items: stretch; }
+      .flow-arrow { transform: rotate(90deg); text-align: center; padding: 4px 0; }
+      .page { padding: 24px 16px 80px; }
+      th, td { padding: 10px 12px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <img src="/assets/cartpath-shield.png" alt="CartPath">
+    <h1>CartPath Reference Guide</h1>
+    <div class="subtitle">Internal Only — Not for Members</div>
+    <div class="private-badge">Private · Do Not Share</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- MEMBERSHIP TIERS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Membership Tiers</h2>
+    <p class="section-desc">Two membership levels. Both require a one-time $2,500 entry fee. Annual dues are billed through Stripe.</p>
+
+    <div class="card-grid">
+      <!-- Executive -->
+      <div class="card">
+        <div class="card-eyebrow">Tier 1</div>
+        <div class="card-title">Executive</div>
+        <div class="card-price">$20,000</div>
+        <div class="card-price-note">per year + $2,500 one-time entry fee</div>
+        <ul class="card-list">
+          <li>Book Tier 3–4 athletes only</li>
+          <li>Standard concierge</li>
+          <li>Full app access (feed, chat, scores)</li>
+          <li>Regional events</li>
+          <li>Merch access</li>
+          <li class="no">No Tier 5 Legend access</li>
+          <li class="no">No priority booking</li>
+          <li class="no">No guest passes</li>
+          <li class="no">No jet coordination</li>
+        </ul>
+      </div>
+
+      <!-- Chairman -->
+      <div class="card featured">
+        <div class="card-eyebrow">Tier 2 — Most Popular</div>
+        <div class="card-title">Chairman</div>
+        <div class="card-price">$30,000</div>
+        <div class="card-price-note">per year + $2,500 one-time entry fee</div>
+        <ul class="card-list">
+          <li>Book ALL athletes (Tiers 1–5)</li>
+          <li>Dedicated concierge</li>
+          <li>Full app access (feed, chat, scores)</li>
+          <li>Priority booking</li>
+          <li>VIP events</li>
+          <li>2 guest passes per year</li>
+          <li>Chairman-only chat channel</li>
+          <li>Unlimited rounds</li>
+          <li>Jet coordination</li>
+          <li>Equity participation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HOW A MEMBER JOINS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">How a Member Joins</h2>
+    <p class="section-desc">The application-to-activation flow. You (Mayo) are the gatekeeper at step 2.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 1</div>
+        <div class="flow-step-label">They Apply</div>
+        <div class="flow-step-desc">cartpathclub.com/apply</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 2</div>
+        <div class="flow-step-label">You Approve</div>
+        <div class="flow-step-desc">Admin dashboard</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 3</div>
+        <div class="flow-step-label">They Pay $2,500</div>
+        <div class="flow-step-desc">Entry fee via Stripe</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 4</div>
+        <div class="flow-step-label">They Pay Annual Dues</div>
+        <div class="flow-step-desc">$20K or $30K via Stripe</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">STEP 5</div>
+        <div class="flow-step-label">Account Created</div>
+        <div class="flow-step-desc">Auto — login emailed</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">What happens automatically</div>
+      <p>After you click "Approve" in the admin dashboard, everything else happens on its own. The system emails them a $2,500 entry fee link. When they pay, it automatically sends them a second email with their annual dues link. When they pay that, it automatically creates their login account and emails them a temporary password. You don't have to touch it again.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Waiving the fee</div>
+      <p>When you approve an application, there's a "Waive Fee" option. Use this for VIPs, investors, or strategic partnerships. They skip the $2,500 entry fee AND the annual dues — their account is created immediately as a complimentary member.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ATHLETE ROSTER PRICING -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">What Members Pay to Book Athletes</h2>
+    <p class="section-desc">These are the round prices members pay. CartPath keeps 20% as a platform fee. You pay the athlete the remaining 80% after the round (Venmo, wire, or check).</p>
+
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:16px;">5-Star Legends</h3>
+    <table>
+      <tr><th>Athlete</th><th>In-Town Price</th><th>Out-of-Town Add</th><th>Availability</th></tr>
+      <tr><td class="name">Kirby Smart</td><td class="gold">$12,000–$15,000</td><td>—</td><td>Offseason only</td></tr>
+      <tr><td class="name">Charles Barkley</td><td class="gold">$10,000–$12,000</td><td>—</td><td>By request</td></tr>
+      <tr><td class="name">Tommy Tuberville</td><td class="gold">$8,000–$12,000</td><td>+$3,000</td><td>By request</td></tr>
+      <tr><td class="name">Charles Woodson</td><td class="gold">$6,000–$9,000</td><td>+$3,000</td><td>By request</td></tr>
+      <tr><td class="name">Hines Ward</td><td class="gold">$6,000–$8,000</td><td>+$2,500</td><td>Limited</td></tr>
+      <tr><td class="name">Champ Bailey</td><td class="gold">$5,000–$7,000</td><td>+$2,000</td><td>Limited</td></tr>
+      <tr><td class="name">Ed Reed</td><td class="gold">$5,000–$7,000</td><td>+$2,000</td><td>Limited</td></tr>
+    </table>
+
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:28px 0 16px;">4-Star All-Stars</h3>
+    <table>
+      <tr><th>Athlete</th><th>In-Town Price</th><th>Out-of-Town Add</th><th>Availability</th></tr>
+      <tr><td class="name">Matthew Stafford</td><td class="gold">$4,000–$6,000</td><td>+$2,500</td><td>Limited</td></tr>
+      <tr><td class="name">Tavares Robinson</td><td class="gold">$3,500–$5,500</td><td>+$1,500</td><td>Offseason</td></tr>
+      <tr><td class="name">Patrick Peterson</td><td class="gold">$3,500–$5,000</td><td>+$2,000</td><td>Available</td></tr>
+      <tr><td class="name">Jonas Jennings</td><td class="gold">$2,500–$4,000</td><td>+$1,200</td><td>Available</td></tr>
+      <tr><td class="name">David Pollack</td><td class="gold">$2,500–$4,000</td><td>—</td><td>Available</td></tr>
+      <tr><td class="name">Ronnie Brown</td><td class="gold">$2,000–$3,500</td><td>+$1,500</td><td>Available</td></tr>
+      <tr><td class="name">Jason Campbell</td><td class="gold">$1,500–$2,500</td><td>+$1,500</td><td>Available</td></tr>
+    </table>
+
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:28px 0 16px;">3-Star Champions</h3>
+    <table>
+      <tr><th>Athlete</th><th>In-Town Price</th><th>Out-of-Town Add</th><th>Availability</th></tr>
+      <tr><td class="name">Carlos Rogers</td><td class="gold">$1,500–$2,500</td><td>+$1,200</td><td>Available</td></tr>
+      <tr><td class="name">Tim Jennings</td><td class="gold">$1,000–$2,000</td><td>+$1,000</td><td>Available</td></tr>
+      <tr><td class="name">Mohamed Massaquoi</td><td class="gold">$800–$1,500</td><td>+$800</td><td>Available</td></tr>
+    </table>
+
+    <div class="info-box" style="margin-top:28px;">
+      <div class="info-box-title">The 80/20 split explained</div>
+      <p>When a member pays $8,000 for a round with Champ Bailey, CartPath keeps $1,600 (20%). You pay Champ $6,400 (80%) after the round is completed. Payment method is up to you — Venmo, wire transfer, or check. Record the payout in the admin dashboard so we have a paper trail.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HOW A BOOKING WORKS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">How a Booking Works</h2>
+    <p class="section-desc">A member submits a round request in the app. You review it, set the final price, and the system handles the rest.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div class="flow-step-label">Member Requests</div>
+        <div class="flow-step-desc">In the app — picks athlete, date, course</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div class="flow-step-label">You See It</div>
+        <div class="flow-step-desc">Admin dashboard — pending queue</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div class="flow-step-label">You Quote It</div>
+        <div class="flow-step-desc">Set final price → member gets emailed a pay link</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">4</div>
+        <div class="flow-step-label">Member Pays</div>
+        <div class="flow-step-desc">Via Stripe (72 hours to pay)</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <div class="flow-step-label">You Coordinate</div>
+        <div class="flow-step-desc">Set up the round with the athlete</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Who can book whom?</div>
+      <p><span class="badge badge-exec">Executive</span> members can only book <strong>3-Star and 4-Star</strong> athletes.<br>
+      <span class="badge badge-chair">Chairman</span> members can book <strong>everyone</strong> — including 5-Star Legends and Coaches.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">What if a member doesn't pay the quote?</div>
+      <p>The Stripe link expires after 72 hours. If they don't pay, the booking dies. No charge, no follow-up required. If they want to rebook, they submit a new request.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- EXECUTIVE ASSISTANTS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Executive Assistants</h2>
+    <p class="section-desc">Members can invite their assistants to use the app on their behalf. Here's what assistants can and can't do.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-eyebrow">Assistants CAN</div>
+        <ul class="card-list">
+          <li>Submit round requests for the member</li>
+          <li>View the member's booking history</li>
+          <li>Browse the athlete roster</li>
+          <li>Use the clubhouse chat</li>
+          <li>View the social feed</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow" style="color:rgba(200,100,100,0.9);">Assistants CANNOT</div>
+        <ul class="card-list">
+          <li class="no">Change the payment method / credit card</li>
+          <li class="no">Edit the member's personal profile</li>
+          <li class="no">Cancel the membership</li>
+          <li class="no">View billing details (unless member allows)</li>
+          <li class="no">Book over the dollar threshold without member approval</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="info-box" style="margin-top:20px;">
+      <div class="info-box-title">Dollar threshold</div>
+      <p>Members set a dollar limit when they invite their assistant (for example, $5,000). If the assistant tries to request a round that might cost more than $5,000, it goes into a "needs your approval" queue — the member gets a push notification and has to tap "Approve" before it reaches you. This protects the member from their assistant accidentally booking a $15,000 round with Charles Barkley.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- ATHLETE LISTING FEES -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">What Athletes Pay to Be on CartPath</h2>
+    <p class="section-desc">Athletes pay a monthly listing fee to be on the platform. This is private — members never see it. Annual prepay saves 2 months.</p>
+
+    <table>
+      <tr><th>Tier</th><th>Who</th><th>Monthly</th><th>Annual (2 mo free)</th></tr>
+      <tr><td>Tier 1</td><td>Local pros, mini-tour</td><td class="gold">$150</td><td class="gold">$1,500</td></tr>
+      <tr><td>Tier 2</td><td>Korn Ferry, retired tour</td><td class="gold">$250</td><td class="gold">$2,500</td></tr>
+      <tr><td>Tier 3</td><td>PGA Tour, LPGA</td><td class="gold">$400</td><td class="gold">$4,000</td></tr>
+      <tr><td>Tier 4</td><td>Tour winners, Ryder Cup</td><td class="gold">$600</td><td class="gold">$6,000</td></tr>
+      <tr><td>Tier 5</td><td>Hall of Famers, legends</td><td class="gold">$850</td><td class="gold">$8,500</td></tr>
+    </table>
+
+    <div class="info-box" style="margin-top:20px;">
+      <div class="info-box-title">Complimentary athletes</div>
+      <p>Some legends may refuse to pay (and that's OK). You can flag any athlete as "complimentary" in the admin dashboard — they stay on the roster with no listing fee. Use this sparingly and only for athletes whose presence drives member signups.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Members never see this</div>
+      <p>The athlete pricing pages are hidden from the main website. They're only reachable via direct links that you send to athletes personally. There is no "For Athletes" section in the member portal, no pricing visible in the app. Members see athletes as "roster partners," not as paying subscribers.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- YOUR PAGES & LINKS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Your Pages & Links</h2>
+    <p class="section-desc">Quick reference for every page on the site. Bookmark the ones you use daily.</p>
+
+    <table>
+      <tr><th>Page</th><th>URL</th><th>Who Sees It</th></tr>
+      <tr><td class="name">Homepage</td><td><a href="/" style="color:var(--gold);text-decoration:none;">cartpathclub.com</a></td><td>Everyone</td></tr>
+      <tr><td class="name">Apply for Membership</td><td><a href="/apply" style="color:var(--gold);text-decoration:none;">cartpathclub.com/apply</a></td><td>Everyone</td></tr>
+      <tr><td class="name">Live Scores</td><td><a href="/scores" style="color:var(--gold);text-decoration:none;">cartpathclub.com/scores</a></td><td>Everyone</td></tr>
+      <tr><td class="name">App Preview</td><td><a href="/app" style="color:var(--gold);text-decoration:none;">cartpathclub.com/app</a></td><td>Everyone</td></tr>
+      <tr><td class="name">Privacy Policy</td><td><a href="/privacy" style="color:var(--gold);text-decoration:none;">cartpathclub.com/privacy</a></td><td>Everyone</td></tr>
+      <tr style="background:rgba(191,155,59,0.04);"><td class="name">Admin Dashboard</td><td><a href="/admin" style="color:var(--gold);text-decoration:none;">cartpathclub.com/admin</a></td><td>You + Dylan only</td></tr>
+      <tr><td class="name">Member Portal</td><td><a href="/members" style="color:var(--gold);text-decoration:none;">cartpathclub.com/members</a></td><td>Members only (login required)</td></tr>
+      <tr><td class="name">Athlete Interest Form</td><td><a href="/athletes/join" style="color:var(--gold);text-decoration:none;">cartpathclub.com/athletes/join</a></td><td>Athletes you share the link with</td></tr>
+      <tr style="background:rgba(191,155,59,0.04);"><td class="name">This Page</td><td><a href="/internal" style="color:var(--gold);text-decoration:none;">cartpathclub.com/internal</a></td><td>You + Dylan only</td></tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- MOBILE APP SCREENS -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Mobile App — What Members See</h2>
+    <p class="section-desc">The five main tabs in the app, plus the secondary screens members can reach.</p>
+
+    <div class="card-grid three">
+      <div class="card">
+        <div class="card-eyebrow">Tab 1</div>
+        <div class="card-title">Home</div>
+        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Dashboard with welcome banner, quick stats, and a snapshot of the current tournament leaderboard.</p>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Tab 2</div>
+        <div class="card-title">Athletes</div>
+        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Full roster with search bar and tier filters. Tap an athlete to see their profile + request a round.</p>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Tab 3</div>
+        <div class="card-title">Live</div>
+        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Real-time PGA Tour leaderboard. Auto-refreshes every 60 seconds during tournaments.</p>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Tab 4</div>
+        <div class="card-title">Clubhouse</div>
+        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Chat channels — general, course reviews, equipment, events. Chairman members get an exclusive channel.</p>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Tab 5</div>
+        <div class="card-title">Account</div>
+        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Membership details, My Bookings, My Rounds (score history), Assistants, Settings, Support, Log Out.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:28px 0 16px;">Other Screens</h3>
+    <table>
+      <tr><th>Screen</th><th>What It Does</th></tr>
+      <tr><td class="name">Athlete Profile</td><td>Full story, availability, tier badge. "Request Experience" button opens the booking form.</td></tr>
+      <tr><td class="name">Request a Round</td><td>Form: date, course, group size, in-town/out-of-town, notes. Submit sends to your review queue.</td></tr>
+      <tr><td class="name">My Bookings</td><td>Lists all their round requests with status badges (Submitted → In Review → Ready to Pay → Paid → Confirmed → Completed).</td></tr>
+      <tr><td class="name">Submit Score</td><td>Log a round: select course (with "Near Me" GPS finder), enter score, hole-by-hole optional, rate 1–5 stars.</td></tr>
+      <tr><td class="name">Round History</td><td>Past scores, handicap tracker, best/average stats.</td></tr>
+      <tr><td class="name">Assistants</td><td>Invite/manage executive assistants. Set permissions + dollar approval thresholds.</td></tr>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- REVENUE SUMMARY -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Where the Money Comes From</h2>
+    <p class="section-desc">Four revenue streams.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-eyebrow">Revenue 1</div>
+        <div class="card-title">Entry Fees</div>
+        <div class="card-price">$2,500</div>
+        <div class="card-price-note">one-time per member</div>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Revenue 2</div>
+        <div class="card-title">Annual Dues</div>
+        <div class="card-price">$20K–$30K</div>
+        <div class="card-price-note">per member per year</div>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Revenue 3</div>
+        <div class="card-title">Booking Platform Fee</div>
+        <div class="card-price">20%</div>
+        <div class="card-price-note">of every round booked</div>
+      </div>
+      <div class="card">
+        <div class="card-eyebrow">Revenue 4</div>
+        <div class="card-title">Athlete Listing Fees</div>
+        <div class="card-price">$150–$850</div>
+        <div class="card-price-note">per athlete per month</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- QUICK REFERENCE CONTACT -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">Contact & Support</h2>
+
+    <div class="info-box">
+      <div class="info-box-title">Member-facing email</div>
+      <p><a href="mailto:hello@cartpathclub.com" style="color:var(--gold);text-decoration:none;font-weight:600;">hello@cartpathclub.com</a> — this is what members see in all emails, in the app, and on the website. All public communications come from this address.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Admin dashboard password</div>
+      <p>You log into the admin dashboard at <a href="/admin" style="color:var(--gold);text-decoration:none;">cartpathclub.com/admin</a>. Dylan has the current password — ask him if you need it.</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center; padding-top:48px; border-top:1px solid rgba(191,155,59,0.08);">
+    <p style="font-size:11px; color:rgba(245,240,225,0.25); letter-spacing:1px;">CartPath Internal Reference — Last updated April 2026</p>
+  </div>
+
+</div>
+
+</body>
+</html>
