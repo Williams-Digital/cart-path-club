@@ -264,6 +264,359 @@
     .badge-chair { color: var(--gold); border-color: rgba(191,155,59,0.4); background: rgba(191,155,59,0.08); }
     .badge-both { color: rgba(109,200,109,0.8); border-color: rgba(109,200,109,0.3); background: rgba(109,200,109,0.06); }
 
+    /* Phone mockup frames */
+    .phone-row {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .phone-frame {
+      width: 220px;
+      min-height: 420px;
+      background: var(--green-dark);
+      border: 2px solid rgba(191,155,59,0.25);
+      border-radius: 28px;
+      padding: 32px 14px 20px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50px;
+      height: 5px;
+      background: rgba(191,155,59,0.2);
+      border-radius: 3px;
+    }
+    .phone-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-align: center;
+      margin-top: 12px;
+    }
+    .phone-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--cream);
+      text-align: center;
+      margin: 4px 0 12px;
+    }
+    /* Mock tab bar */
+    .mock-tabs {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 0;
+      border-top: 1px solid rgba(191,155,59,0.15);
+      margin-top: auto;
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      right: 14px;
+    }
+    .mock-tab {
+      text-align: center;
+      font-size: 8px;
+      color: rgba(245,240,225,0.4);
+      letter-spacing: 0.3px;
+    }
+    .mock-tab.active { color: var(--gold); }
+    .mock-tab-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 2px;
+      margin: 0 auto 3px;
+    }
+    .mock-tab.active .mock-tab-dot { background: var(--gold); }
+    /* Mock list items inside phone */
+    .mock-list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(191,155,59,0.06);
+    }
+    .mock-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .mock-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cream);
+    }
+    .mock-sub {
+      font-size: 9px;
+      color: rgba(245,240,225,0.45);
+    }
+    .mock-badge {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-left: auto;
+    }
+    /* Mock search bar */
+    .mock-search {
+      background: rgba(6,15,10,0.6);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 10px;
+      color: rgba(245,240,225,0.3);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mock-search-icon {
+      width: 10px;
+      height: 10px;
+      border: 1.5px solid rgba(245,240,225,0.3);
+      border-radius: 50%;
+    }
+    /* Mock filter pills */
+    .mock-pills {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .mock-pill {
+      font-size: 8px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(191,155,59,0.15);
+      color: rgba(245,240,225,0.4);
+      white-space: nowrap;
+    }
+    .mock-pill.active {
+      background: rgba(191,155,59,0.15);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    /* Mock stat cards */
+    .mock-stat-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .mock-stat {
+      flex: 1;
+      background: rgba(16,53,42,0.4);
+      border-radius: 6px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+    .mock-stat-num {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .mock-stat-label {
+      font-size: 7px;
+      color: rgba(245,240,225,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    /* Mock chat bubble */
+    .mock-chat {
+      padding: 6px 10px;
+      background: rgba(16,53,42,0.5);
+      border-radius: 10px 10px 10px 2px;
+      margin-bottom: 6px;
+      max-width: 85%;
+    }
+    .mock-chat-name {
+      font-size: 8px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 2px;
+    }
+    .mock-chat-text {
+      font-size: 10px;
+      color: rgba(245,240,225,0.7);
+      line-height: 1.4;
+    }
+    /* Mock booking card */
+    .mock-booking {
+      background: rgba(16,53,42,0.4);
+      border: 1px solid rgba(191,155,59,0.1);
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
+    .mock-booking-status {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      color: var(--gold);
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .mock-booking-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 3px;
+    }
+    .mock-booking-detail {
+      font-size: 9px;
+      color: rgba(245,240,225,0.45);
+    }
+    /* Mock form field */
+    .mock-field {
+      margin-bottom: 10px;
+    }
+    .mock-field-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.45);
+      margin-bottom: 4px;
+    }
+    .mock-field-input {
+      background: rgba(6,15,10,0.6);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 4px;
+      padding: 7px 10px;
+      font-size: 10px;
+      color: rgba(245,240,225,0.5);
+    }
+    /* Mock button */
+    .mock-btn {
+      background: linear-gradient(135deg, #A88630, #BF9B3B);
+      color: var(--green-deep);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    /* Mock near me btn */
+    .mock-nearme {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      color: var(--gold);
+      border: 1px solid rgba(191,155,59,0.2);
+      border-radius: 4px;
+      padding: 5px 10px;
+      margin-top: 6px;
+      width: fit-content;
+    }
+    /* Mock toggle */
+    .mock-toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(191,155,59,0.06);
+    }
+    .mock-toggle-label {
+      font-size: 10px;
+      color: var(--cream);
+    }
+    .mock-toggle {
+      width: 28px;
+      height: 16px;
+      border-radius: 8px;
+      background: rgba(191,155,59,0.8);
+      position: relative;
+    }
+    .mock-toggle::after {
+      content: '';
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--cream);
+    }
+    .mock-toggle.off {
+      background: rgba(245,240,225,0.15);
+    }
+    .mock-toggle.off::after {
+      right: auto;
+      left: 2px;
+    }
+    /* Assistant flow diagram specific */
+    .assistant-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 24px 0;
+    }
+    .assistant-flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 0;
+    }
+    .assistant-flow-num {
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      border-radius: 50%;
+      background: rgba(191,155,59,0.1);
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .assistant-flow-content {
+      flex: 1;
+    }
+    .assistant-flow-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .assistant-flow-desc {
+      font-size: 13px;
+      color: rgba(245,240,225,0.55);
+      line-height: 1.6;
+    }
+    .assistant-flow-line {
+      width: 2px;
+      height: 16px;
+      background: rgba(191,155,59,0.15);
+      margin-left: 15px;
+    }
+
     @media (max-width: 768px) {
       .card-grid { grid-template-columns: 1fr; }
       .card-grid.three { grid-template-columns: 1fr; }
@@ -271,6 +624,8 @@
       .flow-arrow { transform: rotate(90deg); text-align: center; padding: 4px 0; }
       .page { padding: 24px 16px 80px; }
       th, td { padding: 10px 12px; font-size: 13px; }
+      .phone-row { gap: 20px; }
+      .phone-frame { width: 200px; min-height: 380px; }
     }
   </style>
 </head>
@@ -493,7 +848,7 @@
   <!-- ═══════════════════════════════════════════ -->
   <div class="section">
     <h2 class="section-title">Executive Assistants</h2>
-    <p class="section-desc">Members can invite their assistants to use the app on their behalf. Here's what assistants can and can't do.</p>
+    <p class="section-desc">Many of our members are CEOs and executives who have assistants managing their calendars. Instead of making the member do everything themselves, we let them invite their assistant to use CartPath on their behalf. The assistant gets their own separate login — they never have the member's password.</p>
 
     <div class="card-grid">
       <div class="card">
@@ -501,26 +856,92 @@
         <ul class="card-list">
           <li>Submit round requests for the member</li>
           <li>View the member's booking history</li>
-          <li>Browse the athlete roster</li>
+          <li>Browse the full athlete roster</li>
           <li>Use the clubhouse chat</li>
-          <li>View the social feed</li>
+          <li>View the social feed and scores</li>
+          <li>See all the same athletes the member can see</li>
         </ul>
       </div>
       <div class="card">
-        <div class="card-eyebrow" style="color:rgba(200,100,100,0.9);">Assistants CANNOT</div>
+        <div class="card-eyebrow" style="color:rgba(200,100,100,0.9);">Assistants CAN NEVER</div>
         <ul class="card-list">
-          <li class="no">Change the payment method / credit card</li>
-          <li class="no">Edit the member's personal profile</li>
-          <li class="no">Cancel the membership</li>
-          <li class="no">View billing details (unless member allows)</li>
-          <li class="no">Book over the dollar threshold without member approval</li>
+          <li class="no">Change the member's credit card or payment method</li>
+          <li class="no">Edit the member's name, photo, or personal profile</li>
+          <li class="no">Cancel the member's membership</li>
+          <li class="no">View billing details (unless member specifically allows it)</li>
+          <li class="no">Book over the dollar threshold without the member tapping "Approve"</li>
         </ul>
       </div>
     </div>
 
-    <div class="info-box" style="margin-top:20px;">
-      <div class="info-box-title">Dollar threshold</div>
-      <p>Members set a dollar limit when they invite their assistant (for example, $5,000). If the assistant tries to request a round that might cost more than $5,000, it goes into a "needs your approval" queue — the member gets a push notification and has to tap "Approve" before it reaches you. This protects the member from their assistant accidentally booking a $15,000 round with Charles Barkley.</p>
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:32px 0 16px;">How It Works — Step by Step</h3>
+
+    <div class="assistant-flow">
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">1</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Member opens "Assistants" in the app</div>
+          <div class="assistant-flow-desc">From the Account tab, the member taps "Assistants" and then "Invite an Assistant."</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">2</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Member fills in the assistant's info</div>
+          <div class="assistant-flow-desc">Name, email, and phone. They also choose what the assistant is allowed to do (toggle switches for booking, history, billing) and set a dollar threshold — for example, "$5,000 means any booking over $5K needs my approval first."</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">3</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Assistant gets an email with a sign-up link</div>
+          <div class="assistant-flow-desc">The email comes from hello@cartpathclub.com and says "[Member Name] has invited you to manage their CartPath account." The link expires after 7 days. The assistant clicks it and creates their own password.</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">4</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Assistant logs in — sees a banner that says "Acting on behalf of [Member]"</div>
+          <div class="assistant-flow-desc">The app looks the same as the member's view, but there's a gold banner at the top of key screens reminding them (and us) that they're acting on someone else's behalf. Everything they do is logged.</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">5</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Assistant submits a round request</div>
+          <div class="assistant-flow-desc">If the round estimate is under the threshold ($5K in this example), it goes straight to your review queue — same as if the member submitted it themselves. If it's over the threshold, it goes into a "Pending Member Approval" state first.</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">6</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">If over threshold: member gets a push notification</div>
+          <div class="assistant-flow-desc">The member's phone buzzes: "Your assistant submitted a request for a round with Charles Barkley (~$10,000). Approve or decline?" The member taps one button. If they approve, it flows to your queue. If they decline, it dies.</div>
+        </div>
+      </div>
+      <div class="assistant-flow-line"></div>
+      <div class="assistant-flow-step">
+        <div class="assistant-flow-num">7</div>
+        <div class="assistant-flow-content">
+          <div class="assistant-flow-title">Member can revoke access anytime</div>
+          <div class="assistant-flow-desc">From the Assistants screen, the member taps "Revoke Access." The assistant's login stops working immediately. Everything the assistant did is still logged for the member to review.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">Why this matters for CartPath</div>
+      <p>Most golf club apps make the CEO do everything themselves. These are busy people — they have someone who manages their calendar, books their restaurants, and coordinates their travel. If we make the CEO open the app and fill out a form every time they want to play golf, they won't use it. But if their assistant can do it for them, the booking happens the same day the CEO says "I want to play with Champ Bailey next Friday."</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">What YOU (Mayo) see when an assistant submits a booking</div>
+      <p>It looks exactly the same in your admin queue as a regular booking. There's a small "Assistant" tag on the booking card so you know it was submitted by an EA instead of the member directly, but the flow is identical — you quote it, the member (not the assistant) gets the payment link, the member pays, and you coordinate the round.</p>
     </div>
   </div>
 
@@ -582,47 +1003,217 @@
   <!-- MOBILE APP SCREENS -->
   <!-- ═══════════════════════════════════════════ -->
   <div class="section">
-    <h2 class="section-title">Mobile App — What Members See</h2>
-    <p class="section-desc">The five main tabs in the app, plus the secondary screens members can reach.</p>
+    <h2 class="section-title">The App — What Members See</h2>
+    <p class="section-desc">Below are previews of every major screen in the mobile app. Members navigate using five tabs at the bottom of the screen.</p>
 
-    <div class="card-grid three">
-      <div class="card">
-        <div class="card-eyebrow">Tab 1</div>
-        <div class="card-title">Home</div>
-        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Dashboard with welcome banner, quick stats, and a snapshot of the current tournament leaderboard.</p>
+    <!-- Row 1: Home + Athletes + Live -->
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:20px;">Main Tabs</h3>
+
+    <div class="phone-row">
+
+      <!-- HOME -->
+      <div class="phone-frame">
+        <div style="font-size:18px;font-family:var(--font-display);color:var(--cream);font-weight:300;margin-bottom:4px;">Welcome back</div>
+        <div style="font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:14px;">EXECUTIVE MEMBER</div>
+        <div class="mock-stat-row">
+          <div class="mock-stat"><div class="mock-stat-num">6</div><div class="mock-stat-label">Remaining</div></div>
+          <div class="mock-stat"><div class="mock-stat-num">4</div><div class="mock-stat-label">Played</div></div>
+          <div class="mock-stat"><div class="mock-stat-num">2026</div><div class="mock-stat-label">Since</div></div>
+        </div>
+        <div style="font-size:9px;color:rgba(245,240,225,0.4);letter-spacing:1px;text-transform:uppercase;margin:12px 0 8px;">Live Tournament</div>
+        <div style="font-size:12px;color:var(--cream);font-weight:600;margin-bottom:3px;">The Masters 2026</div>
+        <div class="mock-list-item"><div class="mock-avatar" style="width:22px;height:22px;font-size:8px;">🏆</div><div><div class="mock-name" style="font-size:10px;">S. Scheffler</div></div><div class="mock-badge" style="color:#C44;">-14</div></div>
+        <div class="mock-list-item"><div class="mock-avatar" style="width:22px;height:22px;font-size:8px;">2</div><div><div class="mock-name" style="font-size:10px;">R. McIlroy</div></div><div class="mock-badge" style="color:#C44;">-11</div></div>
+        <div class="mock-tabs">
+          <div class="mock-tab active"><div class="mock-tab-dot"></div>Home</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Athletes</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Live</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Chat</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Account</div>
+        </div>
+        <div class="phone-label">Home Tab</div>
       </div>
-      <div class="card">
-        <div class="card-eyebrow">Tab 2</div>
-        <div class="card-title">Athletes</div>
-        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Full roster with search bar and tier filters. Tap an athlete to see their profile + request a round.</p>
+
+      <!-- ATHLETES / ROSTER -->
+      <div class="phone-frame">
+        <div style="font-size:18px;font-family:var(--font-display);color:var(--cream);font-weight:300;margin-bottom:2px;">The Roster</div>
+        <div style="font-size:9px;color:var(--gold);letter-spacing:1.5px;margin-bottom:10px;">ATHLETES & COACHES</div>
+        <div class="mock-search"><div class="mock-search-icon"></div>Search athletes, sports, schools...</div>
+        <div class="mock-pills">
+          <div class="mock-pill active">All</div>
+          <div class="mock-pill">5-Star</div>
+          <div class="mock-pill">4-Star</div>
+          <div class="mock-pill">3-Star</div>
+          <div class="mock-pill">Coaches</div>
+        </div>
+        <div class="mock-list-item"><div class="mock-avatar">CB</div><div><div class="mock-name">Charles Barkley</div><div class="mock-sub">Auburn · TNT HQ</div></div><div class="mock-badge">LEGEND</div></div>
+        <div class="mock-list-item"><div class="mock-avatar">HW</div><div><div class="mock-name">Hines Ward</div><div class="mock-sub">UGA · East Point</div></div><div class="mock-badge">LEGEND</div></div>
+        <div class="mock-list-item"><div class="mock-avatar">MS</div><div><div class="mock-name">Matt Stafford</div><div class="mock-sub">UGA · Super Bowl</div></div><div class="mock-badge">ALL-STAR</div></div>
+        <div class="mock-list-item"><div class="mock-avatar">PP</div><div><div class="mock-name">Patrick Peterson</div><div class="mock-sub">Auburn · 9x Pro Bowl</div></div><div class="mock-badge">ALL-STAR</div></div>
+        <div class="mock-tabs">
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Home</div>
+          <div class="mock-tab active"><div class="mock-tab-dot"></div>Athletes</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Live</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Chat</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Account</div>
+        </div>
+        <div class="phone-label">Athletes Tab</div>
       </div>
-      <div class="card">
-        <div class="card-eyebrow">Tab 3</div>
-        <div class="card-title">Live</div>
-        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Real-time PGA Tour leaderboard. Auto-refreshes every 60 seconds during tournaments.</p>
-      </div>
-      <div class="card">
-        <div class="card-eyebrow">Tab 4</div>
-        <div class="card-title">Clubhouse</div>
-        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Chat channels — general, course reviews, equipment, events. Chairman members get an exclusive channel.</p>
-      </div>
-      <div class="card">
-        <div class="card-eyebrow">Tab 5</div>
-        <div class="card-title">Account</div>
-        <p style="font-size:13px;color:rgba(245,240,225,0.55);">Membership details, My Bookings, My Rounds (score history), Assistants, Settings, Support, Log Out.</p>
+
+      <!-- CLUBHOUSE / CHAT -->
+      <div class="phone-frame">
+        <div style="font-size:18px;font-family:var(--font-display);color:var(--cream);font-weight:300;margin-bottom:2px;">Clubhouse</div>
+        <div style="font-size:9px;color:var(--gold);letter-spacing:1.5px;margin-bottom:14px;"># GENERAL</div>
+        <div class="mock-chat"><div class="mock-chat-name">Dylan W.</div><div class="mock-chat-text">Just played East Lake — course is in incredible shape right now.</div></div>
+        <div class="mock-chat"><div class="mock-chat-name">Mike T.</div><div class="mock-chat-text">How were the greens? Playing there Thursday.</div></div>
+        <div class="mock-chat"><div class="mock-chat-name">Dylan W.</div><div class="mock-chat-text">Fast. Really fast. Bring your A-game on the back 9 🏌️</div></div>
+        <div class="mock-chat" style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.12);"><div class="mock-chat-name">CartPath</div><div class="mock-chat-text">Welcome to the Clubhouse! Chairman members have access to the exclusive #chairman channel.</div></div>
+        <div class="mock-tabs">
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Home</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Athletes</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Live</div>
+          <div class="mock-tab active"><div class="mock-tab-dot"></div>Chat</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Account</div>
+        </div>
+        <div class="phone-label">Clubhouse Tab</div>
       </div>
     </div>
 
-    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:28px 0 16px;">Other Screens</h3>
-    <table>
-      <tr><th>Screen</th><th>What It Does</th></tr>
-      <tr><td class="name">Athlete Profile</td><td>Full story, availability, tier badge. "Request Experience" button opens the booking form.</td></tr>
-      <tr><td class="name">Request a Round</td><td>Form: date, course, group size, in-town/out-of-town, notes. Submit sends to your review queue.</td></tr>
-      <tr><td class="name">My Bookings</td><td>Lists all their round requests with status badges (Submitted → In Review → Ready to Pay → Paid → Confirmed → Completed).</td></tr>
-      <tr><td class="name">Submit Score</td><td>Log a round: select course (with "Near Me" GPS finder), enter score, hole-by-hole optional, rate 1–5 stars.</td></tr>
-      <tr><td class="name">Round History</td><td>Past scores, handicap tracker, best/average stats.</td></tr>
-      <tr><td class="name">Assistants</td><td>Invite/manage executive assistants. Set permissions + dollar approval thresholds.</td></tr>
-    </table>
+    <!-- Row 2: Request a Round + My Bookings + Submit Score -->
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:32px 0 20px;">Key Screens</h3>
+
+    <div class="phone-row">
+
+      <!-- REQUEST A ROUND -->
+      <div class="phone-frame">
+        <div style="font-size:9px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:4px;">Round Request</div>
+        <div style="font-size:16px;font-family:var(--font-display);color:var(--cream);text-align:center;margin-bottom:14px;">Champ Bailey</div>
+        <div class="mock-field"><div class="mock-field-label">Preferred Date</div><div class="mock-field-input">2026-05-14</div></div>
+        <div class="mock-field"><div class="mock-field-label">Course</div><div class="mock-field-input">East Lake Golf Club</div></div>
+        <div class="mock-nearme">📍 Near Me</div>
+        <div style="height:8px;"></div>
+        <div class="mock-field"><div class="mock-field-label">Group Size</div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;padding:6px;text-align:center;border:1px solid rgba(191,155,59,0.15);border-radius:4px;font-size:12px;color:rgba(245,240,225,0.4);">1</div>
+            <div style="flex:1;padding:6px;text-align:center;border:1px solid var(--gold);border-radius:4px;font-size:12px;color:var(--gold);background:rgba(191,155,59,0.1);">2</div>
+            <div style="flex:1;padding:6px;text-align:center;border:1px solid rgba(191,155,59,0.15);border-radius:4px;font-size:12px;color:rgba(245,240,225,0.4);">3</div>
+            <div style="flex:1;padding:6px;text-align:center;border:1px solid rgba(191,155,59,0.15);border-radius:4px;font-size:12px;color:rgba(245,240,225,0.4);">4</div>
+          </div>
+        </div>
+        <div class="mock-btn">Submit Request</div>
+        <div style="font-size:8px;color:rgba(245,240,225,0.35);text-align:center;margin-top:6px;">No charge today. Our concierge will follow up within 24 hours.</div>
+        <div class="phone-label">Request a Round</div>
+      </div>
+
+      <!-- MY BOOKINGS -->
+      <div class="phone-frame">
+        <div style="font-size:16px;font-family:var(--font-display);color:var(--cream);text-align:center;margin-bottom:14px;">Your Rounds</div>
+        <div class="mock-booking">
+          <div class="mock-booking-status">Confirmed</div>
+          <div class="mock-booking-name">Champ Bailey</div>
+          <div class="mock-booking-detail">📅 Fri, May 14, 2026</div>
+          <div class="mock-booking-detail">📍 East Lake Golf Club</div>
+          <div class="mock-booking-detail">👥 Group of 2 · In town</div>
+          <div style="font-size:9px;color:rgba(245,240,225,0.4);font-style:italic;margin-top:6px;">All set. We'll see you on the course.</div>
+        </div>
+        <div class="mock-booking">
+          <div class="mock-booking-status" style="border-color:rgba(245,240,225,0.4);color:rgba(245,240,225,0.4);">In Review</div>
+          <div class="mock-booking-name">Patrick Peterson</div>
+          <div class="mock-booking-detail">📅 Sat, May 22, 2026</div>
+          <div class="mock-booking-detail">📍 TPC Sugarloaf</div>
+          <div style="font-size:9px;color:rgba(245,240,225,0.4);font-style:italic;margin-top:6px;">Our concierge is coordinating with the athlete.</div>
+        </div>
+        <div class="phone-label">My Bookings</div>
+      </div>
+
+      <!-- SUBMIT SCORE -->
+      <div class="phone-frame">
+        <div style="font-size:16px;font-family:var(--font-display);color:var(--cream);text-align:center;margin-bottom:14px;">Submit Round</div>
+        <div class="mock-field"><div class="mock-field-label">Course</div><div class="mock-field-input" style="display:flex;justify-content:space-between;align-items:center;">East Lake Golf Club <span style="color:var(--gold);">›</span></div></div>
+        <div class="mock-nearme">📍 Near Me</div>
+        <div style="height:10px;"></div>
+        <div style="background:rgba(191,155,59,0.06);border:1px solid rgba(191,155,59,0.15);border-radius:8px;padding:12px;text-align:center;margin-bottom:10px;">
+          <div style="font-size:8px;color:rgba(245,240,225,0.4);letter-spacing:1px;text-transform:uppercase;">Total Score</div>
+          <div style="font-size:28px;font-family:var(--font-display);color:var(--gold);font-weight:600;">78</div>
+          <div style="font-size:11px;color:rgba(245,240,225,0.5);">+6</div>
+        </div>
+        <div style="font-size:9px;color:var(--gold);text-align:center;margin-bottom:8px;">▼ Show Hole-by-Hole Scorecard</div>
+        <div class="mock-field"><div class="mock-field-label">Played With</div><div class="mock-field-input">Champ Bailey</div></div>
+        <div class="mock-btn">Save Round</div>
+        <div class="phone-label">Submit Score</div>
+      </div>
+    </div>
+
+    <!-- Row 3: Account + Assistants -->
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:32px 0 20px;">Account & Assistants</h3>
+
+    <div class="phone-row">
+
+      <!-- ACCOUNT / PROFILE -->
+      <div class="phone-frame">
+        <div style="font-size:18px;font-family:var(--font-display);color:var(--cream);font-weight:300;margin-bottom:4px;">Your Membership</div>
+        <div style="background:var(--green-dark);border:1px solid var(--gold);border-radius:8px;padding:14px;margin-bottom:12px;">
+          <div style="font-size:10px;color:var(--gold);letter-spacing:3px;margin-bottom:6px;">CHAIRMAN</div>
+          <div style="font-size:13px;font-weight:600;color:var(--cream);">John Harrison</div>
+          <div style="font-size:9px;color:rgba(245,240,225,0.4);">john@company.com</div>
+        </div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;">📅 My Bookings</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;">⛳ My Rounds</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;">👥 Assistants</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;">⚙️ Settings</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;">💬 Support</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-list-item"><div style="flex:1"><div class="mock-name" style="font-size:11px;color:rgba(200,60,60,0.7);">🚪 Log Out</div></div><div style="font-size:12px;color:rgba(245,240,225,0.3);">›</div></div>
+        <div class="mock-tabs">
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Home</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Athletes</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Live</div>
+          <div class="mock-tab"><div class="mock-tab-dot"></div>Chat</div>
+          <div class="mock-tab active"><div class="mock-tab-dot"></div>Account</div>
+        </div>
+        <div class="phone-label">Account Tab</div>
+      </div>
+
+      <!-- ASSISTANTS SCREEN -->
+      <div class="phone-frame">
+        <div style="font-size:16px;font-family:var(--font-display);color:var(--cream);text-align:center;margin-bottom:6px;">Assistants</div>
+        <div style="font-size:10px;color:rgba(245,240,225,0.5);text-align:center;margin-bottom:14px;line-height:1.5;">Delegate round requests to your EA. You control what they can do.</div>
+        <!-- Assistant card -->
+        <div style="background:rgba(16,53,42,0.4);border:1px solid rgba(191,155,59,0.1);border-radius:6px;padding:10px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <div class="mock-avatar" style="width:28px;height:28px;font-size:9px;">JR</div>
+            <div><div class="mock-name" style="font-size:11px;">Jamie Reyes</div><div class="mock-sub">jamie@company.com</div></div>
+            <div class="mock-booking-status" style="font-size:7px;border-color:rgba(109,200,109,0.5);color:rgba(109,200,109,0.8);margin-left:auto;margin-bottom:0;">Active</div>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:6px;">
+            <div style="font-size:7px;padding:3px 6px;border:1px solid rgba(191,155,59,0.3);border-radius:2px;color:var(--gold);letter-spacing:0.5px;">BOOKING ✓</div>
+            <div style="font-size:7px;padding:3px 6px;border:1px solid rgba(191,155,59,0.3);border-radius:2px;color:var(--gold);letter-spacing:0.5px;">HISTORY ✓</div>
+            <div style="font-size:7px;padding:3px 6px;border:1px solid rgba(245,240,225,0.1);border-radius:2px;color:rgba(245,240,225,0.3);letter-spacing:0.5px;">BILLING ✕</div>
+          </div>
+          <div style="font-size:8px;color:rgba(245,240,225,0.45);display:flex;align-items:center;gap:4px;">🛡️ Bookings over $5,000 need your approval</div>
+        </div>
+        <div class="mock-btn">Invite an Assistant</div>
+        <div style="background:rgba(191,155,59,0.04);border:1px solid rgba(191,155,59,0.1);border-radius:4px;padding:8px;margin-top:10px;">
+          <div style="font-size:8px;color:rgba(245,240,225,0.5);line-height:1.6;">ℹ️ Assistants can never change your payment method, edit your profile, or cancel your membership.</div>
+        </div>
+        <div class="phone-label">Assistants Screen</div>
+      </div>
+
+      <!-- ASSISTANT INVITE MODAL -->
+      <div class="phone-frame">
+        <div style="font-size:16px;font-family:var(--font-display);color:var(--cream);text-align:center;margin-bottom:14px;">New Assistant</div>
+        <div class="mock-field"><div class="mock-field-label">Full Name</div><div class="mock-field-input">Jamie Reyes</div></div>
+        <div class="mock-field"><div class="mock-field-label">Email</div><div class="mock-field-input">jamie@company.com</div></div>
+        <div style="font-size:11px;font-weight:600;color:var(--cream);margin:8px 0 6px;">What can they do?</div>
+        <div class="mock-toggle-row"><div class="mock-toggle-label">Submit round requests</div><div class="mock-toggle"></div></div>
+        <div class="mock-toggle-row"><div class="mock-toggle-label">View booking history</div><div class="mock-toggle"></div></div>
+        <div class="mock-toggle-row"><div class="mock-toggle-label">View billing</div><div class="mock-toggle off"></div></div>
+        <div style="font-size:11px;font-weight:600;color:var(--cream);margin:10px 0 6px;">Approval Threshold</div>
+        <div class="mock-field-input" style="display:flex;align-items:center;gap:4px;"><span style="color:var(--gold);font-weight:700;font-size:14px;">$</span> 5,000</div>
+        <div style="font-size:8px;color:rgba(245,240,225,0.35);margin-top:4px;">Bookings over this amount need your approval</div>
+        <div class="mock-btn" style="margin-top:10px;">Send Invitation</div>
+        <div class="phone-label">Invite Form</div>
+      </div>
+    </div>
   </div>
 
   <div class="divider"></div>
