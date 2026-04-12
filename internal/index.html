@@ -782,10 +782,6 @@
       <tr><td class="name">Mohamed Massaquoi</td><td class="gold">$800–$1,500</td><td>+$800</td><td>Available</td></tr>
     </table>
 
-    <div class="info-box" style="margin-top:28px;">
-      <div class="info-box-title">The 80/20 split explained</div>
-      <p>When a member pays $8,000 for a round with Champ Bailey, CartPath keeps $1,600 (20%). You pay Champ $6,400 (80%) after the round is completed. Payment method is up to you — Venmo, wire transfer, or check. Record the payout in the admin dashboard so we have a paper trail.</p>
-    </div>
   </div>
 
   <div class="divider"></div>
@@ -839,6 +835,99 @@
       <div class="info-box-title">What if a member doesn't pay the quote?</div>
       <p>The Stripe link expires after 72 hours. If they don't pay, the booking dies. No charge, no follow-up required. If they want to rebook, they submit a new request.</p>
     </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- HOW THE MONEY SPLITS ON EVERY BOOKING -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="section">
+    <h2 class="section-title">How the Money Splits on Every Booking</h2>
+    <p class="section-desc">When a member pays for a round, CartPath keeps 20% as a platform fee. The athlete gets 80%. The member never sees the split — they just see one price. The athlete doesn't need to know the member's total unless they ask.</p>
+
+    <!-- Visual split diagram -->
+    <div style="background:rgba(16,53,42,0.3);border:1px solid rgba(191,155,59,0.15);border-radius:8px;padding:32px 28px;margin-bottom:28px;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:11px;color:rgba(245,240,225,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">Member pays</div>
+        <div style="font-family:var(--font-display);font-size:42px;font-weight:700;color:var(--cream);">$8,000</div>
+        <div style="font-size:12px;color:rgba(245,240,225,0.4);margin-top:4px;">Example: round with Champ Bailey</div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:20px;">
+        <div style="flex:1;height:2px;background:rgba(191,155,59,0.2);"></div>
+        <div style="font-size:10px;color:rgba(245,240,225,0.4);padding:0 8px;">splits into</div>
+        <div style="flex:1;height:2px;background:rgba(191,155,59,0.2);"></div>
+      </div>
+
+      <div style="display:flex;gap:16px;">
+        <!-- Stripe fee -->
+        <div style="flex:0.8;background:rgba(6,15,10,0.5);border:1px solid rgba(245,240,225,0.08);border-radius:6px;padding:16px;text-align:center;">
+          <div style="font-size:9px;color:rgba(245,240,225,0.35);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">Stripe Fee</div>
+          <div style="font-family:var(--font-display);font-size:20px;font-weight:600;color:rgba(245,240,225,0.5);">$232</div>
+          <div style="font-size:10px;color:rgba(245,240,225,0.3);margin-top:4px;">2.9% + $0.30</div>
+        </div>
+        <!-- Athlete -->
+        <div style="flex:2;background:rgba(6,15,10,0.5);border:1px solid rgba(191,155,59,0.15);border-radius:6px;padding:16px;text-align:center;">
+          <div style="font-size:9px;color:rgba(245,240,225,0.35);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">Athlete Gets</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--cream);">$6,214</div>
+          <div style="font-size:10px;color:rgba(245,240,225,0.4);margin-top:4px;">80% — you Venmo/wire after the round</div>
+        </div>
+        <!-- CartPath -->
+        <div style="flex:1.2;background:rgba(191,155,59,0.06);border:1px solid rgba(191,155,59,0.25);border-radius:6px;padding:16px;text-align:center;">
+          <div style="font-size:9px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;">CartPath Keeps</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--gold);">$1,554</div>
+          <div style="font-size:10px;color:rgba(191,155,59,0.6);margin-top:4px;">20% platform fee</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real examples table -->
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:16px;">Real Examples by Athlete</h3>
+    <table>
+      <tr><th>Athlete</th><th>Member Pays</th><th>Stripe Fee</th><th>Athlete Gets (80%)</th><th style="color:var(--gold);">CartPath Keeps (20%)</th></tr>
+      <tr><td class="name">Kirby Smart</td><td>$15,000</td><td>$435</td><td>$11,652</td><td class="gold">$2,913</td></tr>
+      <tr><td class="name">Charles Barkley</td><td>$10,000</td><td>$290</td><td>$7,768</td><td class="gold">$1,942</td></tr>
+      <tr><td class="name">Hines Ward</td><td>$8,000</td><td>$232</td><td>$6,214</td><td class="gold">$1,554</td></tr>
+      <tr><td class="name">Matthew Stafford</td><td>$5,000</td><td>$145</td><td>$3,884</td><td class="gold">$971</td></tr>
+      <tr><td class="name">Patrick Peterson</td><td>$4,000</td><td>$116</td><td>$3,107</td><td class="gold">$777</td></tr>
+      <tr><td class="name">David Pollack</td><td>$3,000</td><td>$87</td><td>$2,330</td><td class="gold">$583</td></tr>
+      <tr><td class="name">Jason Campbell</td><td>$2,000</td><td>$58</td><td>$1,554</td><td class="gold">$388</td></tr>
+      <tr><td class="name">Tim Jennings</td><td>$1,500</td><td>$44</td><td>$1,165</td><td class="gold">$291</td></tr>
+      <tr><td class="name">Mohamed Massaquoi</td><td>$1,000</td><td>$29</td><td>$777</td><td class="gold">$194</td></tr>
+    </table>
+
+    <div class="info-box" style="margin-top:24px;">
+      <div class="info-box-title">How you set the price</div>
+      <p>When a booking request lands in your admin queue, you set the final price based on the athlete's range, travel needs, and what feels right for the situation. The system automatically calculates the 80/20 split from whatever number you enter. You don't need to do any math — just enter the total price the member should pay.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">What the member sees</div>
+      <p>The member sees <strong>one number</strong> in their payment email — for example, "$8,000." They do not see the split. They don't know the athlete gets $6,214 and CartPath keeps $1,554. They just see the price of the experience. This is intentional — we're a concierge, not a marketplace.</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">What the athlete sees</div>
+      <p>You tell the athlete their payout amount — for example, "you'll get $6,400 for this round." If they ask what the member paid, you can share it, but it's not required. Most athletes are used to agents and platforms taking a cut. Our 20% is lower than Cameo (25%) and lower than most talent booking agencies (30-40%).</p>
+    </div>
+
+    <div class="info-box">
+      <div class="info-box-title">How you pay the athlete</div>
+      <p>After the round is completed, you pay the athlete their 80% via <strong>Venmo, wire transfer, or check</strong> — whatever they prefer. Then mark the payout in the admin dashboard (method + reference number) so we have a record. The system does not pay athletes automatically — that's a future feature.</p>
+    </div>
+
+    <!-- Monthly revenue projection -->
+    <h3 style="font-size:14px; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin:32px 0 16px;">What Booking Revenue Looks Like Per Month</h3>
+    <table>
+      <tr><th>Bookings / Month</th><th>Avg Round Price</th><th>Total Collected</th><th>Athlete Payouts (80%)</th><th style="color:var(--gold);">CartPath Revenue (20%)</th></tr>
+      <tr><td>5 bookings</td><td>$4,000</td><td>$20,000</td><td>$15,536</td><td class="gold">$3,884</td></tr>
+      <tr><td>10 bookings</td><td>$5,000</td><td>$50,000</td><td>$38,840</td><td class="gold">$9,710</td></tr>
+      <tr><td>15 bookings</td><td>$5,000</td><td>$75,000</td><td>$58,260</td><td class="gold">$14,565</td></tr>
+      <tr><td>20 bookings</td><td>$5,500</td><td>$110,000</td><td>$85,448</td><td class="gold">$21,362</td></tr>
+      <tr><td>30 bookings</td><td>$5,000</td><td>$150,000</td><td>$116,520</td><td class="gold">$29,130</td></tr>
+    </table>
+    <p style="font-size:12px;color:rgba(245,240,225,0.4);margin-top:8px;">* All numbers are after Stripe's 2.9% + $0.30 processing fee. These are the actual dollars in your bank account.</p>
   </div>
 
   <div class="divider"></div>
