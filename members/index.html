@@ -1673,7 +1673,7 @@
         <!-- Green base with wood grain -->
         <div style="background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 3px), #1B4D2E; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;">
           <span id="ls-last-updated" style="font-family: var(--font-ui); font-size: 10px; color: rgba(255,255,255,0.35); letter-spacing: 0.5px;"></span>
-          <span style="font-family: var(--font-ui); font-size: 10px; color: rgba(255,255,255,0.2);">Powered by SportsData.io</span>
+          <span style="font-family: var(--font-ui); font-size: 10px; color: rgba(255,255,255,0.2);">Live scoring data</span>
         </div>
       </div>
 
@@ -1925,7 +1925,7 @@
               <span style="font-family: var(--font-ui); font-size: 15px; font-weight: 600; color: var(--cream);"># clubhouse-lounge</span>
               <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.3); margin-left: 12px;">Main gathering spot</span>
             </div>
-            <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.2);">47 members</span>
+            <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.2);">Private Community</span>
           </div>
 
           <!-- Messages (loaded from API) -->
@@ -2026,7 +2026,7 @@
           </div>
           <div class="account-actions">
             <a href="mailto:hello@cartpathclub.com?subject=Concierge%20Request" class="acct-btn gold">Contact Concierge</a>
-            <a href="#" class="acct-btn outline">Manage Billing</a>
+            <a href="mailto:hello@cartpathclub.com?subject=Billing%20Inquiry" class="acct-btn outline">Contact About Billing</a>
           </div>
         </div>
 
@@ -2137,7 +2137,7 @@
     if (!tier) {
       // Demo tier mapping by email
       var email = (payload.email || '').toLowerCase();
-      if (email === 'dylan@williamsdigital.io' || email === 'msowell@cartpathclub.com') {
+      if (email === 'hello@cartpathclub.com' || email === 'msowell@cartpathclub.com') {
         tier = 'chairman';
       } else {
         tier = 'clubhouse'; // default for demo
@@ -2230,10 +2230,10 @@
 
     // Referral link
     var refId = user.sub ? user.sub.substring(0, 8).toUpperCase() : 'MEMBER';
-    document.getElementById('referral-link').textContent = 'williamsdigital.io/cartpath-apply?ref=' + refId;
+    document.getElementById('referral-link').textContent = 'cartpathclub.com/apply?ref=' + refId;
 
     // Admin: Show "View As" tier switcher for admin users
-    var adminEmails = ['dylan@williamsdigital.io', 'msowell@cartpathclub.com'];
+    var adminEmails = ['hello@cartpathclub.com', 'msowell@cartpathclub.com'];
     if (adminEmails.indexOf((user.email || '').toLowerCase()) !== -1) {
       showAdminTierSwitcher();
     }
@@ -2914,7 +2914,7 @@
 
   function isChatAdmin() {
     var user = getUserInfo();
-    return ['dylan@williamsdigital.io', 'msowell@cartpathclub.com'].indexOf((user.email || '').toLowerCase()) !== -1;
+    return ['hello@cartpathclub.com', 'msowell@cartpathclub.com'].indexOf((user.email || '').toLowerCase()) !== -1;
   }
 
   function showChatAdminPanel() {
