@@ -911,6 +911,17 @@
             </div>
           </div>
 
+          <!-- Terms Agreement -->
+          <div class="terms-check" style="margin-top: 24px; margin-bottom: 24px;">
+            <label style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="termsCheckbox" style="margin-top: 4px; width: 18px; height: 18px; accent-color: #BF9B3B; flex-shrink: 0; cursor: pointer;">
+              <span style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6); line-height: 1.6;">
+                I agree to the <a href="/terms" target="_blank" style="color: #BF9B3B; text-decoration: underline;">Terms of Service</a> and <a href="/privacy" target="_blank" style="color: #BF9B3B; text-decoration: underline;">Privacy Policy</a>.
+              </span>
+            </label>
+            <div class="field-error" id="errorTerms" style="margin-top: 6px;">You must agree to the Terms of Service to continue</div>
+          </div>
+
           <div class="step-nav">
             <button type="button" class="btn-back" onclick="goToStep(2)">&larr; Back</button>
             <button type="submit" class="btn-gold" id="submitBtn" style="flex: 1;">Submit Application</button>
@@ -929,8 +940,8 @@
     <h2>You're One Step Closer</h2>
     <p id="successMessage">Thank you. Our membership committee will review your application and reach out within 48 hours.</p>
     <div class="success-stats">
-      <div class="success-stat"><strong>47</strong> members</div>
-      <div class="success-stat"><strong>12%</strong> acceptance</div>
+      <div class="success-stat"><strong>Private</strong> community</div>
+      <div class="success-stat"><strong>Selective</strong> acceptance</div>
       <div class="success-stat"><strong>48hr</strong> review</div>
     </div>
     <a href="/" class="success-btn">Explore CartPath</a>
@@ -1091,7 +1102,16 @@
         return true;
       }
 
-      return true; // Step 3 has no required fields
+      if (step === 3) {
+        var termsBox = document.getElementById('termsCheckbox');
+        if (!termsBox.checked) {
+          document.getElementById('errorTerms').classList.add('show');
+          return false;
+        }
+        return true;
+      }
+
+      return true;
     }
 
     function showError(fieldId, errorId) {
@@ -1178,7 +1198,9 @@
         athletes: selectedAthletes,
         referral: (document.getElementById('fieldReferral') || {}).value || '',
         notes: (document.getElementById('fieldNotes') || {}).value || '',
-        _source: document.getElementById('sourceField').value
+        _source: document.getElementById('sourceField').value,
+        agreed_to_terms: document.getElementById('termsCheckbox').checked,
+        terms_agreed_at: new Date().toISOString()
       };
 
       fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/applications', {

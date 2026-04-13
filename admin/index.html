@@ -1949,6 +1949,14 @@
         html += detailField('Referral Source', referral);
         html += detailField('Notes', notes);
         html += detailField('Membership Tier', tierLabel);
+
+        // Terms agreement
+        var agreedToTerms = app.agreed_to_terms || app.agreedToTerms || false;
+        var termsDate = app.terms_agreed_at || app.termsAgreedAt || '';
+        var termsDisplay = agreedToTerms
+          ? '<span style="color:#6DC86D;">&#10003; Agreed</span>' + (termsDate ? ' <span style="opacity:0.5;">(' + formatDate(termsDate) + ')</span>' : '')
+          : '<span style="color:#C44;">&#10007; Not agreed</span>';
+        html += '<div class="detail-field"><div class="detail-label">Terms of Service</div><div class="detail-value">' + termsDisplay + '</div></div>';
         html += '</div>';
 
         // Timeline
