@@ -1205,7 +1205,7 @@
       <button class="nav-tab" data-tab="livescores">Live Scores</button>
       <button class="nav-tab" data-tab="myrounds">My Rounds</button>
       <button class="nav-tab" data-tab="courses">Courses</button>
-      <button class="nav-tab chairman-only" data-tab="chat" style="display:none;">Chat</button>
+      <button class="nav-tab" data-tab="chat">Chat</button>
       <button class="nav-tab" data-tab="account">Account</button>
     </div>
 
@@ -1224,7 +1224,7 @@
     <button class="nav-tab" data-tab="livescores" onclick="switchTab('livescores');closeMobileMenu();">Live Scores</button>
     <button class="nav-tab" data-tab="myrounds" onclick="switchTab('myrounds');closeMobileMenu();">My Rounds</button>
     <button class="nav-tab" data-tab="courses" onclick="switchTab('courses');closeMobileMenu();">Courses</button>
-    <button class="nav-tab chairman-only" data-tab="chat" onclick="switchTab('chat');closeMobileMenu();" style="display:none;">Chat</button>
+    <button class="nav-tab" data-tab="chat" onclick="switchTab('chat');closeMobileMenu();">Chat</button>
     <button class="nav-tab" data-tab="account" onclick="switchTab('account');closeMobileMenu();">Account</button>
   </div>
 
@@ -2691,6 +2691,28 @@
           html += '<div>';
           html += '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + (m.userName || 'Unknown') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">' + timeStr + '</span></div>';
           html += '<div style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.65);line-height:1.5;">' + (m.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+
+          // Photos
+          if (m.photos && m.photos.length > 0) {
+            html += '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">';
+            m.photos.forEach(function(url) {
+              html += '<a href="' + url + '" target="_blank" style="display:block;"><img src="' + url + '" style="width:160px;height:120px;object-fit:cover;border-radius:8px;border:1px solid rgba(191,155,59,0.1);cursor:pointer;" loading="lazy"></a>';
+            });
+            html += '</div>';
+          }
+
+          // Reactions
+          if (m.reactions && Object.keys(m.reactions).length > 0) {
+            html += '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">';
+            Object.keys(m.reactions).forEach(function(emoji) {
+              var users = m.reactions[emoji] || [];
+              if (users.length > 0) {
+                html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;background:rgba(245,240,225,0.06);border:1px solid rgba(245,240,225,0.08);font-size:13px;cursor:default;" title="' + users.join(', ') + '">' + emoji + ' <span style="font-size:11px;color:rgba(245,240,225,0.5);font-weight:600;">' + users.length + '</span></span>';
+              }
+            });
+            html += '</div>';
+          }
+
           html += '</div></div>';
 
           if (m.timestamp > lastMessageTimestamp) lastMessageTimestamp = m.timestamp;
@@ -3019,20 +3041,19 @@
   function showChatForTier(tier) {
     var isChairman = tier && (tier.toLowerCase().includes('back') || tier.toLowerCase().includes('founder') || tier.toLowerCase().includes('chairman'));
 
-    // Show/hide chat tab in nav
-    document.querySelectorAll('.chairman-only').forEach(function(el) {
-      el.style.display = isChairman ? '' : 'none';
-    });
-
-    // Inside chat tab, show chat or upgrade prompt
-    var chatContent = document.querySelector('#tab-chat > div:first-child');
-    var chatGrid = document.querySelector('#tab-chat > div:nth-child(2)');
+    // Chat is open to all members now. Chairman-exclusive channels
+    // are locked at the channel level, not the tab level.
     var upgradePrompt = document.getElementById('chatUpgradePrompt');
+    if (upgradePrompt) upgradePrompt.style.display = 'none';
 
-    if (isChairman) {
-      if (upgradePrompt) upgradePrompt.style.display = 'none';
-    } else {
-      if (upgradePrompt) upgradePrompt.style.display = 'block';
+    // Lock chairman-only channels for non-chairman members
+    if (!isChairman) {
+      var chairmanChannels = document.querySelectorAll('#ch-chairman, #ch-deals');
+      chairmanChannels.forEach(function(el) {
+        el.style.opacity = '0.4';
+        el.style.pointerEvents = 'none';
+        el.insertAdjacentHTML('beforeend', '<div style="font-size:9px;color:rgba(191,155,59,0.4);margin-top:2px;">Chairman only</div>');
+      });
     }
   }
 
