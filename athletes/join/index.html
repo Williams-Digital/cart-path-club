@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- noindex enforced via vercel.json for /athletes/:path* -->
-  <meta name="robots" content="noindex, nofollow">
-  <title>Join the Roster — CartPath</title>
-  <meta name="description" content="CartPath is a private golf community. Our roster connects accomplished professionals with the members who want to play alongside them.">
+  <title>Get Paid to Play — CartPath</title>
+  <meta name="description" content="CartPath athletes earn $2,000-$10,000+ per round playing private golf with founders, executives, and decision-makers. Apply for the roster.">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Join the CartPath Roster">
-  <meta property="og:description" content="A private golf community connecting accomplished professionals with the members who want to play alongside them.">
+  <meta property="og:title" content="Get Paid to Play Golf — CartPath">
+  <meta property="og:description" content="Earn $2,000-$10,000+ per round playing private golf with founders, executives, and decision-makers.">
   <meta property="og:image" content="https://cartpathclub.com/assets/og-image-v2.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -17,10 +15,9 @@
   <meta property="og:site_name" content="CartPath">
 
   <link rel="icon" href="/assets/cartpath-shield.png" type="image/png">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -32,7 +29,7 @@
       --gold-light: #D4B14E;
       --cream:      #F5F0E1;
       --font-display: 'Playfair Display', Georgia, serif;
-      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
       --font-ui: 'Inter', system-ui, sans-serif;
     }
 
@@ -47,7 +44,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Noise overlay matches the rest of the site */
     body::before {
       content: '';
       position: fixed;
@@ -60,146 +56,256 @@
       background-size: 256px 256px;
     }
 
-    /* Defensive responsive guards */
     img, svg, video { max-width: 100%; height: auto; }
     p, h1, h2, h3, label, a { word-wrap: break-word; overflow-wrap: break-word; }
 
-    /* ═══ Nav — minimal, single back-link only ═══ */
+    /* ═══ Nav ═══ */
     .nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       background: rgba(6, 15, 10, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(191, 155, 59, 0.08);
     }
     .nav-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 14px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      max-width: 1100px; margin: 0 auto; padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-logo img {
-      height: 28px;
-      width: auto;
-      display: block;
-    }
+    .nav-logo img { height: 28px; width: auto; display: block; }
     .nav-back {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: rgba(245, 240, 225, 0.5);
-      text-decoration: none;
-      transition: color 0.3s;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.5); text-decoration: none; transition: color 0.3s;
     }
     .nav-back:hover { color: var(--gold); }
 
     /* ═══ Hero ═══ */
     .hero {
-      padding: 140px 32px 60px;
+      padding: 160px 32px 80px;
       text-align: center;
       position: relative;
-      max-width: 760px;
+      max-width: 820px;
       margin: 0 auto;
-    }
-    .hero-eyebrow {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 24px;
     }
     .hero h1 {
       font-family: var(--font-display);
-      font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
       font-weight: 400;
-      font-style: italic;
       color: var(--cream);
       line-height: 1.15;
-      letter-spacing: 0.01em;
-      margin-bottom: 20px;
+      letter-spacing: -0.01em;
+      margin-bottom: 24px;
     }
     .hero h1 em {
       color: var(--gold);
       font-style: italic;
-      font-weight: 500;
     }
     .hero-sub {
       font-family: var(--font-body);
-      font-size: clamp(1rem, 2vw, 1.15rem);
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
       line-height: 1.8;
       color: rgba(245, 240, 225, 0.65);
-      max-width: 580px;
-      margin: 0 auto;
+      max-width: 620px;
+      margin: 0 auto 36px;
     }
-    .hero-rule {
-      width: 48px;
-      height: 1px;
-      background: rgba(191, 155, 59, 0.4);
-      margin: 32px auto 0;
+    .hero-cta {
+      display: inline-block;
+      padding: 16px 48px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep);
+      font-family: var(--font-ui);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(191, 155, 59, 0.3);
     }
 
-    /* ═══ The three-panel pitch ═══ */
-    .pitch {
+    /* ═══ Compensation Block ═══ */
+    .comp-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+      text-align: center;
+    }
+    .comp-card {
+      background: linear-gradient(160deg, rgba(191,155,59,0.08), rgba(16,53,42,0.4));
+      border: 2px solid rgba(191,155,59,0.25);
+      border-radius: 12px;
+      padding: 48px 40px;
+    }
+    .comp-eyebrow {
+      font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 20px;
+    }
+    .comp-range {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .comp-range-note {
+      font-size: 14px;
+      color: rgba(245,240,225,0.5);
+      margin-bottom: 28px;
+    }
+    .comp-body {
+      font-size: 16px;
+      color: rgba(245,240,225,0.7);
+      line-height: 1.8;
+      margin-bottom: 32px;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .comp-perks {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .comp-perk {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cream);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comp-perk-check {
+      color: var(--gold);
+      font-size: 16px;
+    }
+
+    /* ═══ Pillars ═══ */
+    .pillars {
       max-width: 960px;
-      margin: 24px auto 0;
-      padding: 48px 32px 32px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
+      gap: 24px;
     }
-    .pitch-card {
-      background: linear-gradient(160deg, rgba(16, 53, 42, 0.35), rgba(9, 29, 20, 0.5));
-      border: 1px solid rgba(191, 155, 59, 0.12);
-      border-radius: 6px;
-      padding: 32px 24px;
-      text-align: left;
+    .pillar {
+      background: rgba(16, 53, 42, 0.3);
+      border: 1px solid rgba(191, 155, 59, 0.1);
+      border-radius: 8px;
+      padding: 36px 28px;
     }
-    .pitch-card-number {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 400;
-      color: var(--gold);
-      line-height: 1;
+    .pillar-icon {
+      font-size: 28px;
       margin-bottom: 18px;
-      opacity: 0.75;
     }
-    .pitch-card-title {
+    .pillar-title {
       font-family: var(--font-display);
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 500;
       color: var(--cream);
       margin-bottom: 12px;
-      letter-spacing: 0.01em;
     }
-    .pitch-card-body {
+    .pillar-body {
       font-size: 14px;
       line-height: 1.75;
       color: rgba(245, 240, 225, 0.6);
     }
 
-    /* ═══ Form section ═══ */
+    /* ═══ Social Proof ═══ */
+    .proof {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+      text-align: center;
+    }
+    .proof-text {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+      color: rgba(245,240,225,0.7);
+      line-height: 1.7;
+      border-left: 3px solid var(--gold);
+      padding-left: 28px;
+      text-align: left;
+    }
+
+    /* ═══ The Experience ═══ */
+    .experience {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 32px 80px;
+    }
+    .exp-title {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .exp-card {
+      background: rgba(16,53,42,0.25);
+      border: 1px solid rgba(191,155,59,0.1);
+      border-radius: 8px;
+      padding: 36px 32px;
+    }
+    .exp-heading {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--cream);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .exp-list {
+      list-style: none;
+      padding: 0;
+    }
+    .exp-list li {
+      font-size: 15px;
+      color: rgba(245,240,225,0.7);
+      padding: 10px 0;
+      padding-left: 24px;
+      position: relative;
+      border-bottom: 1px solid rgba(191,155,59,0.06);
+    }
+    .exp-list li:last-child { border-bottom: none; }
+    .exp-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0.6;
+    }
+    .exp-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      font-style: italic;
+      color: rgba(245,240,225,0.45);
+    }
+
+    /* ═══ Form Section ═══ */
     .form-section {
       max-width: 640px;
       margin: 0 auto;
-      padding: 32px 32px 120px;
+      padding: 0 32px 120px;
     }
     .form-label-row {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 14px;
-      text-align: center;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 3px; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 12px; text-align: center;
     }
     .form-intro {
       font-family: var(--font-display);
@@ -207,49 +313,32 @@
       font-weight: 400;
       color: var(--cream);
       text-align: center;
-      line-height: 1.35;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .form-intro-sub {
       font-size: 14px;
       color: rgba(245, 240, 225, 0.5);
       text-align: center;
       line-height: 1.8;
-      margin-bottom: 40px;
+      margin-bottom: 36px;
     }
-
     .form-card {
       background: rgba(16, 53, 42, 0.25);
       border: 1px solid rgba(191, 155, 59, 0.1);
       border-radius: 8px;
       padding: 40px 36px;
     }
-    .form-group {
-      margin-bottom: 24px;
-    }
-    .form-group:last-of-type {
-      margin-bottom: 0;
-    }
+    .form-group { margin-bottom: 22px; }
     .form-label {
-      display: block;
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(245, 240, 225, 0.55);
-      margin-bottom: 8px;
+      display: block; font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.55); margin-bottom: 8px;
     }
     .form-label .optional {
-      color: rgba(245, 240, 225, 0.25);
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: 0.02em;
-      margin-left: 6px;
+      color: rgba(245, 240, 225, 0.25); font-weight: 400;
+      text-transform: none; letter-spacing: 0.02em; margin-left: 6px;
     }
-    .form-input,
-    .form-textarea,
-    .form-select {
+    .form-input, .form-textarea, .form-select {
       width: 100%;
       background: rgba(6, 15, 10, 0.6);
       border: 1px solid rgba(191, 155, 59, 0.15);
@@ -260,119 +349,66 @@
       font-size: 15px;
       outline: none;
       transition: border-color 0.3s;
-      /* Pin at 16px to prevent iOS focus-zoom on mobile */
     }
-    .form-input:focus,
-    .form-textarea:focus,
-    .form-select:focus {
-      border-color: rgba(191, 155, 59, 0.5);
-    }
-    .form-textarea {
-      min-height: 120px;
-      resize: vertical;
-      line-height: 1.6;
-    }
-    .form-row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
+    .form-input:focus, .form-textarea:focus { border-color: rgba(191, 155, 59, 0.5); }
+    .form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .form-submit {
-      display: block;
-      width: 100%;
+      display: block; width: 100%;
       background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-      color: var(--green-deep);
-      font-family: var(--font-ui);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      border: none;
-      padding: 18px 24px;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 32px;
+      color: var(--green-deep); font-family: var(--font-ui);
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      border: none; padding: 18px 24px; border-radius: 4px;
+      cursor: pointer; margin-top: 28px;
       transition: transform 0.2s, box-shadow 0.3s;
     }
     .form-submit:hover:not(:disabled) {
       transform: translateY(-1px);
       box-shadow: 0 8px 24px rgba(191, 155, 59, 0.25);
     }
-    .form-submit:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .form-fine {
-      text-align: center;
-      font-size: 11px;
-      color: rgba(245, 240, 225, 0.35);
-      margin-top: 18px;
-      line-height: 1.7;
+      text-align: center; font-size: 11px;
+      color: rgba(245, 240, 225, 0.35); margin-top: 18px; line-height: 1.7;
     }
-
     .form-success {
       background: rgba(109, 200, 109, 0.06);
       border: 1px solid rgba(109, 200, 109, 0.2);
-      border-radius: 8px;
-      padding: 48px 36px;
-      text-align: center;
+      border-radius: 8px; padding: 48px 36px; text-align: center;
     }
     .form-success h2 {
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 400;
-      color: var(--cream);
-      margin-bottom: 16px;
+      font-family: var(--font-display); font-size: 28px;
+      font-weight: 400; color: var(--cream); margin-bottom: 16px;
     }
     .form-success p {
-      font-size: 14px;
-      line-height: 1.75;
-      color: rgba(245, 240, 225, 0.65);
+      font-size: 14px; line-height: 1.75; color: rgba(245, 240, 225, 0.65);
     }
     .form-error-banner {
       background: rgba(200, 60, 60, 0.08);
       border: 1px solid rgba(200, 60, 60, 0.25);
-      border-radius: 4px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      color: #E08080;
-      font-size: 13px;
-      line-height: 1.6;
-      display: none;
+      border-radius: 4px; padding: 14px 18px; margin-bottom: 22px;
+      color: #E08080; font-size: 13px; line-height: 1.6; display: none;
     }
     .form-error-banner.show { display: block; }
 
     /* ═══ Responsive ═══ */
     @media (max-width: 768px) {
       .nav-inner { padding: 12px 20px; }
-      .hero { padding: 120px 20px 48px; }
-      .pitch {
-        grid-template-columns: 1fr;
-        padding: 32px 20px 20px;
-        gap: 16px;
-      }
-      .pitch-card { padding: 28px 22px; }
-      .form-section { padding: 24px 20px 96px; }
+      .hero { padding: 120px 20px 60px; }
+      .pillars { grid-template-columns: 1fr; padding: 0 20px 60px; }
+      .comp-section, .proof, .experience, .form-section { padding-left: 20px; padding-right: 20px; }
+      .comp-card { padding: 36px 24px; }
+      .comp-perks { flex-direction: column; gap: 14px; align-items: center; }
       .form-card { padding: 32px 24px; }
-      .form-row-2 { grid-template-columns: 1fr; gap: 0; }
-      .form-row-2 .form-group { margin-bottom: 24px; }
+      .form-row-2 { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 480px) {
-      .nav-inner { padding: 10px 16px; }
-      .hero { padding: 104px 16px 40px; }
-      .pitch { padding: 28px 16px 16px; }
-      .form-section { padding: 20px 16px 80px; }
+      .hero { padding: 104px 16px 48px; }
+      .comp-section, .proof, .experience, .form-section { padding-left: 16px; padding-right: 16px; }
+      .comp-card { padding: 28px 20px; }
       .form-card { padding: 28px 20px; }
-      .form-intro { font-size: 1.35rem; }
-      .form-input,
-      .form-textarea,
-      .form-select { font-size: 16px !important; }
-    }
-
-    @media (max-height: 500px) and (orientation: landscape) {
-      .hero { padding: 100px 24px 40px; }
+      .form-input, .form-textarea { font-size: 16px !important; }
     }
   </style>
 </head>
@@ -381,67 +417,100 @@
   <!-- ═══ NAV ═══ -->
   <nav class="nav">
     <div class="nav-inner">
-      <a href="/" class="nav-logo">
-        <img src="/assets/cartpath-shield.png" alt="CartPath">
-      </a>
+      <a href="/" class="nav-logo"><img src="/assets/cartpath-shield.png" alt="CartPath"></a>
       <a href="/" class="nav-back">&larr; Back to CartPath</a>
     </div>
   </nav>
 
   <!-- ═══ HERO ═══ -->
   <section class="hero">
-    <div class="hero-eyebrow">By Invitation &middot; For Professionals</div>
-    <h1>Join the <em>CartPath</em> Roster</h1>
+    <h1>Get <em>Paid</em> to Play Golf With the People Who Build Industries</h1>
     <p class="hero-sub">
-      CartPath is a private community of executives, professionals, and the
-      athletes and coaches they play alongside. If golf is part of how you
-      build relationships and move through the world, there may be a place
-      for you on our roster.
+      Private, high-end rounds with founders, executives, and decision-makers.
+      You show up. We handle the rest &mdash; including your rate.
     </p>
-    <div class="hero-rule"></div>
+    <a href="#apply" class="hero-cta">Apply for the Roster</a>
   </section>
 
-  <!-- ═══ WHY CARTPATH ═══ -->
-  <section class="pitch">
-    <div class="pitch-card">
-      <div class="pitch-card-number">I</div>
-      <div class="pitch-card-title">Curated, Not Crowded</div>
-      <div class="pitch-card-body">
-        Our roster is handpicked. We introduce our members to a small, carefully
-        chosen group of athletes and coaches &mdash; not a directory. Every name
-        on the list is someone we'd personally recommend.
+  <!-- ═══ COMPENSATION ═══ -->
+  <section class="comp-section">
+    <div class="comp-card">
+      <div class="comp-eyebrow">What You Earn</div>
+      <div class="comp-range">$2,000 &ndash; $10,000+</div>
+      <div class="comp-range-note">per round, depending on demand, profile, and experience level</div>
+      <p class="comp-body">
+        Travel, lodging, and course fees are covered. We set the rate, handle
+        contracts, and guarantee payment. You just play.
+      </p>
+      <div class="comp-perks">
+        <div class="comp-perk"><span class="comp-perk-check">&#10003;</span> No negotiations</div>
+        <div class="comp-perk"><span class="comp-perk-check">&#10003;</span> No chasing payments</div>
+        <div class="comp-perk"><span class="comp-perk-check">&#10003;</span> No agents required</div>
       </div>
     </div>
-    <div class="pitch-card">
-      <div class="pitch-card-number">II</div>
-      <div class="pitch-card-title">We Handle the Logistics</div>
-      <div class="pitch-card-body">
-        Scheduling, travel, courses, contracts, payment &mdash; all of it runs
-        through us. You focus on the round. We handle the rest, and members
-        only reach you after we've already confirmed the match.
+  </section>
+
+  <!-- ═══ PILLARS ═══ -->
+  <section class="pillars">
+    <div class="pillar">
+      <div class="pillar-icon">&#128176;</div>
+      <div class="pillar-title">Earn Without the Hassle</div>
+      <div class="pillar-body">
+        You're compensated for your time &mdash; transparently and professionally.
+        No awkward asks, no backend deals. Your rate is set and your payout is guaranteed.
       </div>
     </div>
-    <div class="pitch-card">
-      <div class="pitch-card-number">III</div>
-      <div class="pitch-card-title">A Private Audience</div>
-      <div class="pitch-card-body">
-        CartPath members are CEOs, founders, and investors who value privacy
-        and discretion. Every relationship stays inside the walls of the club.
-        No social media, no press, just the game.
+    <div class="pillar">
+      <div class="pillar-icon">&#9992;&#65039;</div>
+      <div class="pillar-title">We Handle Everything</div>
+      <div class="pillar-body">
+        From scheduling to travel logistics to payment processing &mdash; it's all managed.
+        You get a confirmed round, itinerary, and payout. Show up and play.
       </div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">&#129309;</div>
+      <div class="pillar-title">Play With People Who Open Doors</div>
+      <div class="pillar-body">
+        Rounds include founders, investors, executives, and operators.
+        These aren't fans &mdash; they're people who can change your next chapter.
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SOCIAL PROOF ═══ -->
+  <section class="proof">
+    <p class="proof-text">
+      CartPath athletes have played rounds with startup founders, pro team owners,
+      and Fortune 500 executives &mdash; leading to business deals, partnerships,
+      and long-term relationships that started on the fairway.
+    </p>
+  </section>
+
+  <!-- ═══ THE EXPERIENCE ═══ -->
+  <section class="experience">
+    <div class="exp-title">A Typical CartPath Round</div>
+    <div class="exp-card">
+      <ul class="exp-list">
+        <li>Private course or top-tier club</li>
+        <li>3&ndash;4 members + 1 athlete</li>
+        <li>Relaxed, competitive environment</li>
+        <li>Dinner, drinks, or follow-up included</li>
+        <li>Travel and logistics handled by our team</li>
+      </ul>
+      <div class="exp-footer">No crowds. No chaos. Just real conversations on the course.</div>
     </div>
   </section>
 
   <!-- ═══ FORM ═══ -->
-  <section class="form-section">
-    <div class="form-label-row">Introduce Yourself</div>
-    <h2 class="form-intro">Tell us who you are.</h2>
+  <section class="form-section" id="apply">
+    <div class="form-label-row">Apply to Join</div>
+    <h2 class="form-intro">Apply to Join the CartPath Roster</h2>
     <p class="form-intro-sub">
-      We read every message personally. If there's a fit, we'll reach out directly.
+      We review every athlete personally. If accepted, we'll reach out with next steps and availability.
     </p>
 
     <div class="form-card" id="formContainer">
-
       <div class="form-error-banner" id="errorBanner"></div>
 
       <form id="athleteInterestForm" novalidate>
@@ -464,7 +533,7 @@
         <div class="form-row-2">
           <div class="form-group">
             <label class="form-label" for="sport">Sport / Discipline</label>
-            <input type="text" id="sport" name="sport" class="form-input" placeholder="NFL, PGA Tour, NCAA coaching&hellip;">
+            <input type="text" id="sport" name="sport" class="form-input" placeholder="NFL, PGA Tour, NCAA coaching...">
           </div>
           <div class="form-group">
             <label class="form-label" for="school">School / Team <span class="optional">optional</span></label>
@@ -474,30 +543,27 @@
 
         <div class="form-group">
           <label class="form-label" for="current_role">Current Role</label>
-          <input type="text" id="current_role" name="current_role" class="form-input" placeholder="Active player, ESPN analyst, retired, coaching&hellip;">
+          <input type="text" id="current_role" name="current_role" class="form-input" placeholder="Active player, ESPN analyst, retired, coaching...">
         </div>
 
         <div class="form-group">
           <label class="form-label" for="bio">Tell us about yourself</label>
-          <textarea id="bio" name="bio" class="form-textarea" placeholder="A few sentences about your career, your handicap, and what you're looking for on CartPath. No pressure &mdash; we'll follow up personally."></textarea>
+          <textarea id="bio" name="bio" class="form-textarea" placeholder="A few sentences about your career, your handicap, and what interests you about CartPath."></textarea>
         </div>
 
         <input type="hidden" id="proposed_tier" name="proposed_tier" value="3">
 
-        <button type="submit" class="form-submit" id="submitBtn">Send Introduction</button>
+        <button type="submit" class="form-submit" id="submitBtn">Apply for the Roster</button>
         <p class="form-fine">
           Your information is private and shared only with the CartPath team.
           We'll be in touch within a few days.
         </p>
       </form>
     </div>
-
   </section>
 
   <script>
-    // API base — athletes-api Lambda route
     var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
-
     var form = document.getElementById('athleteInterestForm');
     var container = document.getElementById('formContainer');
     var submitBtn = document.getElementById('submitBtn');
@@ -508,7 +574,6 @@
       errorBanner.classList.add('show');
       errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-
     function hideError() {
       errorBanner.classList.remove('show');
       errorBanner.textContent = '';
@@ -533,15 +598,13 @@
         showError('Please include your name and email.');
         return;
       }
-
-      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email);
-      if (!emailOk) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
         showError('Please enter a valid email address.');
         return;
       }
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Sending...';
+      submitBtn.textContent = 'Submitting...';
 
       try {
         var res = await fetch(API_BASE + '/athlete-applications', {
@@ -554,52 +617,43 @@
         try { data = await res.json(); } catch (_) {}
 
         if (!res.ok) {
-          // 429 = rate limit (same email submitted recently)
           if (res.status === 429) {
-            showError('We just received your introduction. Please give us a moment — we\'ll be in touch.');
+            showError("We just received your application. Please give us a moment — we'll be in touch.");
           } else {
             showError((data && data.error) || 'Something went wrong. Please email hello@cartpathclub.com directly.');
           }
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Send Introduction';
+          submitBtn.textContent = 'Apply for the Roster';
           return;
         }
 
-        // Success — swap form with thank-you message
         container.innerHTML =
           '<div class="form-success">' +
-          '<h2>Thank you.</h2>' +
-          '<p>We\'ve received your introduction and we\'ll be in touch personally within a few days. Questions in the meantime? Reach out to <a href="mailto:hello@cartpathclub.com" style="color:var(--gold);text-decoration:none;">hello@cartpathclub.com</a>.</p>' +
+          '<h2>Application Received</h2>' +
+          '<p>We review every athlete personally. If there\'s a fit, we\'ll reach out within a few days with next steps, rate details, and availability.</p>' +
+          '<p style="margin-top:16px;">Questions? <a href="mailto:hello@cartpathclub.com" style="color:var(--gold);text-decoration:none;">hello@cartpathclub.com</a></p>' +
           '</div>';
-
-        // Scroll the success card into view
         container.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } catch (err) {
         console.error(err);
-        // Network error — offer a mailto fallback so the applicant
-        // can still reach us even if our backend is momentarily down.
         var mailtoBody = encodeURIComponent(
           'Name: ' + payload.name + '\n' +
           'Email: ' + payload.email + '\n' +
           (payload.phone ? ('Phone: ' + payload.phone + '\n') : '') +
           (payload.sport ? ('Sport: ' + payload.sport + '\n') : '') +
-          (payload.school ? ('School: ' + payload.school + '\n') : '') +
-          (payload.current_role ? ('Role: ' + payload.current_role + '\n') : '') +
           (payload.bio ? ('\nAbout me:\n' + payload.bio + '\n') : '')
         );
-        var mailtoSubject = encodeURIComponent('CartPath Roster — Introduction from ' + payload.name);
+        var mailtoSubject = encodeURIComponent('CartPath Roster — Application from ' + payload.name);
         var mailtoLink = 'mailto:hello@cartpathclub.com?subject=' + mailtoSubject + '&body=' + mailtoBody;
 
         errorBanner.innerHTML =
-          'We couldn\'t send that automatically. ' +
+          "We couldn't send that automatically. " +
           '<a href="' + mailtoLink + '" style="color:#BF9B3B;text-decoration:underline;">' +
-          'Click here to email us directly</a> ' +
-          '&mdash; your message is pre-filled.';
+          'Click here to email us directly</a> — your info is pre-filled.';
         errorBanner.classList.add('show');
         errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Introduction';
+        submitBtn.textContent = 'Apply for the Roster';
       }
     });
   </script>
