@@ -336,92 +336,91 @@
     }
 
     /* Tier Cards */
-    .tier-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
+    .membership-block {
+      background: var(--green-dark);
+      border: 1px solid rgba(191,155,59,0.12);
+      border-radius: 8px;
+      padding: 32px 28px;
       margin-top: 16px;
     }
-    .tier-card {
-      position: relative;
-      background: var(--green-dark);
-      border: 1px solid rgba(191,155,59,0.08);
-      border-radius: 6px;
-      padding: 24px 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .tier-card:hover {
-      border-color: rgba(191,155,59,0.2);
-    }
-    .tier-card.selected {
-      border-color: var(--gold);
-      background: rgba(191,155,59,0.06);
-    }
-    .tier-card input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .tier-card-badge {
-      position: absolute;
-      top: -9px;
-      left: 50%;
-      transform: translateX(-50%);
+    .membership-block-label {
       font-family: var(--font-ui);
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      background: var(--gold);
-      color: var(--green-deep);
-      padding: 3px 10px;
-      border-radius: 2px;
-      white-space: nowrap;
+      color: var(--gold);
+      margin-bottom: 8px;
     }
-    .tier-card-name {
+    .membership-block-price {
       font-family: var(--font-display);
-      font-size: 16px;
+      font-size: 22px;
       font-weight: 600;
       color: var(--cream);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .tier-card-price {
+    .membership-block-period {
       font-family: var(--font-ui);
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--gold);
-      margin-bottom: 2px;
+      font-size: 11px;
+      color: rgba(245,240,225,0.35);
+      margin-bottom: 20px;
     }
-    .tier-card-period {
+    .membership-block-intro {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: rgba(245,240,225,0.55);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .membership-section-title {
       font-family: var(--font-ui);
       font-size: 10px;
-      color: rgba(245,240,225,0.3);
-      margin-bottom: 6px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
     }
-    .tier-card-desc {
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-style: italic;
-      color: rgba(245,240,225,0.5);
-      margin-bottom: 14px;
-      line-height: 1.4;
-    }
-    .tier-card-features {
+    .membership-features {
       list-style: none;
       padding: 0;
+      margin: 0 0 28px 0;
     }
-    .tier-card-features li {
+    .membership-features li {
       font-family: var(--font-ui);
       font-size: 11px;
-      color: rgba(245,240,225,0.45);
-      padding: 5px 0;
+      color: rgba(245,240,225,0.5);
+      padding: 6px 0;
       border-top: 1px solid rgba(191,155,59,0.06);
       line-height: 1.4;
     }
-    .tier-card-features li:first-child {
+    .membership-features li:first-child {
       border-top: none;
+    }
+    .membership-expanded {
+      border-top: 1px solid rgba(191,155,59,0.1);
+      padding-top: 24px;
+      margin-top: 4px;
+    }
+    .membership-expanded-desc {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-style: italic;
+      color: rgba(245,240,225,0.4);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .membership-placement {
+      border-top: 1px solid rgba(191,155,59,0.1);
+      padding-top: 24px;
+      margin-top: 4px;
+    }
+    .membership-placement p {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: rgba(245,240,225,0.4);
+      line-height: 1.5;
+      margin: 0;
     }
 
     /* Athlete Horizontal Scroll */
@@ -679,7 +678,7 @@
       .progress-container { padding: 0 20px; margin-bottom: 32px; }
       .form-wrapper { padding: 0 20px 60px; }
       .form-row { grid-template-columns: 1fr; }
-      .tier-cards { grid-template-columns: 1fr; }
+      .membership-block { padding: 24px 20px; }
       .progress-step-label { font-size: 8px; }
       .step-nav { flex-direction: column-reverse; gap: 12px; }
       .step-nav .btn-gold,
@@ -839,40 +838,44 @@
             </div>
           </div>
 
-          <label class="form-label" style="margin-top: 28px;">Which membership interests you? <span class="required">*</span></label>
-          <div class="field-error" id="errorTier" style="margin-bottom: 8px;">Please select a membership tier</div>
-          <div class="tier-cards" id="tierCards">
-            <div class="tier-card" onclick="selectTier(this, 'Executive ($20,000/yr)')">
-              <input type="radio" name="tier" value="Executive ($20,000/yr)">
-              <div class="tier-card-name">Executive</div>
-              <div class="tier-card-price">$20,000 <span style="font-size:12px;font-weight:400;color:rgba(245,240,225,0.5)">/ year</span></div>
-              <div class="tier-card-period">Billed annually · $2,500 entry fee</div>
-              <div class="tier-card-desc">Your entry into CartPath.<br>A curated introduction to the people, rounds, and relationships that define the club.</div>
-              <ul class="tier-card-features">
-                <li>Access to select athletes across the CartPath roster</li>
-                <li>A limited number of curated rounds each year</li>
-                <li>Concierge support for booking and coordination</li>
-                <li>Member network and private community access</li>
-                <li>Invitations to select member gatherings</li>
-                <li>CartPath merchandise and club privileges</li>
-              </ul>
+          <input type="hidden" name="tier" value="Membership ($20,000-$30,000/yr)">
+
+          <div class="membership-block">
+            <div class="membership-block-label">Membership</div>
+            <div class="membership-block-price">$20,000 - $30,000 annually</div>
+            <div class="membership-block-period">$2,500 one-time entry fee</div>
+
+            <div class="membership-block-intro">
+              CartPath memberships are structured based on level of access, athlete availability, and how each member engages with the club.<br><br>
+              Every membership includes curated rounds, concierge coordination, and access to a private network built around the game.
             </div>
-            <div class="tier-card" onclick="selectTier(this, 'Chairman ($30,000/yr)')">
-              <div class="tier-card-badge">Top Tier</div>
-              <input type="radio" name="tier" value="Chairman ($30,000/yr)">
-              <div class="tier-card-name">Chairman</div>
-              <div class="tier-card-price">$30,000 <span style="font-size:12px;font-weight:400;color:rgba(245,240,225,0.5)">/ year</span></div>
-              <div class="tier-card-period">Billed annually · $2,500 entry fee</div>
-              <div class="tier-card-desc">The full expression of CartPath.<br>Unrestricted access, priority placement, and a level of service built around you.</div>
-              <ul class="tier-card-features">
-                <li>Full access to the entire athlete roster, including top-tier legends and coaches</li>
-                <li>Priority placement in curated rounds throughout the year</li>
+
+            <div class="membership-section-title">What Membership Includes</div>
+            <ul class="membership-features">
+              <li>Curated rounds with athletes across the CartPath roster</li>
+              <li>Concierge-led booking, coordination, and scheduling</li>
+              <li>Access to the private member network and community</li>
+              <li>Invitations to select gatherings and club experiences</li>
+              <li>Ongoing access to athlete availability and opportunities</li>
+            </ul>
+
+            <div class="membership-expanded">
+              <div class="membership-section-title">Expanded Access (Select Members)</div>
+              <div class="membership-expanded-desc">For members seeking deeper access and priority placement across the club.</div>
+              <ul class="membership-features">
+                <li>Access to top-tier athletes, legends, and coaches</li>
+                <li>Priority placement in high-demand rounds and experiences</li>
                 <li>Dedicated concierge with white-glove coordination</li>
-                <li>First access to all signature and destination experiences</li>
-                <li>Invitations to private dinners and VIP gatherings</li>
-                <li>Guest privileges for select experiences</li>
+                <li>Invitations to private dinners, destination experiences, and VIP gatherings</li>
+                <li>Guest access and expanded booking flexibility</li>
                 <li>Travel and logistics handled end-to-end</li>
               </ul>
+            </div>
+
+            <div class="membership-placement">
+              <div class="membership-section-title">Placement</div>
+              <p>Membership level is determined through application and conversation.<br>
+              Access is tailored to ensure the right mix of members, athletes, and experiences across the club.</p>
             </div>
           </div>
 
@@ -1009,15 +1012,6 @@
       document.getElementById('athletesHidden').value = selectedAthletes.join(', ');
     }
 
-    // ——— Tier Selection ———
-    function selectTier(card, value) {
-      var cards = document.querySelectorAll('.tier-card');
-      cards.forEach(function(c) { c.classList.remove('selected'); });
-      card.classList.add('selected');
-      card.querySelector('input[type="radio"]').checked = true;
-      document.getElementById('errorTier').classList.remove('show');
-    }
-
     // ——— Step Navigation ———
     function goToStep(step) {
       // Validate current step before going forward
@@ -1100,11 +1094,6 @@
       }
 
       if (step === 2) {
-        var tierSelected = document.querySelector('input[name="tier"]:checked');
-        if (!tierSelected) {
-          document.getElementById('errorTier').classList.add('show');
-          return false;
-        }
         return true;
       }
 
@@ -1141,25 +1130,9 @@
     var source = params.get('source') || 'direct';
     document.getElementById('sourceField').value = source;
 
-    // Pre-select tier
+    // Legacy tier param (no longer used, membership is unified)
     var tierParam = params.get('tier');
     if (tierParam) {
-      var tierMap = {
-        'executive': 'Executive ($20,000/yr)',
-        'chairman': 'Chairman ($30,000/yr)',
-        'founders': "Chairman ($30,000/yr)"
-      };
-      var tierValue = tierMap[tierParam.toLowerCase()];
-      if (tierValue) {
-        var cards = document.querySelectorAll('.tier-card');
-        cards.forEach(function(card) {
-          var radio = card.querySelector('input[type="radio"]');
-          if (radio.value === tierValue) {
-            card.classList.add('selected');
-            radio.checked = true;
-          }
-        });
-      }
     }
 
     // Pre-select athlete
@@ -1200,7 +1173,7 @@
         handicap: (document.getElementById('fieldHandicap') || {}).value || '',
         frequency: (document.getElementById('fieldFrequency') || {}).value || '',
         home_course: (document.getElementById('fieldCourse') || {}).value || '',
-        tier: (document.querySelector('input[name="tier"]:checked') || {}).value || '',
+        tier: document.querySelector('input[name="tier"]').value || '',
         athletes: selectedAthletes,
         referral: (document.getElementById('fieldReferral') || {}).value || '',
         notes: (document.getElementById('fieldNotes') || {}).value || '',
