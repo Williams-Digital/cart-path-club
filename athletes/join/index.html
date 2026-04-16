@@ -8,9 +8,9 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Get Paid to Play Golf — CartPath">
   <meta property="og:description" content="Earn $2,000-$10,000+ per round playing private golf with founders, executives, and decision-makers.">
-  <meta property="og:image" content="https://cartpathclub.com/assets/og-image-v2.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image" content="https://cartpathclub.com/assets/cartpath-shield.png">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
   <meta property="og:url" content="https://cartpathclub.com/athletes/join">
   <meta property="og:site_name" content="CartPath">
 
@@ -499,13 +499,45 @@
     </div>
   </section>
 
+  <!-- ═══ WHY ATHLETES JOIN ═══ -->
+  <section style="max-width: 700px; margin: 0 auto; padding: 0 32px 70px;">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <div style="font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--green-dark); margin-bottom: 16px;">Why Athletes Join CartPath</div>
+      <div style="width: 40px; height: 2px; background: var(--gold); margin: 0 auto;"></div>
+    </div>
+    <p style="font-family: var(--font-display); font-style: italic; font-size: 1.15rem; color: var(--text-mid); text-align: center; line-height: 1.7; margin-bottom: 32px; max-width: 560px; margin-left: auto; margin-right: auto;">
+      CartPath is built for athletes who understand access matters.
+    </p>
+    <div style="max-width: 520px; margin: 0 auto;">
+      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+        <span style="color: var(--gold); font-size: 14px; margin-top: 2px;">&#9670;</span>
+        <span style="font-size: 15px; color: var(--text-dark); line-height: 1.6;">Paid private rounds with vetted executives and founders</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+        <span style="color: var(--gold); font-size: 14px; margin-top: 2px;">&#9670;</span>
+        <span style="font-size: 15px; color: var(--text-dark); line-height: 1.6;">Relationships that extend beyond the course</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+        <span style="color: var(--gold); font-size: 14px; margin-top: 2px;">&#9670;</span>
+        <span style="font-size: 15px; color: var(--text-dark); line-height: 1.6;">A controlled, invite-only environment &mdash; no noise, no chaos</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 14px; padding: 12px 0;">
+        <span style="color: var(--gold); font-size: 14px; margin-top: 2px;">&#9670;</span>
+        <span style="font-size: 15px; color: var(--text-dark); line-height: 1.6;">Full coordination handled by our team</span>
+      </div>
+    </div>
+    <p style="font-family: var(--font-display); font-style: italic; font-size: 1rem; color: var(--text-light); text-align: center; margin-top: 28px;">
+      This isn't volume. It's precision.
+    </p>
+  </section>
+
   <!-- ═══ FORM (dark green section) ═══ -->
   <section class="form-section" id="apply">
     <div class="form-inner">
-      <div class="form-label-row">Apply to Join</div>
-      <h2 class="form-intro">Apply to Join the CartPath Roster</h2>
+      <div class="form-label-row">Athlete Application</div>
+      <h2 class="form-intro">Apply to Join the CartPath Athlete Roster</h2>
       <p class="form-intro-sub">
-        We review every athlete personally. If accepted, we'll reach out with next steps and availability.
+        Our team reviews every application carefully.<br>Qualified athletes are contacted directly.
       </p>
 
       <div class="form-card" id="formContainer">
@@ -551,10 +583,9 @@
 
           <input type="hidden" id="proposed_tier" name="proposed_tier" value="3">
 
-          <button type="submit" class="form-submit" id="submitBtn">Apply for the Roster</button>
+          <button type="submit" class="form-submit" id="submitBtn">Submit Application</button>
           <p class="form-fine">
             Your information is private and shared only with the CartPath team.
-            We'll be in touch within a few days.
           </p>
         </form>
       </div>
@@ -627,14 +658,14 @@
             showError((data && data.error) || 'Something went wrong. Please email hello@cartpathclub.com directly.');
           }
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Apply for the Roster';
+          submitBtn.textContent = 'Submit Application';
           return;
         }
 
         container.innerHTML =
           '<div class="form-success">' +
           '<h2>Application Received</h2>' +
-          '<p>We review every athlete personally. If there\'s a fit, we\'ll reach out within a few days with next steps, rate details, and availability.</p>' +
+          '<p>Our team reviews every application carefully. Qualified athletes are contacted directly with next steps, rate details, and availability.</p>' +
           '<p style="margin-top:16px;">Questions? <a href="mailto:hello@cartpathclub.com" style="color:var(--gold);text-decoration:none;">hello@cartpathclub.com</a></p>' +
           '</div>';
         container.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -657,7 +688,7 @@
         errorBanner.classList.add('show');
         errorBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Apply for the Roster';
+        submitBtn.textContent = 'Submit Application';
       }
     });
   </script>
