@@ -398,7 +398,15 @@
       font-family: var(--font-ui);
       font-size: 10px;
       color: rgba(245,240,225,0.3);
-      margin-bottom: 16px;
+      margin-bottom: 6px;
+    }
+    .tier-card-desc {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-style: italic;
+      color: rgba(245,240,225,0.5);
+      margin-bottom: 14px;
+      line-height: 1.4;
     }
     .tier-card-features {
       list-style: none;
@@ -837,27 +845,33 @@
             <div class="tier-card" onclick="selectTier(this, 'Executive ($20,000/yr)')">
               <input type="radio" name="tier" value="Executive ($20,000/yr)">
               <div class="tier-card-name">Executive</div>
-              <div class="tier-card-price">$20,000</div>
-              <div class="tier-card-period">per year · $2,500 entry fee</div>
+              <div class="tier-card-price">$20,000 <span style="font-size:12px;font-weight:400;color:rgba(245,240,225,0.5)">/ year</span></div>
+              <div class="tier-card-period">Billed annually · $2,500 entry fee</div>
+              <div class="tier-card-desc">Your entry into CartPath.<br>A curated introduction to the people, rounds, and relationships that define the club.</div>
               <ul class="tier-card-features">
-                <li>Tier 3-4 athlete access</li>
-                <li>Standard concierge</li>
-                <li>Full app + clubhouse access</li>
-                <li>Regional events</li>
+                <li>Access to select athletes across the CartPath roster</li>
+                <li>A limited number of curated rounds each year</li>
+                <li>Concierge support for booking and coordination</li>
+                <li>Member network and private community access</li>
+                <li>Invitations to select member gatherings</li>
+                <li>CartPath merchandise and club privileges</li>
               </ul>
             </div>
             <div class="tier-card" onclick="selectTier(this, 'Chairman ($30,000/yr)')">
-              <div class="tier-card-badge">Most Popular</div>
+              <div class="tier-card-badge">Top Tier</div>
               <input type="radio" name="tier" value="Chairman ($30,000/yr)">
               <div class="tier-card-name">Chairman</div>
-              <div class="tier-card-price">$30,000</div>
-              <div class="tier-card-period">per year · $2,500 entry fee</div>
+              <div class="tier-card-price">$30,000 <span style="font-size:12px;font-weight:400;color:rgba(245,240,225,0.5)">/ year</span></div>
+              <div class="tier-card-period">Billed annually · $2,500 entry fee</div>
+              <div class="tier-card-desc">The full expression of CartPath.<br>Unrestricted access, priority placement, and a level of service built around you.</div>
               <ul class="tier-card-features">
-                <li>All athletes (Tiers 1-5)</li>
-                <li>Dedicated concierge</li>
-                <li>Priority booking + VIP events</li>
-                <li>Unlimited rounds</li>
-                <li>Chairman-only clubhouse channel</li>
+                <li>Full access to the entire athlete roster, including top-tier legends and coaches</li>
+                <li>Priority placement in curated rounds throughout the year</li>
+                <li>Dedicated concierge with white-glove coordination</li>
+                <li>First access to all signature and destination experiences</li>
+                <li>Invitations to private dinners and VIP gatherings</li>
+                <li>Guest privileges for select experiences</li>
+                <li>Travel and logistics handled end-to-end</li>
               </ul>
             </div>
           </div>
