@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CartPath - Athlete Portal</title>
+  <link rel="icon" href="/assets/cartpath-shield.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #0D2A1E;
+      --green-mid: #10352A;
+      --gold: #BF9B3B;
+      --cream: #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+      --open: #2D8A56;
+      --blocked: #C0392B;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+
+    /* ── Loading / Auth States ── */
+    .loading-screen, .error-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 40px;
+    }
+    .loading-spinner {
+      width: 32px; height: 32px; border: 2px solid rgba(191,155,59,0.15);
+      border-top-color: var(--gold); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-screen h2 { font-family: var(--font-display); color: var(--gold); margin-bottom: 12px; }
+    .error-screen p { color: rgba(245,240,225,0.5); font-size: 14px; }
+
+    /* ── Header ── */
+    .portal-header {
+      background: var(--green-dark);
+      border-bottom: 1px solid rgba(191,155,59,0.1);
+      padding: 20px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .portal-brand { display: flex; align-items: center; gap: 14px; }
+    .portal-brand img { width: 32px; height: auto; }
+    .portal-brand-text { font-family: var(--font-display); font-size: 18px; color: var(--cream); font-weight: 500; }
+    .portal-athlete { font-size: 13px; color: rgba(245,240,225,0.5); }
+    .portal-athlete strong { color: var(--gold); font-weight: 600; }
+
+    /* ── Main Layout ── */
+    .portal-main {
+      max-width: 900px; margin: 0 auto; padding: 40px 32px;
+    }
+    .portal-title {
+      font-family: var(--font-display); font-size: 28px; font-weight: 500;
+      color: var(--cream); margin-bottom: 8px;
+    }
+    .portal-subtitle {
+      font-size: 14px; color: rgba(245,240,225,0.45); margin-bottom: 36px; line-height: 1.6;
+    }
+
+    /* ── Action Bar ── */
+    .action-bar {
+      display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;
+    }
+    .btn {
+      font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 12px 24px; border-radius: 4px; border: none; cursor: pointer;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-open { background: var(--open); color: #fff; }
+    .btn-open:hover { background: #34A065; }
+    .btn-blocked { background: var(--blocked); color: #fff; }
+    .btn-blocked:hover { background: #D94436; }
+    .btn-secondary {
+      background: transparent; color: var(--cream); border: 1px solid rgba(245,240,225,0.15);
+    }
+    .btn-secondary:hover { border-color: rgba(245,240,225,0.3); }
+
+    /* ── Calendar Grid ── */
+    .calendar-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .calendar-month {
+      font-family: var(--font-display); font-size: 20px; color: var(--cream); font-weight: 500;
+    }
+    .calendar-nav-btn {
+      background: none; border: 1px solid rgba(191,155,59,0.15); color: var(--gold);
+      width: 36px; height: 36px; border-radius: 4px; cursor: pointer;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .calendar-nav-btn:hover { border-color: var(--gold); background: rgba(191,155,59,0.08); }
+
+    .calendar-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 40px;
+    }
+    .calendar-dow {
+      text-align: center; font-size: 10px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(245,240,225,0.3); padding: 8px 0;
+    }
+    .calendar-day {
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 6px; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; position: relative;
+      border: 1px solid transparent; color: rgba(245,240,225,0.6);
+    }
+    .calendar-day:hover { background: rgba(245,240,225,0.04); }
+    .calendar-day.empty { cursor: default; }
+    .calendar-day.empty:hover { background: transparent; }
+    .calendar-day.today { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+    .calendar-day.has-open { background: rgba(45,138,86,0.15); border-color: rgba(45,138,86,0.3); color: var(--cream); }
+    .calendar-day.has-blocked { background: rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.3); color: var(--cream); }
+    .calendar-day.has-open.has-blocked { background: linear-gradient(135deg, rgba(45,138,86,0.15) 50%, rgba(192,57,43,0.15) 50%); border-color: rgba(191,155,59,0.3); }
+    .calendar-day.selected { border-color: var(--gold); background: rgba(191,155,59,0.12); box-shadow: 0 0 0 1px var(--gold); }
+    .calendar-day .day-num { z-index: 1; }
+    .calendar-day .day-dot {
+      width: 5px; height: 5px; border-radius: 50%; margin-top: 3px;
+    }
+    .dot-open { background: var(--open); }
+    .dot-blocked { background: var(--blocked); }
+    .day-dots { display: flex; gap: 3px; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex; gap: 24px; margin-bottom: 36px; flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px; font-size: 12px;
+      color: rgba(245,240,225,0.5);
+    }
+    .legend-swatch {
+      width: 12px; height: 12px; border-radius: 3px;
+    }
+    .legend-swatch.open { background: rgba(45,138,86,0.3); border: 1px solid rgba(45,138,86,0.5); }
+    .legend-swatch.blocked { background: rgba(192,57,43,0.3); border: 1px solid rgba(192,57,43,0.5); }
+
+    /* ── Entries List ── */
+    .entries-section { margin-top: 12px; }
+    .entries-title {
+      font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .entry-card {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--green-dark); border: 1px solid rgba(191,155,59,0.06);
+      border-radius: 6px; padding: 16px 20px; margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .entry-card:hover { border-color: rgba(191,155,59,0.15); }
+    .entry-left { display: flex; align-items: center; gap: 14px; }
+    .entry-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 3px; white-space: nowrap;
+    }
+    .entry-badge.open { background: rgba(45,138,86,0.15); color: var(--open); }
+    .entry-badge.blocked { background: rgba(192,57,43,0.15); color: var(--blocked); }
+    .entry-dates { font-size: 14px; color: var(--cream); }
+    .entry-notes { font-size: 12px; color: rgba(245,240,225,0.4); margin-top: 2px; }
+    .entry-delete {
+      background: none; border: none; color: rgba(245,240,225,0.2); cursor: pointer;
+      font-size: 18px; padding: 4px 8px; transition: color 0.2s;
+    }
+    .entry-delete:hover { color: var(--blocked); }
+    .empty-state {
+      text-align: center; padding: 48px 20px; color: rgba(245,240,225,0.3);
+      font-size: 14px; line-height: 1.7;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--green-dark); border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 8px; padding: 32px; width: 100%; max-width: 440px;
+    }
+    .modal-title {
+      font-family: var(--font-display); font-size: 20px; color: var(--cream);
+      margin-bottom: 24px;
+    }
+    .form-label {
+      display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: rgba(245,240,225,0.5); margin-bottom: 6px;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.1);
+      border-radius: 4px; padding: 10px 14px; color: var(--cream);
+      font-family: var(--font-ui); font-size: 14px; margin-bottom: 16px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-textarea { resize: vertical; min-height: 60px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-hint { font-size: 11px; color: rgba(245,240,225,0.3); margin: -10px 0 16px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+    .btn-cancel {
+      background: none; border: 1px solid rgba(245,240,225,0.1); color: var(--cream);
+      padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 13px;
+    }
+    .btn-save {
+      background: var(--gold); color: var(--green-deep); border: none;
+      padding: 10px 24px; border-radius: 4px; cursor: pointer;
+      font-size: 13px; font-weight: 600;
+    }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .portal-header { padding: 16px 20px; flex-direction: column; gap: 8px; align-items: flex-start; }
+      .portal-main { padding: 24px 16px; }
+      .portal-title { font-size: 22px; }
+      .calendar-day { font-size: 12px; }
+      .action-bar { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .form-row { grid-template-columns: 1fr; }
+      .entry-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div style="color: rgba(245,240,225,0.5); font-size: 13px;">Loading your portal...</div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorScreen" class="error-screen" style="display:none;">
+    <h2>Access Denied</h2>
+    <p>This link is invalid or has expired. Contact hello@cartpathclub.com for a new portal link.</p>
+  </div>
+
+  <!-- Portal -->
+  <div id="portalContent" style="display:none;">
+
+    <header class="portal-header">
+      <div class="portal-brand">
+        <img src="/assets/cartpath-shield.png" alt="CartPath">
+        <span class="portal-brand-text">Athlete Portal</span>
+      </div>
+      <div class="portal-athlete">Welcome, <strong id="athleteName"></strong></div>
+    </header>
+
+    <main class="portal-main">
+      <h1 class="portal-title">Availability Calendar</h1>
+      <p class="portal-subtitle">Set the dates you're open to play and block off dates you're unavailable. This information is only visible to the CartPath team to help coordinate bookings.</p>
+
+      <!-- Action Buttons -->
+      <div class="action-bar">
+        <button class="btn btn-open" onclick="openModal('open')">+ Open Date</button>
+        <button class="btn btn-blocked" onclick="openModal('blocked')">+ Block Date</button>
+      </div>
+
+      <!-- Calendar -->
+      <div class="calendar-nav">
+        <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
+        <div class="calendar-month" id="calendarMonth"></div>
+        <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch open"></div> Open / Available</div>
+        <div class="legend-item"><div class="legend-swatch blocked"></div> Blocked / Unavailable</div>
+      </div>
+
+      <!-- Entries List -->
+      <div class="entries-section">
+        <div class="entries-title">Your Availability Entries</div>
+        <div id="entriesList"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title" id="modalTitle">Add Open Date</div>
+      <input type="hidden" id="modalType" value="open">
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-input" id="modalStartDate">
+        </div>
+        <div>
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-input" id="modalEndDate">
+        </div>
+      </div>
+      <div class="form-hint">Leave end date empty for a single day.</div>
+
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="modalNotes" placeholder="e.g. Only available mornings, Prefer East Lake, Out of town..."></textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" id="modalSave" onclick="saveEntry()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Config ──
+    var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+    var token = new URLSearchParams(window.location.search).get('token');
+
+    var athlete = null;
+    var entries = [];
+    var currentYear, currentMonth;
+
+    // ── Init ──
+    (async function init() {
+      if (!token) return showError();
+
+      try {
+        // Fetch athlete info
+        var meRes = await fetch(API_BASE + '/athletes/portal/me?token=' + token);
+        if (!meRes.ok) return showError();
+        var meData = await meRes.json();
+        athlete = meData.athlete;
+
+        // Fetch availability
+        await loadEntries();
+
+        // Render
+        document.getElementById('athleteName').textContent = athlete.name;
+        var now = new Date();
+        currentYear = now.getFullYear();
+        currentMonth = now.getMonth();
+        renderCalendar();
+        renderEntries();
+
+        document.getElementById('loadingScreen').style.display = 'none';
+        document.getElementById('portalContent').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        showError();
+      }
+    })();
+
+    function showError() {
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('errorScreen').style.display = 'flex';
+    }
+
+    async function loadEntries() {
+      var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token);
+      if (res.ok) {
+        var data = await res.json();
+        entries = data.availability || [];
+      }
+    }
+
+    // ── Calendar Rendering ──
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      document.getElementById('calendarMonth').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+
+      var grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      // Day-of-week headers
+      DAYS.forEach(function(d) {
+        var el = document.createElement('div');
+        el.className = 'calendar-dow';
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+
+      var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      var today = new Date();
+      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+      // Empty cells before first day
+      for (var i = 0; i < firstDay; i++) {
+        var empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        grid.appendChild(empty);
+      }
+
+      // Day cells
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var cell = document.createElement('div');
+        cell.className = 'calendar-day';
+
+        if (dateStr === todayStr) cell.classList.add('today');
+
+        // Check if this date has entries
+        var hasOpen = false, hasBlocked = false;
+        entries.forEach(function(e) {
+          var start = e.start_date.substring(0, 10);
+          var end = e.end_date.substring(0, 10);
+          if (dateStr >= start && dateStr <= end) {
+            if (e.type === 'open') hasOpen = true;
+            if (e.type === 'blocked') hasBlocked = true;
+          }
+        });
+
+        if (hasOpen) cell.classList.add('has-open');
+        if (hasBlocked) cell.classList.add('has-blocked');
+
+        var numSpan = document.createElement('span');
+        numSpan.className = 'day-num';
+        numSpan.textContent = d;
+        cell.appendChild(numSpan);
+
+        // Dots
+        if (hasOpen || hasBlocked) {
+          var dots = document.createElement('div');
+          dots.className = 'day-dots';
+          if (hasOpen) {
+            var dot = document.createElement('div');
+            dot.className = 'day-dot dot-open';
+            dots.appendChild(dot);
+          }
+          if (hasBlocked) {
+            var dot2 = document.createElement('div');
+            dot2.className = 'day-dot dot-blocked';
+            dots.appendChild(dot2);
+          }
+          cell.appendChild(dots);
+        }
+
+        // Click to add entry for that date
+        (function(ds) {
+          cell.addEventListener('click', function() {
+            document.getElementById('modalStartDate').value = ds;
+            document.getElementById('modalEndDate').value = '';
+            openModal('open');
+          });
+        })(dateStr);
+
+        grid.appendChild(cell);
+      }
+    }
+
+    // ── Entries List ──
+    function renderEntries() {
+      var container = document.getElementById('entriesList');
+
+      // Sort: upcoming first, then by date
+      var sorted = entries.slice().sort(function(a, b) {
+        return a.start_date.localeCompare(b.start_date);
+      });
+
+      if (sorted.length === 0) {
+        container.innerHTML = '<div class="empty-state">No availability set yet.<br>Use the buttons above to mark dates as open or blocked.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      sorted.forEach(function(entry) {
+        var card = document.createElement('div');
+        card.className = 'entry-card';
+
+        var startStr = formatDate(entry.start_date);
+        var endStr = formatDate(entry.end_date);
+        var dateDisplay = startStr === endStr ? startStr : startStr + '  &rarr;  ' + endStr;
+
+        card.innerHTML =
+          '<div class="entry-left">' +
+            '<span class="entry-badge ' + entry.type + '">' + (entry.type === 'open' ? 'Open' : 'Blocked') + '</span>' +
+            '<div>' +
+              '<div class="entry-dates">' + dateDisplay + '</div>' +
+              (entry.notes ? '<div class="entry-notes">' + escapeHtml(entry.notes) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          '<button class="entry-delete" title="Remove" data-id="' + entry.id + '">&times;</button>';
+
+        card.querySelector('.entry-delete').addEventListener('click', function() {
+          deleteEntry(entry.id);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    function formatDate(dateStr) {
+      var d = new Date(dateStr + 'T12:00:00');
+      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // ── Modal ──
+    function openModal(type) {
+      document.getElementById('modalType').value = type;
+      document.getElementById('modalTitle').textContent = type === 'open' ? 'Add Open Date' : 'Add Blocked Date';
+      document.getElementById('modalNotes').value = '';
+      // Don't clear start date if it was pre-filled by calendar click
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+      document.getElementById('modalStartDate').value = '';
+      document.getElementById('modalEndDate').value = '';
+      document.getElementById('modalNotes').value = '';
+    }
+
+    async function saveEntry() {
+      var type = document.getElementById('modalType').value;
+      var startDate = document.getElementById('modalStartDate').value;
+      var endDate = document.getElementById('modalEndDate').value;
+      var notes = document.getElementById('modalNotes').value.trim();
+
+      if (!startDate) {
+        alert('Please select a start date.');
+        return;
+      }
+
+      var saveBtn = document.getElementById('modalSave');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: type,
+            start_date: startDate,
+            end_date: endDate || startDate,
+            notes: notes || null
+          })
+        });
+
+        if (!res.ok) {
+          var err = await res.json();
+          alert(err.error || 'Failed to save. Please try again.');
+          return;
+        }
+
+        await loadEntries();
+        renderCalendar();
+        renderEntries();
+        closeModal();
+      } catch (err) {
+        alert('Network error. Please try again.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    async function deleteEntry(id) {
+      if (!confirm('Remove this availability entry?')) return;
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/availability/' + id + '?token=' + token, {
+          method: 'DELETE'
+        });
+
+        if (res.ok) {
+          await loadEntries();
+          renderCalendar();
+          renderEntries();
+        } else {
+          alert('Failed to delete. Please try again.');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+      }
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+
+</body>
+</html>
