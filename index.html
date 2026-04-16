@@ -2298,6 +2298,13 @@
       .excl-stats { flex-wrap: wrap; gap: 20px; }
       .hero-tagline { font-size: 1.6rem; }
 
+      /* Legends section grid collapse */
+      #legends div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        padding: 0 20px !important;
+        gap: 16px !important;
+      }
+
       /* --- Gaps the audit caught --- */
       .hero-content { padding: 0 20px; }
       .hero-logo { margin-bottom: 32px; }
@@ -2315,6 +2322,10 @@
       section { padding: 48px 16px; }
       .nav { padding: 12px 16px; }
       .merch-grid { grid-template-columns: 1fr; }
+      /* Legends section tighter on small phones */
+      #legends div[style*="grid-template-columns"] {
+        padding: 0 16px !important;
+      }
       /* Tighter typography on small phones so headings don't wrap badly */
       .hero-tagline { font-size: 1.35rem; line-height: 1.3; }
       .hero-sub { font-size: 0.95rem; line-height: 1.65; }
