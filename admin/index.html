@@ -1299,6 +1299,12 @@
     </div>
 
     <div class="main">
+      <!-- Type Toggle: Members vs Athletes -->
+      <div style="display: flex; gap: 0; margin-bottom: 24px; border: 1px solid var(--border-light); border-radius: 6px; overflow: hidden; width: fit-content;">
+        <button id="toggleMembers" onclick="setAppType('members')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--gold); color: var(--bg);">Members</button>
+        <button id="toggleAthletes" onclick="setAppType('athletes')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Athletes</button>
+      </div>
+
       <!-- Stats -->
       <div class="stats-row" id="statsRow">
         <div class="stat-card">
@@ -1411,6 +1417,31 @@
     let lastTotal = null;
     let selectedIds = new Set();
 
+    // ── App type toggle (members vs athletes) ──
+    let currentAppType = 'members';
+    let athleteApplications = [];
+    let allAthleteApplications = [];
+
+    function setAppType(type) {
+      currentAppType = type;
+      expandedId = null;
+      var membersBtn = document.getElementById('toggleMembers');
+      var athletesBtn = document.getElementById('toggleAthletes');
+      if (type === 'members') {
+        membersBtn.style.background = 'var(--gold)';
+        membersBtn.style.color = 'var(--bg)';
+        athletesBtn.style.background = 'var(--bg-card)';
+        athletesBtn.style.color = 'var(--cream-muted)';
+      } else {
+        athletesBtn.style.background = 'var(--gold)';
+        athletesBtn.style.color = 'var(--bg)';
+        membersBtn.style.background = 'var(--bg-card)';
+        membersBtn.style.color = 'var(--cream-muted)';
+      }
+      applyClientFilters();
+      updateStats();
+    }
+
     // AUTH
     function getToken() {
       return sessionStorage.getItem('cartpath_admin_token');
@@ -1509,8 +1540,9 @@
     async function loadData() {
       showLoading();
       try {
-        const [apps, st] = await Promise.all([fetchApplications(), fetchStats()]);
+        const [apps, st, athApps] = await Promise.all([fetchApplications(), fetchStats(), fetchAthleteApplications()]);
         allApplications = Array.isArray(apps) ? apps : (apps.applications || apps.data || []);
+        allAthleteApplications = Array.isArray(athApps) ? athApps : [];
         stats = {
           total: st.total || 0,
           pending: st.pending || 0,
@@ -1527,6 +1559,16 @@
       }
     }
 
+    async function fetchAthleteApplications() {
+      try {
+        const res = await fetch(API + '/athlete-applications', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) return [];
+        return await res.json();
+      } catch { return []; }
+    }
+
     function showLoading() {
       document.getElementById('contentArea').innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading applications...</div></div>';
     }
@@ -1538,10 +1580,16 @@
 
     // STATS
     function updateStats() {
-      document.getElementById('statTotal').textContent = stats.total;
-      document.getElementById('statPending').textContent = stats.pending;
-      document.getElementById('statApproved').textContent = stats.approved;
-      document.getElementById('statDeclined').textContent = stats.declined;
+      var sourceData = currentAppType === 'athletes' ? allAthleteApplications : allApplications;
+      var total = sourceData.length;
+      var pending = sourceData.filter(function(a) { return (a.status || 'pending') === 'pending'; }).length;
+      var approved = sourceData.filter(function(a) { return a.status === 'approved'; }).length;
+      var declined = sourceData.filter(function(a) { return a.status === 'declined'; }).length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statApproved').textContent = approved;
+      document.getElementById('statDeclined').textContent = declined;
 
       const pendingCard = document.getElementById('statPendingCard');
       if (stats.pending > 0) {
@@ -1632,7 +1680,8 @@
     }
 
     function applyClientFilters() {
-      let filtered = allApplications.slice();
+      let sourceData = currentAppType === 'athletes' ? allAthleteApplications : allApplications;
+      let filtered = sourceData.slice();
 
       // Status filter
       if (currentFilter !== 'all') {
@@ -1666,8 +1715,9 @@
         filtered = filtered.filter(function(app) {
           const name = (app.name || '').toLowerCase();
           const email = (app.email || '').toLowerCase();
-          const company = (app.company || '').toLowerCase();
-          return name.includes(query) || email.includes(query) || company.includes(query);
+          const company = (app.company || app.sport || '').toLowerCase();
+          const school = (app.school || '').toLowerCase();
+          return name.includes(query) || email.includes(query) || company.includes(query) || school.includes(query);
         });
       }
 
@@ -1878,12 +1928,14 @@
         return '<span class="sort-arrow' + (isActive ? ' active' : '') + '">' + (isActive ? arrow : '&#9650;') + '</span>';
       };
 
+      var isAthleteMode = currentAppType === 'athletes';
+
       let html = '<div class="table-wrapper">';
       html += '<div class="table-header">';
       html += '<div onclick="toggleSort(\'date\')" style="cursor:pointer">Date ' + sortArrow('date') + '</div>';
       html += '<div onclick="toggleSort(\'name\')" style="cursor:pointer">Name ' + sortArrow('name') + '</div>';
-      html += '<div>Company</div>';
-      html += '<div onclick="toggleSort(\'tier\')" style="cursor:pointer">Tier ' + sortArrow('tier') + '</div>';
+      html += '<div>' + (isAthleteMode ? 'Sport / School' : 'Company') + '</div>';
+      html += '<div onclick="toggleSort(\'tier\')" style="cursor:pointer">' + (isAthleteMode ? 'Tier' : 'Tier') + ' ' + sortArrow('tier') + '</div>';
       html += '<div onclick="toggleSort(\'status\')" style="cursor:pointer">Status ' + sortArrow('status') + '</div>';
       html += '<div>Actions</div>';
       html += '</div>';
@@ -1892,9 +1944,9 @@
         const id = getAppId(app);
         const name = getAppName(app);
         const email = app.email || '';
-        const company = app.company || '';
-        const title = app.jobTitle || app.job_title || app.title || '';
-        const tier = getAppTier(app);
+        const company = isAthleteMode ? (app.sport || '') : (app.company || '');
+        const title = isAthleteMode ? (app.school || '') : (app.jobTitle || app.job_title || app.title || '');
+        const tier = isAthleteMode ? ('Tier ' + (app.proposed_tier || '?')) : getAppTier(app);
         const status = (app.status || 'pending').toLowerCase();
         const rawDate = app.created_at || '';
         const date = formatDate(rawDate);
@@ -1925,14 +1977,21 @@
         html += '<div class="cell-actions" onclick="event.stopPropagation()">';
         if (status === 'pending') {
           html += '<div class="action-btns">';
-          html += '<button class="btn-approve" onclick="openModal(\'approve\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Approve</button>';
-          html += '<button class="btn-waive" onclick="openModal(\'waive\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Waive Fee</button>';
-          html += '<button class="btn-decline" onclick="openModal(\'decline\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
+          if (isAthleteMode) {
+            html += '<button class="btn-approve" onclick="openAthleteApproveModal(\'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\')">Approve</button>';
+            html += '<button class="btn-decline" onclick="openModal(\'decline-athlete\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
+          } else {
+            html += '<button class="btn-approve" onclick="openModal(\'approve\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Approve</button>';
+            html += '<button class="btn-waive" onclick="openModal(\'waive\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Waive Fee</button>';
+            html += '<button class="btn-decline" onclick="openModal(\'decline\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
+          }
           html += '</div>';
         } else if (status === 'approved') {
           html += '<div class="action-btns">';
-          html += '<button class="btn-resend" onclick="event.stopPropagation(); confirmResend(\'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', this)">Resend</button>';
-          html += '<button class="btn-remove" onclick="event.stopPropagation(); openModal(\'remove\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Remove</button>';
+          if (!isAthleteMode) {
+            html += '<button class="btn-resend" onclick="event.stopPropagation(); confirmResend(\'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', this)">Resend</button>';
+            html += '<button class="btn-remove" onclick="event.stopPropagation(); openModal(\'remove\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Remove</button>';
+          }
           html += '</div>';
         }
         html += '</div>';
@@ -1941,15 +2000,24 @@
         // Detail panel
         html += '<div class="app-detail' + (isExpanded ? ' open' : '') + '" id="detail-' + escapeAttr(id) + '">';
         html += '<div class="detail-grid">';
-        html += detailField('Phone', phone);
-        html += detailField('City', city);
-        html += detailField('Handicap', handicap);
-        html += detailField('Play Frequency', frequency);
-        html += detailField('Home Course', homeCourse);
-        html += detailField('Athletes Interested', athletes);
-        html += detailField('Referral Source', referral);
-        html += detailField('Notes', notes);
-        html += detailField('Membership Tier', tierLabel);
+        if (isAthleteMode) {
+          html += detailField('Phone', phone);
+          html += detailField('Sport', app.sport || '');
+          html += detailField('School', app.school || '');
+          html += detailField('Current Role', app.current_role || '');
+          html += detailField('Proposed Tier', 'Tier ' + (app.proposed_tier || '?'));
+          html += detailField('Bio', app.bio || '');
+        } else {
+          html += detailField('Phone', phone);
+          html += detailField('City', city);
+          html += detailField('Handicap', handicap);
+          html += detailField('Play Frequency', frequency);
+          html += detailField('Home Course', homeCourse);
+          html += detailField('Athletes Interested', athletes);
+          html += detailField('Referral Source', referral);
+          html += detailField('Notes', notes);
+          html += detailField('Membership Tier', tierLabel);
+        }
 
         // Terms agreement
         var agreedToTerms = app.agreed_to_terms || app.agreedToTerms || false;
@@ -2045,6 +2113,43 @@
     }
 
     // MODAL
+    function openAthleteApproveModal(id, name) {
+      var overlay = document.getElementById('modalOverlay');
+      var modal = overlay.querySelector('.modal');
+      modal.innerHTML = '<div class="modal-title">Approve Athlete: ' + escapeHtml(name) + '</div>' +
+        '<p style="color:var(--cream-muted);font-size:13px;margin-bottom:20px;">Set the per-round pricing for this athlete. This will be visible to members when booking.</p>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
+          '<div><label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Min Price ($/round)</label>' +
+          '<input type="number" id="athletePriceMin" value="1500" min="0" step="500" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;"></div>' +
+          '<div><label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Max Price ($/round)</label>' +
+          '<input type="number" id="athletePriceMax" value="3000" min="0" step="500" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
+          '<button onclick="closeModal()" style="padding:10px 20px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">Cancel</button>' +
+          '<button onclick="confirmAthleteApprove(\'' + escapeAttr(id) + '\')" style="padding:10px 24px;background:var(--green-ok);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Approve Athlete</button>' +
+        '</div>';
+      overlay.style.display = 'flex';
+    }
+
+    async function confirmAthleteApprove(id) {
+      var priceMin = parseInt(document.getElementById('athletePriceMin').value) || 1500;
+      var priceMax = parseInt(document.getElementById('athletePriceMax').value) || 3000;
+      closeModal();
+
+      try {
+        var res = await fetch(API + '/athlete-applications/' + id + '/approve', {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price_min: priceMin, price_max: priceMax })
+        });
+        if (!res.ok) throw new Error('Approve failed');
+        showToast('Athlete approved! Price set: $' + priceMin.toLocaleString() + ' - $' + priceMax.toLocaleString());
+        await loadData();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
     function openModal(action, id, name, email, tier) {
       pendingAction = { action: action, id: id, name: name, email: email, tier: tier, bulk: false };
       const titleEl = document.getElementById('modalTitle');
@@ -2076,9 +2181,9 @@
         reasonLabel.textContent = 'Reason for Removal';
         reasonTextarea.placeholder = 'e.g. Membership cancelled, violation of terms, non-payment, etc.';
         setTimeout(function() { reasonTextarea.focus(); }, 100);
-      } else if (action === 'decline') {
+      } else if (action === 'decline' || action === 'decline-athlete') {
         titleEl.textContent = 'Decline Application';
-        textEl.textContent = "Decline " + name + "'s application? Please provide a reason below.";
+        textEl.textContent = "Decline " + name + "'s application?";
         confirmBtn.textContent = 'Decline';
         confirmBtn.className = 'modal-confirm decline';
         reasonWrap.style.display = 'block';
@@ -2172,6 +2277,13 @@
             const reason = document.getElementById('modalReasonTextarea').value.trim();
             await declineApplication(pendingAction.id, reason);
             showToast('Application declined. Email sent to ' + pendingAction.email, 'success');
+          } else if (pendingAction.action === 'decline-athlete') {
+            await fetch(API + '/athlete-applications/' + pendingAction.id + '/decline', {
+              method: 'PATCH',
+              headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+              body: JSON.stringify({})
+            });
+            showToast('Athlete application declined.', 'success');
           }
         }
         closeModal();
