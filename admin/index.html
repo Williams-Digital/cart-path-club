@@ -493,7 +493,7 @@
 
     .table-header {
       display: grid;
-      grid-template-columns: 100px 1.3fr 1.1fr 100px 100px 180px;
+      grid-template-columns: 100px 1.3fr 1fr 85px 85px 80px 160px;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
       font-size: 11px;
@@ -525,7 +525,7 @@
 
     .app-row {
       display: grid;
-      grid-template-columns: 100px 1.3fr 1.1fr 100px 100px 180px;
+      grid-template-columns: 100px 1.3fr 1fr 85px 85px 80px 160px;
       padding: 14px 20px;
       border-bottom: 1px solid var(--border);
       align-items: center;
@@ -1937,6 +1937,7 @@
       html += '<div>' + (isAthleteMode ? 'Sport / School' : 'Company') + '</div>';
       html += '<div onclick="toggleSort(\'tier\')" style="cursor:pointer">' + (isAthleteMode ? 'Tier' : 'Tier') + ' ' + sortArrow('tier') + '</div>';
       html += '<div onclick="toggleSort(\'status\')" style="cursor:pointer">Status ' + sortArrow('status') + '</div>';
+      html += '<div>' + (isAthleteMode ? 'Fee' : 'Deposit') + '</div>';
       html += '<div>Actions</div>';
       html += '</div>';
 
@@ -1973,6 +1974,21 @@
         html += '<div class="cell-company-wrap"><div class="cell-company">' + escapeHtml(company) + '</div><div class="cell-title">' + escapeHtml(title) + '</div></div>';
         html += '<div class="cell-tier-wrap"><span class="tier-badge ' + tierClass + '">' + tierLabel + '</span></div>';
         html += '<div class="cell-status-wrap"><span class="status-badge ' + status + '">' + status.charAt(0).toUpperCase() + status.slice(1) + '</span></div>';
+
+        // Deposit / Fee status column
+        var paymentState = app.payment_state || app.listing_status || '';
+        var depositPaid = paymentState === 'entry_fee_paid' || paymentState === 'active' || paymentState === 'complimentary' || paymentState === 'dues_sent';
+        var athleteFeePaid = paymentState === 'active';
+        if (isAthleteMode) {
+          var feeLabel = athleteFeePaid ? 'Paid' : (paymentState === 'pending_payment' ? 'Pending' : '--');
+          var feeClass = athleteFeePaid ? 'approved' : (paymentState === 'pending_payment' ? 'pending' : '');
+          html += '<div class="cell-status-wrap"><span class="status-badge ' + feeClass + '" style="font-size:10px;">' + feeLabel + '</span></div>';
+        } else {
+          var depLabel = depositPaid ? 'Paid' : (paymentState === 'entry_fee_sent' ? 'Sent' : '--');
+          var depClass = depositPaid ? 'approved' : (paymentState === 'entry_fee_sent' ? 'pending' : '');
+          html += '<div class="cell-status-wrap"><span class="status-badge ' + depClass + '" style="font-size:10px;">' + depLabel + '</span></div>';
+        }
+
         // Actions
         html += '<div class="cell-actions" onclick="event.stopPropagation()">';
         if (status === 'pending') {
@@ -1980,10 +1996,12 @@
           if (isAthleteMode) {
             html += '<button class="btn-approve" onclick="openAthleteApproveModal(\'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\')">Approve</button>';
             html += '<button class="btn-decline" onclick="openModal(\'decline-athlete\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
-          } else {
+          } else if (depositPaid) {
             html += '<button class="btn-approve" onclick="openModal(\'approve\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Approve</button>';
             html += '<button class="btn-waive" onclick="openModal(\'waive\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Waive Fee</button>';
             html += '<button class="btn-decline" onclick="openModal(\'decline\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
+          } else {
+            html += '<span style="font-size:10px;color:var(--cream-dim);">Awaiting deposit</span>';
           }
           html += '</div>';
         } else if (status === 'approved') {
@@ -2117,16 +2135,24 @@
       var overlay = document.getElementById('modalOverlay');
       var modal = overlay.querySelector('.modal');
       modal.innerHTML = '<div class="modal-title">Approve Athlete: ' + escapeHtml(name) + '</div>' +
-        '<p style="color:var(--cream-muted);font-size:13px;margin-bottom:20px;">Set the per-round pricing for this athlete. This will be visible to members when booking.</p>' +
+        '<p style="color:var(--cream-muted);font-size:13px;margin-bottom:20px;">Set the listing fee and per-round pricing for this athlete.</p>' +
+
+        '<div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">' +
+          '<label style="display:block;font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Athlete Listing Fee (one-time)</label>' +
+          '<p style="color:var(--cream-dim);font-size:11px;margin-bottom:8px;">What the athlete pays CartPath to join the roster.</p>' +
+          '<input type="number" id="athleteListingFee" value="500" min="0" step="100" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:16px;font-family:Inter,sans-serif;">' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Per-Round Price (visible to members)</label>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
-          '<div><label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Min Price ($/round)</label>' +
+          '<div><label style="display:block;font-size:10px;color:var(--cream-dim);margin-bottom:4px;">Min ($/round)</label>' +
           '<input type="number" id="athletePriceMin" value="1500" min="0" step="500" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;"></div>' +
-          '<div><label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Max Price ($/round)</label>' +
+          '<div><label style="display:block;font-size:10px;color:var(--cream-dim);margin-bottom:4px;">Max ($/round)</label>' +
           '<input type="number" id="athletePriceMax" value="3000" min="0" step="500" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;"></div>' +
         '</div>' +
         '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
           '<button onclick="closeModal()" style="padding:10px 20px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">Cancel</button>' +
-          '<button onclick="confirmAthleteApprove(\'' + escapeAttr(id) + '\')" style="padding:10px 24px;background:var(--green-ok);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Approve Athlete</button>' +
+          '<button onclick="confirmAthleteApprove(\'' + escapeAttr(id) + '\')" style="padding:10px 24px;background:var(--green-ok);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Approve & Send Fee</button>' +
         '</div>';
       overlay.style.display = 'flex';
     }
@@ -2134,16 +2160,21 @@
     async function confirmAthleteApprove(id) {
       var priceMin = parseInt(document.getElementById('athletePriceMin').value) || 1500;
       var priceMax = parseInt(document.getElementById('athletePriceMax').value) || 3000;
+      var listingFee = parseInt(document.getElementById('athleteListingFee').value) || 0;
       closeModal();
 
       try {
         var res = await fetch(API + '/athlete-applications/' + id + '/approve', {
           method: 'PATCH',
           headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ price_min: priceMin, price_max: priceMax })
+          body: JSON.stringify({ price_min: priceMin, price_max: priceMax, listing_fee: listingFee })
         });
-        if (!res.ok) throw new Error('Approve failed');
-        showToast('Athlete approved! Price set: $' + priceMin.toLocaleString() + ' - $' + priceMax.toLocaleString());
+        if (!res.ok) {
+          var errData = await res.json().catch(function() { return {}; });
+          throw new Error(errData.error || 'Approve failed');
+        }
+        var feeMsg = listingFee > 0 ? ' Listing fee link ($' + listingFee.toLocaleString() + ') sent to athlete.' : '';
+        showToast('Athlete approved! Round price: $' + priceMin.toLocaleString() + ' - $' + priceMax.toLocaleString() + '.' + feeMsg);
         await loadData();
       } catch (err) {
         showToast('Error: ' + err.message, 'error');
