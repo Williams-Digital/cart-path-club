@@ -2870,7 +2870,13 @@
     var search = (document.getElementById('courseDirectorySearch')?.value || '').toLowerCase();
 
     var filtered = allCourseData.filter(function(c) {
-      if (search && !c.name.toLowerCase().includes(search) && !c.location.toLowerCase().includes(search)) return false;
+      if (search) {
+        // Split search into words and check each matches somewhere
+        var words = search.split(/\s+/).filter(Boolean);
+        var combined = (c.name + ' ' + c.location).toLowerCase();
+        var match = words.every(function(w) { return combined.includes(w); });
+        if (!match) return false;
+      }
       if (currentCourseFilter === 'played') return playedCourses[c.name];
       if (currentCourseFilter === 'top') return c.googleRating >= 4.6;
       return true;
@@ -2881,8 +2887,20 @@
       return;
     }
 
-    var html = '';
+    // Group by state/region
+    var grouped = {};
     filtered.forEach(function(c) {
+      var parts = c.location.split(', ');
+      var region = parts[parts.length - 1] || 'Other';
+      if (!grouped[region]) grouped[region] = [];
+      grouped[region].push(c);
+    });
+
+    var html = '';
+    var regionOrder = Object.keys(grouped).sort();
+    regionOrder.forEach(function(region) {
+      html += '<div style="grid-column:1/-1;font-family:var(--font-ui);font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);padding:20px 0 8px;border-top:1px solid rgba(191,155,59,0.06);margin-top:8px;">' + region + '</div>';
+      grouped[region].forEach(function(c) {
       var mr = memberRatings[c.name];
       var memberAvg = mr ? (mr.total / mr.count).toFixed(1) : null;
       var memberCount = mr ? mr.count : 0;
@@ -2933,7 +2951,8 @@
 
       html += '</div>';
       html += '</div>';
-    });
+      }); // end grouped[region].forEach
+    }); // end regionOrder.forEach
 
     container.innerHTML = html;
   }
