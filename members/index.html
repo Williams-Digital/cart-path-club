@@ -2957,8 +2957,54 @@
     renderCourseDirectory();
   }
 
+  var directorySearchTimeout = null;
   function filterCourseList() {
     renderCourseDirectory();
+
+    // Also search Google Places if the user typed 3+ chars
+    var query = (document.getElementById('courseDirectorySearch').value || '').trim();
+    if (query.length < 3) return;
+
+    clearTimeout(directorySearchTimeout);
+    directorySearchTimeout = setTimeout(function() {
+      if (!placesService) initPlaces();
+      if (!placesService) return;
+
+      placesService.getPlacePredictions({
+        input: query + ' golf course',
+        types: ['establishment'],
+        sessionToken: placesSessionToken
+      }, function(predictions, status) {
+        if (status !== 'OK' || !predictions) return;
+        var container = document.getElementById('courseDirectory');
+
+        // Add a "More from Google" section
+        var googleSection = document.getElementById('googleCourseResults');
+        if (googleSection) googleSection.remove();
+
+        var div = document.createElement('div');
+        div.id = 'googleCourseResults';
+        div.style.cssText = 'grid-column:1/-1;border-top:1px solid rgba(191,155,59,0.08);padding-top:20px;margin-top:8px;';
+        div.innerHTML = '<div style="font-family:var(--font-ui);font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,225,0.25);margin-bottom:12px;">More Courses</div>';
+
+        var grid = document.createElement('div');
+        grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:16px;';
+
+        predictions.slice(0, 6).forEach(function(p) {
+          var main = p.structured_formatting.main_text;
+          var secondary = p.structured_formatting.secondary_text || '';
+          var card = document.createElement('div');
+          card.className = 'course-card';
+          card.innerHTML = '<div style="margin-bottom:8px;"><div style="font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--cream);">' + main + '</div>' +
+            '<div style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.35);margin-top:2px;">' + secondary + '</div></div>' +
+            '<div style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.2);">Par 72 (est.) &middot; Google Places</div>';
+          grid.appendChild(card);
+        });
+
+        div.appendChild(grid);
+        container.appendChild(div);
+      });
+    }, 400);
   }
 
   // Render courses when tab is opened
