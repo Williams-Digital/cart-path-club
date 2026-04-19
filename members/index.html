@@ -2768,21 +2768,74 @@
   // ── COURSE DIRECTORY ──
 
   var allCourseData = [
+    // Georgia
     { id: 'eastlake', name: 'East Lake Golf Club', location: 'Atlanta, GA', par: 72, yards: 7346, googleRating: 4.7, private: true },
     { id: 'aac', name: 'Atlanta Athletic Club', location: 'Johns Creek, GA', par: 72, yards: 7580, googleRating: 4.6, private: true },
-    { id: 'tpc', name: 'TPC Sugarloaf', location: 'Duluth, GA', par: 72, yards: 7293, googleRating: 4.5, private: true },
+    { id: 'tpc-sugarloaf', name: 'TPC Sugarloaf', location: 'Duluth, GA', par: 72, yards: 7293, googleRating: 4.5, private: true },
     { id: 'peachtree', name: 'Peachtree Golf Club', location: 'Atlanta, GA', par: 72, yards: 7043, googleRating: 4.8, private: true },
-    { id: 'capitalcity', name: 'Capital City Club', location: 'Milton, GA', par: 72, yards: 7100, googleRating: 4.4, private: true },
+    { id: 'capitalcity', name: 'Capital City Club (Crabapple)', location: 'Milton, GA', par: 72, yards: 7100, googleRating: 4.4, private: true },
     { id: 'atlantacc', name: 'Atlanta Country Club', location: 'Marietta, GA', par: 72, yards: 7018, googleRating: 4.3, private: true },
     { id: 'hawksridge', name: 'Hawks Ridge Golf Club', location: 'Ball Ground, GA', par: 72, yards: 7100, googleRating: 4.5, private: false },
     { id: 'echelon', name: 'Echelon Golf Club', location: 'Alpharetta, GA', par: 72, yards: 7150, googleRating: 4.6, private: true },
     { id: 'augustanational', name: 'Augusta National Golf Club', location: 'Augusta, GA', par: 72, yards: 7565, googleRating: 4.9, private: true },
-    { id: 'pebblebeach', name: 'Pebble Beach Golf Links', location: 'Pebble Beach, CA', par: 72, yards: 6828, googleRating: 4.7, private: false },
-    { id: 'pinehurst', name: 'Pinehurst No. 2', location: 'Pinehurst, NC', par: 72, yards: 7588, googleRating: 4.6, private: false },
-    { id: 'tpcsawgrass', name: 'TPC Sawgrass', location: 'Ponte Vedra Beach, FL', par: 72, yards: 7245, googleRating: 4.5, private: false },
+    { id: 'reynolds-oconee', name: 'Reynolds Lake Oconee (Great Waters)', location: 'Greensboro, GA', par: 72, yards: 7048, googleRating: 4.6, private: false },
+    { id: 'sea-island', name: 'Sea Island Golf Club (Seaside)', location: 'St Simons Island, GA', par: 70, yards: 7005, googleRating: 4.7, private: true },
+    // Alabama
+    { id: 'shoal-creek', name: 'Shoal Creek', location: 'Shoal Creek, AL', par: 72, yards: 7145, googleRating: 4.6, private: true },
+    { id: 'rtj-ross-bridge', name: 'RTJ Ross Bridge', location: 'Hoover, AL', par: 72, yards: 8191, googleRating: 4.5, private: false },
+    { id: 'grand-national', name: 'RTJ Grand National (Lake)', location: 'Opelika, AL', par: 72, yards: 7149, googleRating: 4.4, private: false },
+    // Florida
+    { id: 'tpc-sawgrass', name: 'TPC Sawgrass (Stadium)', location: 'Ponte Vedra Beach, FL', par: 72, yards: 7245, googleRating: 4.5, private: false },
+    { id: 'bay-hill', name: 'Bay Hill Club & Lodge', location: 'Orlando, FL', par: 72, yards: 7381, googleRating: 4.6, private: true },
+    { id: 'streamsong-red', name: 'Streamsong Red', location: 'Bowling Green, FL', par: 72, yards: 7148, googleRating: 4.7, private: false },
+    { id: 'streamsong-blue', name: 'Streamsong Blue', location: 'Bowling Green, FL', par: 72, yards: 7160, googleRating: 4.7, private: false },
+    { id: 'tpc-doral-blue', name: 'Trump National Doral (Blue Monster)', location: 'Doral, FL', par: 72, yards: 7608, googleRating: 4.4, private: false },
+    { id: 'seminole', name: 'Seminole Golf Club', location: 'Juno Beach, FL', par: 72, yards: 7170, googleRating: 4.8, private: true },
+    // Carolinas
+    { id: 'pinehurst2', name: 'Pinehurst No. 2', location: 'Pinehurst, NC', par: 72, yards: 7588, googleRating: 4.6, private: false },
     { id: 'quailhollow', name: 'Quail Hollow Club', location: 'Charlotte, NC', par: 72, yards: 7554, googleRating: 4.4, private: true },
-    { id: 'whistling', name: 'Whistling Straits', location: 'Haven, WI', par: 72, yards: 7790, googleRating: 4.6, private: false },
+    { id: 'kiawah-ocean', name: 'Kiawah Island (Ocean Course)', location: 'Kiawah Island, SC', par: 72, yards: 7876, googleRating: 4.7, private: false },
+    { id: 'harbour-town', name: 'Harbour Town Golf Links', location: 'Hilton Head, SC', par: 71, yards: 7099, googleRating: 4.6, private: false },
+    // Tennessee / Kentucky
+    { id: 'honors', name: 'The Honors Course', location: 'Ooltewah, TN', par: 72, yards: 7064, googleRating: 4.7, private: true },
+    { id: 'valhalla', name: 'Valhalla Golf Club', location: 'Louisville, KY', par: 72, yards: 7458, googleRating: 4.5, private: true },
+    // Texas
+    { id: 'colonial', name: 'Colonial Country Club', location: 'Fort Worth, TX', par: 70, yards: 7209, googleRating: 4.5, private: true },
+    { id: 'tpc-craig-ranch', name: 'TPC Craig Ranch', location: 'McKinney, TX', par: 72, yards: 7468, googleRating: 4.4, private: false },
+    { id: 'austin-cc', name: 'Austin Country Club', location: 'Austin, TX', par: 71, yards: 7108, googleRating: 4.5, private: true },
+    // Northeast
     { id: 'oakmont', name: 'Oakmont Country Club', location: 'Oakmont, PA', par: 71, yards: 7255, googleRating: 4.5, private: true },
+    { id: 'winged-foot', name: 'Winged Foot Golf Club (West)', location: 'Mamaroneck, NY', par: 72, yards: 7477, googleRating: 4.6, private: true },
+    { id: 'bethpage-black', name: 'Bethpage Black', location: 'Farmingdale, NY', par: 71, yards: 7468, googleRating: 4.5, private: false },
+    { id: 'shinnecock', name: 'Shinnecock Hills Golf Club', location: 'Southampton, NY', par: 70, yards: 7445, googleRating: 4.7, private: true },
+    { id: 'baltusrol', name: 'Baltusrol Golf Club (Lower)', location: 'Springfield, NJ', par: 72, yards: 7392, googleRating: 4.5, private: true },
+    { id: 'merion', name: 'Merion Golf Club (East)', location: 'Ardmore, PA', par: 70, yards: 7048, googleRating: 4.6, private: true },
+    // Midwest
+    { id: 'whistling-straits', name: 'Whistling Straits', location: 'Haven, WI', par: 72, yards: 7790, googleRating: 4.6, private: false },
+    { id: 'medinah3', name: 'Medinah Country Club (No. 3)', location: 'Medinah, IL', par: 72, yards: 7657, googleRating: 4.5, private: true },
+    { id: 'crooked-stick', name: 'Crooked Stick Golf Club', location: 'Carmel, IN', par: 72, yards: 7385, googleRating: 4.4, private: true },
+    { id: 'erin-hills', name: 'Erin Hills', location: 'Erin, WI', par: 72, yards: 7741, googleRating: 4.6, private: false },
+    { id: 'hazeltine', name: 'Hazeltine National Golf Club', location: 'Chaska, MN', par: 72, yards: 7674, googleRating: 4.5, private: true },
+    // West Coast
+    { id: 'pebble-beach', name: 'Pebble Beach Golf Links', location: 'Pebble Beach, CA', par: 72, yards: 6828, googleRating: 4.7, private: false },
+    { id: 'spyglass', name: 'Spyglass Hill Golf Course', location: 'Pebble Beach, CA', par: 72, yards: 6960, googleRating: 4.6, private: false },
+    { id: 'torrey-south', name: 'Torrey Pines (South)', location: 'La Jolla, CA', par: 72, yards: 7765, googleRating: 4.5, private: false },
+    { id: 'riviera', name: 'Riviera Country Club', location: 'Pacific Palisades, CA', par: 71, yards: 7322, googleRating: 4.7, private: true },
+    { id: 'lacc-north', name: 'Los Angeles Country Club (North)', location: 'Los Angeles, CA', par: 71, yards: 7468, googleRating: 4.6, private: true },
+    { id: 'chambers-bay', name: 'Chambers Bay', location: 'University Place, WA', par: 72, yards: 7585, googleRating: 4.4, private: false },
+    { id: 'bandon-dunes', name: 'Bandon Dunes', location: 'Bandon, OR', par: 72, yards: 6732, googleRating: 4.8, private: false },
+    { id: 'bandon-pacific', name: 'Pacific Dunes', location: 'Bandon, OR', par: 71, yards: 6633, googleRating: 4.8, private: false },
+    // Mountain / Southwest
+    { id: 'sand-hills', name: 'Sand Hills Golf Club', location: 'Mullen, NE', par: 71, yards: 6764, googleRating: 4.8, private: true },
+    { id: 'troon-north', name: 'Troon North (Monument)', location: 'Scottsdale, AZ', par: 72, yards: 7028, googleRating: 4.5, private: false },
+    { id: 'tpc-scottsdale', name: 'TPC Scottsdale (Stadium)', location: 'Scottsdale, AZ', par: 71, yards: 7261, googleRating: 4.4, private: false },
+    // Hawaii
+    { id: 'kapalua', name: 'Kapalua Plantation Course', location: 'Lahaina, HI', par: 73, yards: 7596, googleRating: 4.6, private: false },
+    // International
+    { id: 'royaltroon', name: 'Royal Troon', location: 'Troon, Scotland', par: 71, yards: 7190, googleRating: 4.7, private: true },
+    { id: 'standrews-old', name: 'St Andrews (Old Course)', location: 'St Andrews, Scotland', par: 72, yards: 7305, googleRating: 4.8, private: false },
+    { id: 'royal-portrush', name: 'Royal Portrush (Dunluce)', location: 'Portrush, N. Ireland', par: 72, yards: 7317, googleRating: 4.6, private: true },
+    { id: 'royal-melbourne', name: 'Royal Melbourne (West)', location: 'Melbourne, Australia', par: 72, yards: 6682, googleRating: 4.7, private: true },
   ];
 
   var currentCourseFilter = 'all';
@@ -3059,25 +3112,8 @@
 
   // ===================== MY ROUNDS =====================
 
-  // Course database (from our PostgreSQL + manual additions)
-  var courses = [
-    { id: 'eastlake', name: 'East Lake Golf Club', location: 'Atlanta, GA', par: 72, yards: 7346 },
-    { id: 'aac', name: 'Atlanta Athletic Club', location: 'Johns Creek, GA', par: 72, yards: 7580 },
-    { id: 'tpc', name: 'TPC Sugarloaf', location: 'Duluth, GA', par: 72, yards: 7293 },
-    { id: 'peachtree', name: 'Peachtree Golf Club', location: 'Atlanta, GA', par: 72, yards: 7043 },
-    { id: 'capitalcity', name: 'Capital City Club (Crabapple)', location: 'Milton, GA', par: 72, yards: 7100 },
-    { id: 'atlantacc', name: 'Atlanta Country Club', location: 'Marietta, GA', par: 72, yards: 7018 },
-    { id: 'hawksridge', name: 'Hawks Ridge Golf Club', location: 'Ball Ground, GA', par: 72, yards: 7100 },
-    { id: 'echelon', name: 'Echelon Golf Club', location: 'Alpharetta, GA', par: 72, yards: 7150 },
-    { id: 'augustanational', name: 'Augusta National Golf Club', location: 'Augusta, GA', par: 72, yards: 7565 },
-    { id: 'pebblebeach', name: 'Pebble Beach Golf Links', location: 'Pebble Beach, CA', par: 72, yards: 6828 },
-    { id: 'pinehurst', name: 'Pinehurst No. 2', location: 'Pinehurst, NC', par: 72, yards: 7588 },
-    { id: 'tpcsawgrass', name: 'TPC Sawgrass (Stadium)', location: 'Ponte Vedra Beach, FL', par: 72, yards: 7245 },
-    { id: 'quailhollow', name: 'Quail Hollow Club', location: 'Charlotte, NC', par: 72, yards: 7554 },
-    { id: 'whistling', name: 'Whistling Straits', location: 'Haven, WI', par: 72, yards: 7790 },
-    { id: 'oakmont', name: 'Oakmont Country Club', location: 'Oakmont, PA', par: 71, yards: 7255 },
-    { id: 'royaltroon', name: 'Royal Troon', location: 'Troon, Scotland', par: 71, yards: 7190 },
-  ];
+  // Reuse the full course list from the directory
+  var courses = allCourseData;
 
   var selectedCourse = null;
   var currentRating = 0;
