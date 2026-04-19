@@ -493,7 +493,7 @@
 
     .table-header {
       display: grid;
-      grid-template-columns: 100px 1.3fr 1fr 85px 85px 80px 160px;
+      grid-template-columns: 90px 1.2fr 1.1fr 110px 90px 100px 150px;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
       font-size: 11px;
@@ -525,7 +525,7 @@
 
     .app-row {
       display: grid;
-      grid-template-columns: 100px 1.3fr 1fr 85px 85px 80px 160px;
+      grid-template-columns: 90px 1.2fr 1.1fr 110px 90px 100px 150px;
       padding: 14px 20px;
       border-bottom: 1px solid var(--border);
       align-items: center;
@@ -2001,7 +2001,7 @@
             html += '<button class="btn-waive" onclick="openModal(\'waive\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Waive Fee</button>';
             html += '<button class="btn-decline" onclick="openModal(\'decline\', \'' + escapeAttr(id) + '\', \'' + escapeAttr(name) + '\', \'' + escapeAttr(email) + '\', \'' + escapeAttr(tierLabel) + '\')">Decline</button>';
           } else {
-            html += '<span style="font-size:10px;color:var(--cream-dim);">Awaiting deposit</span>';
+            html += '<span style="font-size:10px;color:var(--amber);opacity:0.7;">Awaiting deposit</span>';
           }
           html += '</div>';
         } else if (status === 'approved') {
