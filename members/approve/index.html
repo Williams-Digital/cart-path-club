@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Approve Quote — CartPath</title>
+  <link rel="icon" href="/assets/cartpath-shield.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #060F0A;
+      color: #F5F0E1;
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container { max-width: 560px; width: 100%; }
+
+    .header {
+      background: #091D14;
+      padding: 40px 32px;
+      border-radius: 8px 8px 0 0;
+      text-align: center;
+      border-bottom: 2px solid #BF9B3B;
+    }
+    .header img { width: 48px; height: auto; display: block; margin: 0 auto 12px; }
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: #F5F0E1;
+      margin: 16px 0 4px;
+    }
+    .header p {
+      color: rgba(245, 240, 225, 0.5);
+      font-size: 13px;
+    }
+
+    .body {
+      background: #10352A;
+      padding: 36px 32px;
+    }
+
+    .loading, .error {
+      text-align: center;
+      padding: 20px;
+      color: rgba(245, 240, 225, 0.5);
+    }
+    .spinner {
+      width: 32px; height: 32px; margin: 0 auto 16px;
+      border: 2px solid rgba(191,155,59,0.15);
+      border-top-color: #BF9B3B; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(191,155,59,0.08);
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+      color: rgba(245,240,225,0.4);
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .detail-value {
+      color: #F5F0E1;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .price-box {
+      background: rgba(191,155,59,0.08);
+      border: 1px solid rgba(191,155,59,0.2);
+      border-radius: 6px;
+      padding: 24px;
+      text-align: center;
+      margin: 24px 0;
+    }
+    .price-label {
+      color: rgba(245,240,225,0.4);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .price-value {
+      color: #BF9B3B;
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      font-weight: 700;
+    }
+
+    .notes {
+      background: rgba(245,240,225,0.03);
+      border-left: 3px solid rgba(191,155,59,0.3);
+      padding: 14px 18px;
+      margin: 20px 0;
+      font-size: 13px;
+      color: rgba(245,240,225,0.6);
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn {
+      padding: 16px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.2s;
+    }
+    .btn-approve {
+      background: linear-gradient(135deg, #A88630, #BF9B3B);
+      color: #091D14;
+    }
+    .btn-decline {
+      background: none;
+      border: 1px solid rgba(229,115,115,0.3);
+      color: #E57373;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .footer {
+      background: #091D14;
+      padding: 20px 32px;
+      border-radius: 0 0 8px 8px;
+      text-align: center;
+      font-size: 12px;
+      color: rgba(245,240,225,0.35);
+    }
+
+    .success-box, .error-box {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    .success-icon, .error-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .success-box h2, .error-box h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: #F5F0E1;
+    }
+    .success-box p, .error-box p {
+      color: rgba(245,240,225,0.6);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .login-prompt {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .login-prompt a {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 28px;
+      background: #BF9B3B;
+      color: #091D14;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <img src="/assets/cartpath-shield.png" alt="CartPath">
+    <h1>Review & Approve Quote</h1>
+    <p>Confirm your round details before payment</p>
+  </div>
+
+  <div class="body" id="body">
+    <div class="loading">
+      <div class="spinner"></div>
+      Loading your quote...
+    </div>
+  </div>
+
+  <div class="footer">
+    Questions? <a href="mailto:hello@cartpathclub.com" style="color:#BF9B3B;text-decoration:none;">hello@cartpathclub.com</a>
+  </div>
+</div>
+
+<script>
+  var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+
+  function getIdToken() {
+    return sessionStorage.getItem('cartpath_id_token') || sessionStorage.getItem('cartpath_access_token') || '';
+  }
+
+  function getBookingId() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('booking_id');
+  }
+
+  async function loadBooking() {
+    var bookingId = getBookingId();
+    var body = document.getElementById('body');
+
+    if (!bookingId) {
+      body.innerHTML = '<div class="error-box"><div class="error-icon">&#9888;</div><h2>Invalid Link</h2><p>This approval link is missing a booking ID. Please check the email or contact us.</p></div>';
+      return;
+    }
+
+    var token = getIdToken();
+    if (!token) {
+      body.innerHTML = '<div class="login-prompt"><p>Please log in to approve this quote.</p><a href="/members/?redirect=/members/approve?booking_id=' + bookingId + '">Log In to Members Portal</a></div>';
+      return;
+    }
+
+    try {
+      var res = await fetch(API_BASE + '/bookings/' + bookingId, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
+      if (res.status === 401) {
+        body.innerHTML = '<div class="login-prompt"><p>Your session has expired. Please log back in.</p><a href="/members/">Log In</a></div>';
+        return;
+      }
+      if (!res.ok) throw new Error('Failed to load booking');
+
+      var data = await res.json();
+      var booking = data.booking || data;
+      renderBooking(booking);
+    } catch (err) {
+      body.innerHTML = '<div class="error-box"><div class="error-icon">&#9888;</div><h2>Unable to Load</h2><p>' + (err.message || 'Something went wrong') + '</p></div>';
+    }
+  }
+
+  function renderBooking(b) {
+    var body = document.getElementById('body');
+
+    if (b.workflow_state !== 'awaiting_member_approval') {
+      var stateMsg = ({
+        requested: 'Still under review by our team.',
+        pending_review: 'Still under review by our team.',
+        price_rejected: 'You previously declined this quote. We will send a revised one.',
+        quoted: 'You already approved this quote. Check your email for the payment link.',
+        paid: 'Payment received! Your round is confirmed.',
+        confirmed: 'This round is confirmed. See you on the course.',
+        completed: 'This round is complete.',
+        declined: 'This request was declined.',
+        cancelled: 'This booking was cancelled.',
+      })[b.workflow_state] || 'Status: ' + b.workflow_state;
+
+      body.innerHTML = '<div class="success-box"><div class="success-icon">&#9990;</div><h2>Quote Not Available</h2><p>' + stateMsg + '</p></div>';
+      return;
+    }
+
+    var amt = b.quoted_amount_cents ? ('$' + (b.quoted_amount_cents / 100).toLocaleString()) : '--';
+    var date = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '--';
+
+    var html = '';
+    html += '<div class="detail-row"><span class="detail-label">Athlete</span><span class="detail-value">' + escapeHtml(b.athlete_name || 'Athlete') + '</span></div>';
+    html += '<div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">' + escapeHtml(date) + '</span></div>';
+    html += '<div class="detail-row"><span class="detail-label">Course</span><span class="detail-value">' + escapeHtml(b.course || '--') + '</span></div>';
+    html += '<div class="detail-row"><span class="detail-label">Group Size</span><span class="detail-value">' + (b.group_size || 1) + '</span></div>';
+    html += '<div class="detail-row"><span class="detail-label">Round Type</span><span class="detail-value">' + escapeHtml((b.round_type || 'in-town').replace('-', ' ')) + '</span></div>';
+
+    html += '<div class="price-box"><div class="price-label">Quoted Price</div><div class="price-value">' + amt + '</div></div>';
+
+    if (b.quote_notes) {
+      html += '<div class="notes">' + escapeHtml(b.quote_notes) + '</div>';
+    }
+
+    html += '<div class="actions">';
+    html += '<button class="btn btn-approve" id="approveBtn" onclick="approveQuote()">Approve & Pay</button>';
+    html += '<button class="btn btn-decline" id="declineBtn" onclick="rejectQuote()">Decline Quote</button>';
+    html += '</div>';
+
+    body.innerHTML = html;
+  }
+
+  async function approveQuote() {
+    var approveBtn = document.getElementById('approveBtn');
+    var declineBtn = document.getElementById('declineBtn');
+    approveBtn.disabled = true; declineBtn.disabled = true;
+    approveBtn.textContent = 'Processing...';
+
+    var token = getIdToken();
+    var bookingId = getBookingId();
+
+    try {
+      var res = await fetch(API_BASE + '/bookings/' + bookingId + '/approve-price', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) throw new Error('Approval failed');
+      var data = await res.json();
+
+      document.getElementById('body').innerHTML =
+        '<div class="success-box"><div class="success-icon">&#10003;</div><h2>Approved!</h2><p>Redirecting to secure payment...</p></div>';
+
+      setTimeout(function() {
+        if (data.checkout_url) window.location.href = data.checkout_url;
+      }, 1200);
+    } catch (err) {
+      approveBtn.disabled = false; declineBtn.disabled = false;
+      approveBtn.textContent = 'Approve & Pay';
+      alert('Error: ' + err.message);
+    }
+  }
+
+  async function rejectQuote() {
+    var reason = prompt('Why are you declining? (optional)') || null;
+    var approveBtn = document.getElementById('approveBtn');
+    var declineBtn = document.getElementById('declineBtn');
+    approveBtn.disabled = true; declineBtn.disabled = true;
+    declineBtn.textContent = 'Processing...';
+
+    var token = getIdToken();
+    var bookingId = getBookingId();
+
+    try {
+      var res = await fetch(API_BASE + '/bookings/' + bookingId + '/reject-price', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+      });
+      if (!res.ok) throw new Error('Rejection failed');
+
+      document.getElementById('body').innerHTML =
+        '<div class="success-box"><div class="success-icon">&#10007;</div><h2>Quote Declined</h2><p>Our team has been notified. We will send you a revised quote shortly.</p></div>';
+    } catch (err) {
+      approveBtn.disabled = false; declineBtn.disabled = false;
+      declineBtn.textContent = 'Decline Quote';
+      alert('Error: ' + err.message);
+    }
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  loadBooking();
+</script>
+
+</body>
+</html>

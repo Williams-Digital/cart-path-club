@@ -1244,20 +1244,20 @@
 
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-value" id="stat-remaining">6</div>
-          <div class="stat-label">Rounds Remaining</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-played">4</div>
+          <div class="stat-value" id="stat-played">--</div>
           <div class="stat-label">Rounds Played</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" id="stat-since">Apr 2026</div>
-          <div class="stat-label">Member Since</div>
+          <div class="stat-value" id="stat-handicap">--</div>
+          <div class="stat-label">Handicap</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value" style="font-size:1.1rem;line-height:1.3;">Founder's Dinner</div>
-          <div class="stat-label">Next Event -- Jun 28</div>
+          <div class="stat-value" id="stat-avg-score">--</div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-since">--</div>
+          <div class="stat-label">Member Since</div>
         </div>
       </div>
 
@@ -1265,6 +1265,11 @@
         <a class="action-btn" href="javascript:void(0)" onclick="switchTab('roster')">Browse Roster</a>
         <a class="action-btn" href="javascript:void(0)" onclick="switchTab('livescores')">View Live Scores</a>
         <a class="action-btn" href="javascript:void(0)" onclick="switchTab('myrounds')">Submit a Round</a>
+      </div>
+
+      <h3 class="section-title">Your Requests</h3>
+      <div id="myRequestsContainer" style="margin-bottom:40px;">
+        <div style="color:rgba(245,240,225,0.3);font-size:13px;padding:20px;text-align:center;">Loading...</div>
       </div>
 
       <h3 class="section-title">Recent Activity</h3>
@@ -1751,8 +1756,17 @@
               </div>
             </div>
 
+            <!-- Quick Log / Detailed Scorecard Toggle -->
+            <div style="margin-bottom: 16px;">
+              <div style="display:flex;gap:0;background:var(--green-dark);border:1px solid rgba(191,155,59,0.1);border-radius:4px;padding:3px;width:fit-content;">
+                <button type="button" id="quickLogBtn" onclick="setLogMode('quick')" style="padding:8px 20px;border:none;background:rgba(191,155,59,0.2);color:var(--gold);font-family:var(--font-ui);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:3px;">Quick Log</button>
+                <button type="button" id="detailedLogBtn" onclick="setLogMode('detailed')" style="padding:8px 20px;border:none;background:none;color:rgba(245,240,225,0.4);font-family:var(--font-ui);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:3px;">Hole-by-Hole</button>
+              </div>
+              <div style="font-size:11px;color:rgba(245,240,225,0.3);margin-top:6px;" id="logModeHint">Just enter your total score — quick and easy.</div>
+            </div>
+
             <!-- Hole-by-Hole Scorecard -->
-            <div style="margin-bottom: 20px;">
+            <div id="scorecardSection" style="margin-bottom: 20px; display: none;">
               <label style="display: block; font-family: var(--font-ui); font-size: 11px; font-weight: 500; letter-spacing: 0.1em; color: rgba(245,240,225,0.5); margin-bottom: 10px;">SCORECARD</label>
               <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
@@ -2251,6 +2265,30 @@
     if (['dashboard', 'roster', 'livescores', 'myrounds', 'chat', 'account'].indexOf(hash) !== -1) {
       switchTab(hash);
     }
+
+    // Load member's booking requests
+    if (typeof loadMyRequests === 'function') {
+      setTimeout(loadMyRequests, 100);
+    }
+
+    // Personalize dashboard stats
+    try {
+      var roundList = typeof getSavedRounds === 'function' ? getSavedRounds() : [];
+      document.getElementById('stat-played').textContent = roundList.length || '0';
+      if (roundList.length > 0) {
+        var avg = Math.round(roundList.reduce(function(s, r) { return s + (r.totalScore || 0); }, 0) / roundList.length);
+        document.getElementById('stat-avg-score').textContent = avg || '--';
+        var withHcp = roundList.filter(function(r) { return r.handicap !== null && r.handicap !== undefined; });
+        if (withHcp.length > 0) document.getElementById('stat-handicap').textContent = withHcp[0].handicap;
+      }
+      // Member since — derive from Cognito custom attribute or use today
+      var sinceAttr = (user.since || '').substring(0, 7);
+      if (sinceAttr) {
+        var parts = sinceAttr.split('-');
+        var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        document.getElementById('stat-since').textContent = monthNames[parseInt(parts[1])-1] + ' ' + parts[0];
+      }
+    } catch {}
   }
 
   function showLogin() {
@@ -3187,6 +3225,29 @@
     document.getElementById('scoreFormContainer').style.display = 'block';
     document.getElementById('roundDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('scoreFormContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setLogMode('quick');
+  }
+
+  function setLogMode(mode) {
+    var quickBtn = document.getElementById('quickLogBtn');
+    var detailedBtn = document.getElementById('detailedLogBtn');
+    var scorecard = document.getElementById('scorecardSection');
+    var hint = document.getElementById('logModeHint');
+    if (mode === 'quick') {
+      quickBtn.style.background = 'rgba(191,155,59,0.2)';
+      quickBtn.style.color = 'var(--gold)';
+      detailedBtn.style.background = 'none';
+      detailedBtn.style.color = 'rgba(245,240,225,0.4)';
+      if (scorecard) scorecard.style.display = 'none';
+      if (hint) hint.textContent = 'Just enter your total score — quick and easy.';
+    } else {
+      detailedBtn.style.background = 'rgba(191,155,59,0.2)';
+      detailedBtn.style.color = 'var(--gold)';
+      quickBtn.style.background = 'none';
+      quickBtn.style.color = 'rgba(245,240,225,0.4)';
+      if (scorecard) scorecard.style.display = 'block';
+      if (hint) hint.textContent = 'Track each hole individually. Total auto-calculates.';
+    }
   }
 
   function closeScoreForm() {
@@ -3570,6 +3631,299 @@
   var style = document.createElement('style');
   style.textContent = 'input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}input[type=number]{-moz-appearance:textfield;}';
   document.head.appendChild(style);
+
+  // ═════════════════════════════════════════════════════════════
+  // REQUEST MATCH FLOW
+  // Replaces all mailto:hello@cartpathclub.com "Request This" links
+  // with a real booking form that POSTs to /bookings.
+  // ═════════════════════════════════════════════════════════════
+
+  var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+
+  function getCognitoIdToken() {
+    return sessionStorage.getItem('cartpath_id_token') || sessionStorage.getItem('cartpath_access_token') || '';
+  }
+
+  function showToast(msg, kind) {
+    kind = kind || 'success';
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:14px 28px;border-radius:6px;color:#0D2A1E;font-family:var(--font-ui);font-size:14px;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.3);background:' + (kind === 'error' ? '#E57373' : '#BF9B3B') + ';';
+    document.body.appendChild(t);
+    setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 2500);
+    setTimeout(function() { t.remove(); }, 3000);
+  }
+
+  // Rewrite all request-btn mailto links to use the modal
+  (function rewriteRequestButtons() {
+    var links = document.querySelectorAll('a.request-btn[href^="mailto:"]');
+    links.forEach(function(a) {
+      // Extract athlete name from the subject query param
+      var href = a.getAttribute('href') || '';
+      var subjMatch = decodeURIComponent(href).match(/(?:Experience|Round)%20Request%3A%20(.+?)(?:%20|$)/) ||
+                      decodeURIComponent(href).match(/(?:Experience|Round) Request: (.+)/);
+      var name = subjMatch ? subjMatch[1].split('—')[0].trim() : 'Athlete';
+
+      // Find an athlete_id — look up sibling bio/meta if we have one, otherwise use the name
+      a.removeAttribute('href');
+      a.setAttribute('role', 'button');
+      a.style.cursor = 'pointer';
+      a.onclick = function(e) {
+        e.preventDefault();
+        openMatchRequestModal(name);
+      };
+    });
+  })();
+
+  function openMatchRequestModal(athleteName) {
+    var existing = document.getElementById('matchRequestModal');
+    if (existing) existing.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'matchRequestModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML =
+      '<div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:480px;width:100%;padding:32px;max-height:90vh;overflow-y:auto;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">' +
+          '<div style="font-family:var(--font-display);font-size:1.4rem;color:var(--cream);">Request a Round</div>' +
+          '<button onclick="closeMatchRequestModal()" style="background:none;border:none;color:rgba(245,240,225,0.4);font-size:24px;cursor:pointer;line-height:1;">&times;</button>' +
+        '</div>' +
+        '<div style="background:rgba(191,155,59,0.06);border:1px solid rgba(191,155,59,0.15);border-radius:4px;padding:14px 18px;margin-bottom:24px;">' +
+          '<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:4px;">Athlete</div>' +
+          '<div style="font-family:var(--font-display);font-size:1.2rem;color:var(--gold);">' + escapeHtmlMR(athleteName) + '</div>' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Preferred Date</label>' +
+        '<input type="date" id="mrDate" min="' + new Date(Date.now()+86400000).toISOString().slice(0,10) + '" style="width:100%;padding:10px 12px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);font-size:14px;margin-bottom:16px;font-family:var(--font-ui);">' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Course</label>' +
+        '<input type="text" id="mrCourse" placeholder="e.g. East Lake Golf Club" style="width:100%;padding:10px 12px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);font-size:14px;margin-bottom:16px;font-family:var(--font-ui);">' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Group Size</label>' +
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;" id="mrGroupSize">' +
+          '<button type="button" class="mr-group-btn" data-val="1" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:14px;">1</button>' +
+          '<button type="button" class="mr-group-btn" data-val="2" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:14px;">2</button>' +
+          '<button type="button" class="mr-group-btn" data-val="3" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:14px;">3</button>' +
+          '<button type="button" class="mr-group-btn" data-val="4" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:14px;">4</button>' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Round Type</label>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;" id="mrRoundType">' +
+          '<button type="button" class="mr-type-btn" data-val="in-town" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">In-Town</button>' +
+          '<button type="button" class="mr-type-btn" data-val="out-of-town" style="padding:10px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">Out-of-Town</button>' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Special Requests (optional)</label>' +
+        '<textarea id="mrNotes" rows="3" placeholder="Any specific requests, scheduling notes, or context our team should know" style="width:100%;padding:10px 12px;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;color:var(--cream);font-size:13px;font-family:var(--font-ui);resize:vertical;margin-bottom:20px;"></textarea>' +
+
+        '<div style="background:rgba(191,155,59,0.04);border-left:3px solid rgba(191,155,59,0.3);padding:12px 16px;margin-bottom:20px;">' +
+          '<p style="color:rgba(245,240,225,0.55);font-size:12px;line-height:1.6;margin:0;">Our team will review your request and send you a quote within 24 hours. You will review and approve the price before any payment is processed.</p>' +
+        '</div>' +
+
+        '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+          '<button onclick="closeMatchRequestModal()" style="padding:12px 24px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:var(--cream);cursor:pointer;font-family:var(--font-ui);font-size:13px;">Cancel</button>' +
+          '<button id="mrSubmitBtn" onclick="submitMatchRequest(\'' + escapeAttrMR(athleteName) + '\')" style="padding:12px 28px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;">Submit Request</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    // Set defaults
+    document.getElementById('mrDate').value = new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+
+    // Button group handlers
+    function wireButtons(selector) {
+      document.querySelectorAll(selector).forEach(function(b) {
+        b.onclick = function() {
+          document.querySelectorAll(selector).forEach(function(x) {
+            x.style.background = '#060F0A'; x.style.borderColor = 'rgba(191,155,59,0.15)'; x.style.color = 'var(--cream)';
+          });
+          b.style.background = 'rgba(191,155,59,0.15)'; b.style.borderColor = 'var(--gold)'; b.style.color = 'var(--gold)';
+        };
+      });
+    }
+    wireButtons('.mr-group-btn');
+    wireButtons('.mr-type-btn');
+    // Preselect group size = 1 and round type = in-town
+    document.querySelector('.mr-group-btn[data-val="1"]').click();
+    document.querySelector('.mr-type-btn[data-val="in-town"]').click();
+  }
+
+  function closeMatchRequestModal() {
+    var m = document.getElementById('matchRequestModal');
+    if (m) m.remove();
+  }
+
+  async function submitMatchRequest(athleteName) {
+    var date = document.getElementById('mrDate').value;
+    var course = document.getElementById('mrCourse').value.trim();
+    var groupBtn = document.querySelector('.mr-group-btn[style*="gold"]');
+    var typeBtn = document.querySelector('.mr-type-btn[style*="gold"]');
+    var notes = document.getElementById('mrNotes').value.trim();
+
+    var groupSize = groupBtn ? parseInt(groupBtn.getAttribute('data-val')) : 1;
+    var roundType = typeBtn ? typeBtn.getAttribute('data-val') : 'in-town';
+
+    if (!date || !course) {
+      showToast('Please fill in date and course', 'error');
+      return;
+    }
+
+    var submitBtn = document.getElementById('mrSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    var token = getCognitoIdToken();
+    if (!token) {
+      showToast('Please log in to request a match', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Request';
+      return;
+    }
+
+    try {
+      var res = await fetch(API_BASE + '/bookings', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          athlete_name: athleteName,
+          preferred_date: date,
+          course: course,
+          group_size: groupSize,
+          round_type: roundType,
+          special_requests: notes || null,
+        })
+      });
+
+      if (!res.ok) {
+        var err = await res.json().catch(function() { return {}; });
+        throw new Error(err.error || 'Request failed');
+      }
+
+      closeMatchRequestModal();
+      showToast('Request sent! Our team will review and respond within 24 hours.');
+      if (typeof loadMyRequests === 'function') loadMyRequests();
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Request';
+    }
+  }
+
+  function escapeHtmlMR(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function escapeAttrMR(s) {
+    return escapeHtmlMR(s).replace(/'/g, '\\\'');
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // YOUR REQUESTS — list member's own bookings with approval UI
+  // ═════════════════════════════════════════════════════════════
+
+  async function loadMyRequests() {
+    var container = document.getElementById('myRequestsContainer');
+    if (!container) return;
+
+    var token = getCognitoIdToken();
+    if (!token) {
+      container.innerHTML = '<div style="color:rgba(245,240,225,0.3);font-size:13px;padding:20px;text-align:center;">Log in to see your requests.</div>';
+      return;
+    }
+
+    try {
+      var res = await fetch(API_BASE + '/bookings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) throw new Error('Failed to load');
+      var data = await res.json();
+      var bookings = data.bookings || [];
+
+      if (bookings.length === 0) {
+        container.innerHTML = '<div style="color:rgba(245,240,225,0.3);font-size:13px;padding:20px;text-align:center;">No round requests yet. Browse the Roster to request a match.</div>';
+        return;
+      }
+
+      var html = '';
+      bookings.forEach(function(b) {
+        var state = b.workflow_state || 'requested';
+        var stateLabel = ({
+          requested: 'Under Review', pending_review: 'Under Review',
+          awaiting_member: 'Under Review', awaiting_member_approval: 'Quote Received — Approve Price',
+          price_rejected: 'Rejected — Awaiting New Quote', quoted: 'Payment Pending',
+          paid: 'Paid', confirmed: 'Confirmed', completed: 'Completed',
+          declined: 'Declined', cancelled: 'Cancelled',
+        })[state] || state;
+
+        var stateColor = (['paid','confirmed','completed'].includes(state)) ? '#6DC86D' :
+                        (['declined','cancelled','price_rejected'].includes(state)) ? '#E57373' :
+                        '#BF9B3B';
+
+        var pref = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+
+        html += '<div style="background:rgba(16,53,42,0.4);border:1px solid rgba(191,155,59,0.1);border-radius:6px;padding:18px;margin-bottom:12px;">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:10px;">';
+        html += '<div><div style="font-family:var(--font-display);font-size:1.05rem;color:var(--cream);font-weight:600;">' + escapeHtmlMR(b.athlete_name || 'Athlete') + '</div>';
+        html += '<div style="font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtmlMR(pref) + ' &middot; ' + escapeHtmlMR(b.course || '') + '</div></div>';
+        html += '<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:' + stateColor + ';padding:5px 10px;background:rgba(255,255,255,0.03);border:1px solid ' + stateColor + '40;border-radius:3px;white-space:nowrap;">' + stateLabel + '</div>';
+        html += '</div>';
+
+        if (state === 'awaiting_member_approval' && b.quoted_amount_cents) {
+          var amt = '$' + (b.quoted_amount_cents / 100).toLocaleString();
+          html += '<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.2);border-radius:4px;padding:14px;margin-top:12px;">';
+          html += '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(245,240,225,0.5);margin-bottom:6px;">Quoted Price</div>';
+          html += '<div style="font-family:var(--font-display);font-size:1.6rem;color:var(--gold);font-weight:700;margin-bottom:10px;">' + amt + '</div>';
+          if (b.quote_notes) html += '<div style="font-size:12px;color:rgba(245,240,225,0.55);margin-bottom:12px;font-style:italic;">' + escapeHtmlMR(b.quote_notes) + '</div>';
+          html += '<div style="display:flex;gap:8px;flex-wrap:wrap;">';
+          html += '<button onclick="approvePrice(\'' + escapeAttrMR(b.id) + '\')" style="flex:1;min-width:120px;padding:10px 16px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;">Approve & Pay</button>';
+          html += '<button onclick="rejectPrice(\'' + escapeAttrMR(b.id) + '\')" style="padding:10px 16px;background:none;border:1px solid rgba(229,115,115,0.3);border-radius:4px;color:#E57373;cursor:pointer;font-family:var(--font-ui);font-size:12px;">Decline</button>';
+          html += '</div>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+      });
+
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = '<div style="color:#E57373;font-size:13px;padding:20px;text-align:center;">Unable to load your requests.</div>';
+    }
+  }
+
+  async function approvePrice(bookingId) {
+    var token = getCognitoIdToken();
+    try {
+      var res = await fetch(API_BASE + '/bookings/' + bookingId + '/approve-price', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) throw new Error('Approval failed');
+      var data = await res.json();
+      showToast('Approved! Redirecting to payment...');
+      setTimeout(function() {
+        if (data.checkout_url) window.location.href = data.checkout_url;
+      }, 1000);
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  async function rejectPrice(bookingId) {
+    var reason = prompt('Why are you declining this quote? (optional)') || null;
+    var token = getCognitoIdToken();
+    try {
+      var res = await fetch(API_BASE + '/bookings/' + bookingId + '/reject-price', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason })
+      });
+      if (!res.ok) throw new Error('Rejection failed');
+      showToast('Quote declined. Our team will revise and send a new quote.');
+      loadMyRequests();
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
 </script>
 
 </body>

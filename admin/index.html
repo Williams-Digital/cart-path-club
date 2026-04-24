@@ -1303,6 +1303,7 @@
       <div style="display: flex; gap: 0; margin-bottom: 24px; border: 1px solid var(--border-light); border-radius: 6px; overflow: hidden; width: fit-content;">
         <button id="toggleMembers" onclick="setAppType('members')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--gold); color: var(--bg);">Members</button>
         <button id="toggleAthletes" onclick="setAppType('athletes')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Athletes</button>
+        <button id="toggleBookings" onclick="setAppType('bookings')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Bookings</button>
       </div>
 
       <!-- Stats -->
@@ -1417,29 +1418,172 @@
     let lastTotal = null;
     let selectedIds = new Set();
 
-    // ── App type toggle (members vs athletes) ──
+    // ── App type toggle (members / athletes / bookings) ──
     let currentAppType = 'members';
     let athleteApplications = [];
     let allAthleteApplications = [];
+    let allBookings = [];
 
     function setAppType(type) {
       currentAppType = type;
       expandedId = null;
-      var membersBtn = document.getElementById('toggleMembers');
-      var athletesBtn = document.getElementById('toggleAthletes');
-      if (type === 'members') {
-        membersBtn.style.background = 'var(--gold)';
-        membersBtn.style.color = 'var(--bg)';
-        athletesBtn.style.background = 'var(--bg-card)';
-        athletesBtn.style.color = 'var(--cream-muted)';
+      var btns = {
+        members: document.getElementById('toggleMembers'),
+        athletes: document.getElementById('toggleAthletes'),
+        bookings: document.getElementById('toggleBookings'),
+      };
+      Object.keys(btns).forEach(function(k) {
+        btns[k].style.background = 'var(--bg-card)';
+        btns[k].style.color = 'var(--cream-muted)';
+      });
+      btns[type].style.background = 'var(--gold)';
+      btns[type].style.color = 'var(--bg)';
+
+      // Show/hide stats, chart, filter tabs based on mode
+      var statsRow = document.getElementById('statsRow');
+      var chartSection = document.getElementById('chartSection');
+      var filterTabs = document.getElementById('filterTabs');
+      var searchDate = document.querySelector('.search-date-row');
+      if (type === 'bookings') {
+        if (statsRow) statsRow.style.display = 'none';
+        if (chartSection) chartSection.style.display = 'none';
+        if (filterTabs) filterTabs.style.display = 'none';
+        if (searchDate) searchDate.style.display = 'none';
+        renderBookings();
       } else {
-        athletesBtn.style.background = 'var(--gold)';
-        athletesBtn.style.color = 'var(--bg)';
-        membersBtn.style.background = 'var(--bg-card)';
-        membersBtn.style.color = 'var(--cream-muted)';
+        if (statsRow) statsRow.style.display = '';
+        if (chartSection) chartSection.style.display = '';
+        if (filterTabs) filterTabs.style.display = '';
+        if (searchDate) searchDate.style.display = '';
+        applyClientFilters();
+        updateStats();
       }
-      applyClientFilters();
-      updateStats();
+    }
+
+    // ── Bookings ──
+    async function fetchBookings() {
+      try {
+        var res = await fetch(API + '/admin/bookings?state=all&limit=200', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) return [];
+        var data = await res.json();
+        return data.bookings || [];
+      } catch { return []; }
+    }
+
+    async function renderBookings() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading bookings...</div></div>';
+
+      allBookings = await fetchBookings();
+
+      if (allBookings.length === 0) {
+        area.innerHTML = '<div class="table-wrapper"><div class="empty-state"><div class="empty-state-icon">&#127948;</div><div class="empty-state-title">No bookings yet</div><div class="empty-state-text">Round requests from members will appear here.</div></div></div>';
+        return;
+      }
+
+      var html = '<div class="table-wrapper"><div class="table-header" style="grid-template-columns: 90px 1.2fr 1.1fr 130px 160px 120px 140px;">';
+      html += '<div>Date</div><div>Member</div><div>Athlete</div><div>Preferred Date</div><div>Course</div><div>Status</div><div>Actions</div></div>';
+
+      allBookings.forEach(function(b) {
+        var created = b.created_at ? new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '--';
+        var preferred = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '--';
+        var state = b.workflow_state || 'requested';
+        var stateLabel = ({
+          requested: 'Requested', pending_review: 'Review', awaiting_member: 'Awaiting Member',
+          awaiting_member_approval: 'Member Approval', price_rejected: 'Rejected',
+          quoted: 'Paid Pending', paid: 'Paid', confirmed: 'Confirmed',
+          completed: 'Completed', declined: 'Declined', cancelled: 'Cancelled',
+        })[state] || state;
+
+        var stateColor = (['paid','confirmed','completed'].includes(state)) ? 'approved' :
+                        (['declined','cancelled','price_rejected'].includes(state)) ? 'declined' :
+                        'pending';
+
+        html += '<div class="app-row" style="grid-template-columns: 90px 1.2fr 1.1fr 130px 160px 120px 140px; cursor:default;">';
+        html += '<div class="cell-date">' + escapeHtml(created) + '</div>';
+        html += '<div class="cell-name-wrap"><div class="cell-name">' + escapeHtml(b.member_name || 'Member') + '</div><div class="cell-email">' + escapeHtml(b.member_email || '') + '</div></div>';
+        html += '<div class="cell-company-wrap"><div class="cell-company">' + escapeHtml(b.athlete_name || 'Athlete') + '</div></div>';
+        html += '<div style="font-size:13px;color:var(--cream);">' + escapeHtml(preferred) + '</div>';
+        html += '<div style="font-size:12px;color:var(--cream-muted);">' + escapeHtml(b.course || '--') + '</div>';
+        html += '<div><span class="status-badge ' + stateColor + '" style="font-size:10px;">' + stateLabel + '</span></div>';
+        html += '<div class="cell-actions">';
+        if (state === 'pending_review' || state === 'awaiting_member' || state === 'price_rejected') {
+          html += '<button class="btn-approve" onclick="openQuoteModal(\'' + escapeAttr(b.id) + '\')">Send Quote</button>';
+        } else if (state === 'awaiting_member_approval') {
+          html += '<span style="font-size:10px;color:var(--amber);opacity:0.8;">Awaiting $ approval</span>';
+        } else if (state === 'quoted') {
+          html += '<span style="font-size:10px;color:var(--amber);opacity:0.8;">Awaiting payment</span>';
+        } else if (state === 'paid') {
+          html += '<button class="btn-approve" onclick="confirmBookingAction(\'' + escapeAttr(b.id) + '\', \'confirm\')">Confirm</button>';
+        } else if (state === 'confirmed') {
+          html += '<button class="btn-approve" onclick="confirmBookingAction(\'' + escapeAttr(b.id) + '\', \'complete\')">Mark Complete</button>';
+        }
+        html += '</div></div>';
+      });
+
+      html += '</div>';
+      area.innerHTML = html;
+    }
+
+    function openQuoteModal(bookingId) {
+      var booking = allBookings.find(function(b) { return b.id === bookingId; });
+      if (!booking) return;
+
+      var overlay = document.getElementById('modalOverlay');
+      var modal = overlay.querySelector('.modal');
+      modal.innerHTML =
+        '<div class="modal-title">Send Quote: ' + escapeHtml(booking.member_name || 'Member') + ' &rarr; ' + escapeHtml(booking.athlete_name || 'Athlete') + '</div>' +
+        '<p style="color:var(--cream-muted);font-size:13px;margin-bottom:20px;">' + escapeHtml(booking.course || '') + ' &middot; ' + escapeHtml(new Date(booking.preferred_date + "T12:00:00").toLocaleDateString()) + '</p>' +
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Quoted Price ($)</label>' +
+        '<p style="color:var(--cream-dim);font-size:11px;margin-bottom:8px;">Total amount the member will pay. CartPath keeps 20%, athlete gets 80%.</p>' +
+        '<input type="number" id="bookingQuotePrice" value="3000" min="100" step="100" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:16px;font-family:Inter,sans-serif;margin-bottom:16px;">' +
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Notes to Member (optional)</label>' +
+        '<textarea id="bookingQuoteNotes" rows="3" placeholder="e.g. Includes caddie, lunch at clubhouse" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:13px;font-family:Inter,sans-serif;resize:vertical;"></textarea>' +
+        '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
+          '<button onclick="closeModal()" style="padding:10px 20px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">Cancel</button>' +
+          '<button onclick="submitQuote(\'' + escapeAttr(bookingId) + '\')" style="padding:10px 24px;background:var(--green-ok);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Send Quote</button>' +
+        '</div>';
+      overlay.style.display = 'flex';
+    }
+
+    async function submitQuote(bookingId) {
+      var price = parseInt(document.getElementById('bookingQuotePrice').value);
+      var notes = document.getElementById('bookingQuoteNotes').value.trim();
+      if (!price || price < 100) { alert('Please enter a valid price'); return; }
+      closeModal();
+
+      try {
+        var res = await fetch(API + '/admin/bookings/' + bookingId + '/quote', {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quoted_amount_cents: price * 100, notes: notes || null })
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Quote failed');
+        }
+        showToast('Quote sent! Member will approve before payment link is sent.');
+        await renderBookings();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function confirmBookingAction(bookingId, action) {
+      if (!confirm('Confirm this action?')) return;
+      try {
+        var res = await fetch(API + '/admin/bookings/' + bookingId + '/' + action, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) throw new Error('Action failed');
+        showToast('Booking updated');
+        await renderBookings();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
     }
 
     // AUTH

@@ -288,6 +288,12 @@
         <div class="entries-title">Your Availability Entries</div>
         <div id="entriesList"></div>
       </div>
+
+      <!-- Booked Rounds -->
+      <div class="entries-section" style="margin-top:40px;">
+        <div class="entries-title">Your Booked Rounds</div>
+        <div id="bookedRoundsContainer"><div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">Loading...</div></div>
+      </div>
     </main>
   </div>
 
@@ -328,6 +334,22 @@
     var entries = [];
     var currentYear, currentMonth;
 
+    // Drag-to-select state
+    var dragStart = null;
+    var dragEnd = null;
+    var isDragging = false;
+
+    // ── Toast feedback ──
+    function showToast(msg, kind) {
+      kind = kind || 'success';
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:14px 28px;border-radius:6px;color:#0D2A1E;font-family:var(--font-ui);font-size:14px;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.3);background:' + (kind === 'error' ? '#C0392B' : '#BF9B3B') + ';';
+      document.body.appendChild(t);
+      setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 2500);
+      setTimeout(function() { t.remove(); }, 3000);
+    }
+
     // ── Init ──
     (async function init() {
       if (!token) return showError();
@@ -349,6 +371,7 @@
         currentMonth = now.getMonth();
         renderCalendar();
         renderEntries();
+        loadBookedRounds();
 
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('portalContent').style.display = 'block';
@@ -452,18 +475,65 @@
           cell.appendChild(dots);
         }
 
-        // Click to add entry for that date
+        cell.setAttribute('data-date', dateStr);
+
+        // Drag-to-select: mousedown starts, mousemove extends, mouseup opens modal
         (function(ds) {
-          cell.addEventListener('click', function() {
-            document.getElementById('modalStartDate').value = ds;
-            document.getElementById('modalEndDate').value = '';
-            openModal('open');
+          cell.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            dragStart = ds;
+            dragEnd = ds;
+            isDragging = true;
+            cell.style.background = 'rgba(191,155,59,0.25)';
+          });
+          cell.addEventListener('mouseover', function() {
+            if (isDragging) {
+              dragEnd = ds;
+              updateDragVisuals();
+            }
+          });
+          // Touch support
+          cell.addEventListener('touchstart', function(e) {
+            dragStart = ds; dragEnd = ds; isDragging = true;
           });
         })(dateStr);
 
         grid.appendChild(cell);
       }
     }
+
+    function updateDragVisuals() {
+      if (!dragStart || !dragEnd) return;
+      var from = dragStart < dragEnd ? dragStart : dragEnd;
+      var to = dragStart < dragEnd ? dragEnd : dragStart;
+      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
+        var d = c.getAttribute('data-date');
+        if (d >= from && d <= to) {
+          c.style.background = 'rgba(191,155,59,0.22)';
+          c.style.boxShadow = 'inset 0 0 0 1px rgba(191,155,59,0.4)';
+        } else {
+          c.style.background = '';
+          c.style.boxShadow = '';
+        }
+      });
+    }
+
+    document.addEventListener('mouseup', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      if (dragStart && dragEnd) {
+        var from = dragStart < dragEnd ? dragStart : dragEnd;
+        var to = dragStart < dragEnd ? dragEnd : dragStart;
+        document.getElementById('modalStartDate').value = from;
+        document.getElementById('modalEndDate').value = from === to ? '' : to;
+        openModal('open');
+      }
+      // clear visuals (re-render after save anyway)
+      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
+        c.style.background = ''; c.style.boxShadow = '';
+      });
+      dragStart = null; dragEnd = null;
+    });
 
     // ── Entries List ──
     function renderEntries() {
@@ -556,7 +626,7 @@
 
         if (!res.ok) {
           var err = await res.json();
-          alert(err.error || 'Failed to save. Please try again.');
+          showToast(err.error || 'Failed to save. Please try again.', 'error');
           return;
         }
 
@@ -564,8 +634,9 @@
         renderCalendar();
         renderEntries();
         closeModal();
+        showToast(type === 'open' ? 'Open dates saved' : 'Blocked dates saved');
       } catch (err) {
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', 'error');
       } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save';
@@ -584,11 +655,12 @@
           await loadEntries();
           renderCalendar();
           renderEntries();
+          showToast('Entry removed');
         } else {
-          alert('Failed to delete. Please try again.');
+          showToast('Failed to delete. Please try again.', 'error');
         }
       } catch (err) {
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', 'error');
       }
     }
 
@@ -596,6 +668,50 @@
       var div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    // ── Booked Rounds ──
+    async function loadBookedRounds() {
+      var container = document.getElementById('bookedRoundsContainer');
+      if (!container) return;
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/bookings?token=' + token);
+        if (!res.ok) throw new Error('Failed');
+        var data = await res.json();
+        var bookings = data.bookings || [];
+
+        if (bookings.length === 0) {
+          container.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(245,240,225,0.3);font-size:13px;">No confirmed rounds yet.</div>';
+          return;
+        }
+
+        var html = '';
+        bookings.forEach(function(b) {
+          var date = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+          var stateLabel = ({
+            paid: 'Paid — Awaiting Confirmation',
+            confirmed: 'Confirmed',
+            completed: 'Completed',
+          })[b.workflow_state] || b.workflow_state;
+          var stateColor = b.workflow_state === 'completed' ? '#6DC86D' : '#BF9B3B';
+
+          html += '<div style="background:var(--green-dark);border:1px solid rgba(191,155,59,0.06);border-radius:6px;padding:16px 20px;margin-bottom:8px;">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+          html += '<div><div style="font-family:var(--font-display);font-size:15px;color:var(--cream);font-weight:500;">' + escapeHtml(b.member_name || 'Member') + '</div>';
+          html += '<div style="font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(date) + '</div></div>';
+          html += '<div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:' + stateColor + ';padding:3px 8px;border:1px solid ' + stateColor + '40;border-radius:3px;">' + stateLabel + '</div>';
+          html += '</div>';
+          html += '<div style="font-size:12px;color:rgba(245,240,225,0.5);">' + escapeHtml(b.course || '') + ' &middot; Group of ' + (b.group_size || 1) + '</div>';
+          if (b.special_requests) {
+            html += '<div style="margin-top:8px;padding:10px;background:rgba(245,240,225,0.03);border-left:2px solid rgba(191,155,59,0.3);font-size:12px;color:rgba(245,240,225,0.55);font-style:italic;">' + escapeHtml(b.special_requests) + '</div>';
+          }
+          html += '</div>';
+        });
+        container.innerHTML = html;
+      } catch {
+        container.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(229,115,115,0.6);font-size:12px;">Unable to load bookings.</div>';
+      }
     }
   </script>
 
