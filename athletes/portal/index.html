@@ -6,6 +6,9 @@
   <meta name="robots" content="noindex, nofollow">
   <title>CartPath - Athlete Portal</title>
   <link rel="icon" href="/assets/cartpath-shield.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -269,6 +272,13 @@
         <button class="btn btn-blocked" onclick="openModal('blocked')">+ Block Date</button>
       </div>
 
+      <!-- View toggle -->
+      <div style="display: flex; gap: 6px; margin-bottom: 12px;" id="view-toggle">
+        <button type="button" class="view-btn" data-view="month" onclick="setCalendarView('month')" style="padding: 7px 16px; background: rgba(191,155,59,0.15); border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">Month</button>
+        <button type="button" class="view-btn" data-view="quarter" onclick="setCalendarView('quarter')" style="padding: 7px 16px; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">3-Month</button>
+        <button type="button" class="view-btn" data-view="year" onclick="setCalendarView('year')" style="padding: 7px 16px; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">Year</button>
+      </div>
+
       <!-- Calendar -->
       <div class="calendar-nav">
         <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
@@ -276,6 +286,7 @@
         <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
+      <div id="calendarExtra" style="margin-top: 16px;"></div>
 
       <!-- Legend -->
       <div class="legend">
@@ -294,7 +305,41 @@
         <div class="entries-title">Your Booked Rounds</div>
         <div id="bookedRoundsContainer"><div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">Loading...</div></div>
       </div>
+
+      <!-- Assistants -->
+      <div class="entries-section" style="margin-top:40px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div class="entries-title" style="margin:0;">Your Assistants</div>
+          <button onclick="openInviteAssistant()" style="padding:8px 16px;background:var(--gold);color:#091D14;border:none;border-radius:4px;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">+ Invite Assistant</button>
+        </div>
+        <p style="font-family:var(--font-ui);font-size:12px;color:rgba(245,240,225,0.4);margin-bottom:14px;line-height:1.6;">Assistants can view your booked rounds and manage your availability calendar. They cannot submit scores or chat on your behalf.</p>
+        <div id="assistantsContainer"><div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">Loading...</div></div>
+      </div>
     </main>
+  </div>
+
+  <!-- Invite Assistant Modal -->
+  <div id="inviteAssistantModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:440px;width:100%;padding:28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div style="font-family:var(--font-display);font-size:1.3rem;color:var(--cream);">Invite an Assistant</div>
+        <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" style="background:none;border:none;color:rgba(245,240,225,0.4);font-size:20px;cursor:pointer;">&times;</button>
+      </div>
+      <label style="display:block;font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Name</label>
+      <input type="text" id="invAsstName" style="width:100%;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;padding:10px 12px;color:var(--cream);margin-bottom:14px;font-family:var(--font-ui);font-size:14px;">
+      <label style="display:block;font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Email</label>
+      <input type="email" id="invAsstEmail" style="width:100%;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;padding:10px 12px;color:var(--cream);margin-bottom:14px;font-family:var(--font-ui);font-size:14px;">
+      <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.65);margin-bottom:8px;">
+        <input type="checkbox" id="invAsstManageAvail" checked> Can manage my availability
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.65);margin-bottom:18px;">
+        <input type="checkbox" id="invAsstViewBookings" checked> Can view my bookings
+      </label>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" style="padding:10px 20px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:var(--cream);cursor:pointer;font-family:var(--font-ui);font-size:13px;">Cancel</button>
+        <button onclick="submitInviteAssistant()" style="padding:10px 24px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:1px;">Send Invite</button>
+      </div>
+    </div>
   </div>
 
   <!-- Add/Edit Modal -->
@@ -372,14 +417,152 @@
         renderCalendar();
         renderEntries();
         loadBookedRounds();
+        loadAssistants();
 
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('portalContent').style.display = 'block';
+
+        // First-login onboarding
+        if (athlete && athlete.onboarded !== true) {
+          setTimeout(startAthleteOnboarding, 800);
+        }
       } catch (err) {
         console.error(err);
         showError();
       }
     })();
+
+    // ─── Onboarding tour for athletes ───
+    var athOnboardSteps = [
+      { title: 'Welcome to CartPath', body: 'You\'re in. Let\'s show you how to manage your availability and see upcoming rounds.' },
+      { title: 'Set Your Availability', body: 'Click and drag across days to mark yourself open or blocked. Our team uses this to coordinate bookings around your schedule.' },
+      { title: 'Track Booked Rounds', body: 'When a member books you, the round appears under "Your Booked Rounds" with their name, course, and any special requests.' },
+      { title: 'All Set', body: 'Your availability only shows to the CartPath team — never to members. Update any time.' },
+    ];
+    var athOnboardIdx = 0;
+
+    function startAthleteOnboarding() {
+      athOnboardIdx = 0;
+      renderAthOnboardStep();
+    }
+
+    function renderAthOnboardStep() {
+      var step = athOnboardSteps[athOnboardIdx];
+      if (!step) return closeAthOnboard(true);
+      var isLast = athOnboardIdx === athOnboardSteps.length - 1;
+
+      var existing = document.getElementById('athOnboardOverlay');
+      if (existing) existing.remove();
+
+      var overlay = document.createElement('div');
+      overlay.id = 'athOnboardOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.innerHTML =
+        '<div style="max-width:440px;width:100%;background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:10px;padding:32px 28px;text-align:center;">' +
+          '<div style="font-family:var(--font-ui);font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:14px;text-transform:uppercase;">Step ' + (athOnboardIdx + 1) + ' of ' + athOnboardSteps.length + '</div>' +
+          '<h2 style="font-family:var(--font-display);font-size:1.5rem;color:var(--cream);margin-bottom:14px;font-weight:500;">' + step.title + '</h2>' +
+          '<p style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.65);line-height:1.6;margin-bottom:24px;">' + step.body + '</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center;">' +
+            (athOnboardIdx === 0
+              ? '<button onclick="closeAthOnboard(true)" style="padding:10px 22px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:rgba(245,240,225,0.6);cursor:pointer;font-family:inherit;font-size:12px;">Skip</button>'
+              : '<button onclick="athOnboardIdx--; renderAthOnboardStep();" style="padding:10px 22px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:rgba(245,240,225,0.6);cursor:pointer;font-family:inherit;font-size:12px;">Back</button>') +
+            '<button onclick="' + (isLast ? 'closeAthOnboard(true)' : 'athOnboardIdx++; renderAthOnboardStep();') + '" style="padding:10px 28px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">' + (isLast ? 'Got It' : 'Next') + '</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(overlay);
+    }
+
+    async function closeAthOnboard(save) {
+      var overlay = document.getElementById('athOnboardOverlay');
+      if (overlay) overlay.remove();
+      if (save) {
+        try {
+          await fetch(API_BASE + '/athletes/portal/mark-onboarded?token=' + token, { method: 'POST' });
+        } catch {}
+      }
+    }
+
+    // ─── Assistants management ───
+
+    async function loadAssistants() {
+      var container = document.getElementById('assistantsContainer');
+      if (!container) return;
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/assistants?token=' + token);
+        if (!res.ok) throw new Error();
+        var data = await res.json();
+        var assistants = data.assistants || [];
+        if (assistants.length === 0) {
+          container.innerHTML = '<div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">No assistants yet. Click "+ Invite Assistant" to add one.</div>';
+          return;
+        }
+        var html = '';
+        assistants.forEach(function(a) {
+          var statusColor = a.status === 'active' ? '#6DC86D' : a.status === 'invited' ? '#BF9B3B' : '#888';
+          html += '<div style="background:var(--green-dark);border:1px solid rgba(191,155,59,0.06);border-radius:6px;padding:14px 18px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">';
+          html += '<div>';
+          html += '<div style="font-family:var(--font-ui);font-size:14px;color:var(--cream);font-weight:500;">' + escapeHtml(a.name) + '</div>';
+          html += '<div style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(a.email) + '</div>';
+          html += '</div>';
+          html += '<div style="display:flex;align-items:center;gap:10px;">';
+          html += '<span style="font-family:var(--font-ui);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:' + statusColor + ';padding:3px 8px;border:1px solid ' + statusColor + '40;border-radius:3px;">' + a.status + '</span>';
+          html += '<button onclick="revokeAssistant(\'' + a.id + '\')" style="background:none;border:1px solid rgba(229,115,115,0.3);color:#E57373;padding:5px 10px;border-radius:3px;font-family:var(--font-ui);font-size:10px;cursor:pointer;">Revoke</button>';
+          html += '</div>';
+          html += '</div>';
+        });
+        container.innerHTML = html;
+      } catch {
+        container.innerHTML = '<div style="padding:16px;color:rgba(229,115,115,0.5);font-size:12px;">Unable to load assistants.</div>';
+      }
+    }
+
+    function openInviteAssistant() {
+      document.getElementById('invAsstName').value = '';
+      document.getElementById('invAsstEmail').value = '';
+      document.getElementById('invAsstManageAvail').checked = true;
+      document.getElementById('invAsstViewBookings').checked = true;
+      document.getElementById('inviteAssistantModal').style.display = 'flex';
+    }
+
+    async function submitInviteAssistant() {
+      var name = document.getElementById('invAsstName').value.trim();
+      var email = document.getElementById('invAsstEmail').value.trim();
+      if (!name || !email) { showToast('Name and email required', 'error'); return; }
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/assistants?token=' + token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            can_manage_availability: document.getElementById('invAsstManageAvail').checked,
+            can_view_bookings: document.getElementById('invAsstViewBookings').checked,
+          }),
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Invite failed');
+        }
+        showToast('Invite sent to ' + email);
+        document.getElementById('inviteAssistantModal').style.display = 'none';
+        loadAssistants();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function revokeAssistant(id) {
+      if (!confirm('Revoke this assistant\'s access?')) return;
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/assistants/' + id + '?token=' + token, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Revoke failed');
+        showToast('Access revoked');
+        loadAssistants();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
 
     function showError() {
       document.getElementById('loadingScreen').style.display = 'none';
@@ -403,6 +586,85 @@
       if (currentMonth > 11) { currentMonth = 0; currentYear++; }
       if (currentMonth < 0) { currentMonth = 11; currentYear--; }
       renderCalendar();
+    }
+
+    var calendarView = 'month';
+
+    function setCalendarView(view) {
+      calendarView = view;
+      document.querySelectorAll('.view-btn').forEach(function(btn) {
+        var active = btn.getAttribute('data-view') === view;
+        btn.style.background = active ? 'rgba(191,155,59,0.15)' : 'transparent';
+        btn.style.border = active ? '1px solid var(--gold)' : '1px solid rgba(191,155,59,0.15)';
+        btn.style.color = active ? 'var(--gold)' : 'rgba(245,240,225,0.5)';
+      });
+      renderCalendar();
+    }
+
+    // Render a compact single-month grid into a container (used for
+    // 3-Month and Year views). Reuses the same dragability by creating
+    // cells with [data-date] so the existing global drag handler works.
+    function renderCompactMonth(year, month, container) {
+      var monthLabel = document.createElement('div');
+      monthLabel.style.cssText = 'font-family: var(--font-display); font-size: 14px; color: var(--cream); font-weight: 500; margin-bottom: 6px; text-align: center; opacity: 0.8;';
+      monthLabel.textContent = MONTHS[month] + ' ' + year;
+      container.appendChild(monthLabel);
+
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;';
+
+      DAYS.forEach(function(d) {
+        var el = document.createElement('div');
+        el.style.cssText = 'text-align: center; font-size: 8px; letter-spacing: 0.1em; color: rgba(245,240,225,0.3); padding: 2px 0;';
+        el.textContent = d.charAt(0);
+        grid.appendChild(el);
+      });
+
+      var firstDay = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var today = new Date();
+      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+      for (var i = 0; i < firstDay; i++) {
+        var empty = document.createElement('div');
+        empty.style.aspectRatio = '1';
+        grid.appendChild(empty);
+      }
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var cell = document.createElement('div');
+        cell.className = 'calendar-day';
+        cell.setAttribute('data-date', dateStr);
+        cell.style.cssText = 'aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; border-radius: 3px; cursor: pointer; color: rgba(245,240,225,0.6); border: 1px solid transparent;';
+        if (dateStr === todayStr) cell.style.border = '1px solid var(--gold)';
+
+        var hasOpen = false, hasBlocked = false;
+        entries.forEach(function(e) {
+          var start = e.start_date.substring(0, 10);
+          var end = e.end_date.substring(0, 10);
+          if (dateStr >= start && dateStr <= end) {
+            if (e.type === 'open') hasOpen = true;
+            if (e.type === 'blocked') hasBlocked = true;
+          }
+        });
+        if (hasOpen && hasBlocked) cell.style.background = 'linear-gradient(135deg,rgba(45,138,86,0.3) 50%,rgba(192,57,43,0.3) 50%)';
+        else if (hasOpen) cell.style.background = 'rgba(45,138,86,0.25)';
+        else if (hasBlocked) cell.style.background = 'rgba(192,57,43,0.25)';
+
+        cell.textContent = d;
+        // Reuse the global drag handlers via classname/data-date
+        (function(ds) {
+          cell.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            dragStart = ds; dragEnd = ds; isDragging = true;
+          });
+          cell.addEventListener('mouseover', function() {
+            if (isDragging) { dragEnd = ds; }
+          });
+        })(dateStr);
+        grid.appendChild(cell);
+      }
+      container.appendChild(grid);
     }
 
     function renderCalendar() {
@@ -499,6 +761,31 @@
         })(dateStr);
 
         grid.appendChild(cell);
+      }
+
+      // Render additional months for 3-Month or Year views into #calendarExtra
+      var extra = document.getElementById('calendarExtra');
+      if (extra) {
+        extra.innerHTML = '';
+        if (calendarView === 'quarter') {
+          extra.style.cssText = 'margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px;';
+          var m1 = currentMonth + 1, y1 = currentYear; if (m1 > 11) { m1 = 0; y1++; }
+          var m2 = currentMonth + 2, y2 = currentYear; if (m2 > 11) { m2 -= 12; y2++; }
+          var c1 = document.createElement('div'); renderCompactMonth(y1, m1, c1);
+          var c2 = document.createElement('div'); renderCompactMonth(y2, m2, c2);
+          extra.appendChild(c1); extra.appendChild(c2);
+        } else if (calendarView === 'year') {
+          extra.style.cssText = 'margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;';
+          for (var off = 1; off < 12; off++) {
+            var m = currentMonth + off, y = currentYear;
+            while (m > 11) { m -= 12; y++; }
+            var c = document.createElement('div');
+            renderCompactMonth(y, m, c);
+            extra.appendChild(c);
+          }
+        } else {
+          extra.style.cssText = 'margin-top:16px;';
+        }
       }
     }
 

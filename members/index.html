@@ -19,6 +19,10 @@
   <meta name="twitter:description" content="Your private dashboard for Atlanta's most exclusive golf community.">
   <meta name="twitter:image" content="https://cartpathclub.com/assets/og-image-v2.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com">
+  <link rel="preconnect" href="https://maps.googleapis.com">
+  <link rel="dns-prefetch" href="https://a.espncdn.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png">
   <style>
@@ -1629,6 +1633,14 @@
     <!-- ===================== LIVE SCORES ===================== -->
     <div class="tab-content" id="tab-livescores">
 
+      <!-- Upcoming Schedule strip -->
+      <div id="ls-schedule-wrap" style="margin-bottom: 24px;">
+        <div style="font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(191,155,59,0.6); margin-bottom: 10px;">UPCOMING ON TOUR</div>
+        <div id="ls-schedule" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px;">
+          <div style="min-width: 180px; padding: 14px 16px; background: rgba(27,77,46,0.15); border: 1px solid rgba(191,155,59,0.08); border-radius: 6px; color: rgba(245,240,225,0.3); font-family: var(--font-ui); font-size: 12px;">Loading…</div>
+        </div>
+      </div>
+
       <!-- Hero — Tournament Leader -->
       <div id="ls-hero" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 32px; padding: 32px; background: linear-gradient(160deg, rgba(27,77,46,0.3), rgba(9,29,20,0.6)); border-radius: 8px; border: 1px solid rgba(191,155,59,0.1); position: relative; overflow: hidden;">
         <div style="position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 3px); pointer-events: none;"></div>
@@ -1647,6 +1659,15 @@
           <div id="ls-leader-score" style="font-family: Georgia, serif; font-size: 3.5rem; font-weight: 700; color: #C62828; line-height: 1;"></div>
           <div id="ls-leader-thru" style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35); margin-top: 6px; letter-spacing: 0.5px;"></div>
         </div>
+      </div>
+
+      <!-- Round filter -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;" id="ls-round-filter">
+        <button type="button" class="ls-round-btn" data-round="total" onclick="setLiveRoundFilter('total')" style="padding: 8px 18px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: rgba(191,155,59,0.15); border: 1px solid var(--gold); color: var(--gold); border-radius: 4px; cursor: pointer;">Total</button>
+        <button type="button" class="ls-round-btn" data-round="r1" onclick="setLiveRoundFilter('r1')" style="padding: 8px 18px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); border-radius: 4px; cursor: pointer;">R1</button>
+        <button type="button" class="ls-round-btn" data-round="r2" onclick="setLiveRoundFilter('r2')" style="padding: 8px 18px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); border-radius: 4px; cursor: pointer;">R2</button>
+        <button type="button" class="ls-round-btn" data-round="r3" onclick="setLiveRoundFilter('r3')" style="padding: 8px 18px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); border-radius: 4px; cursor: pointer;">R3</button>
+        <button type="button" class="ls-round-btn" data-round="r4" onclick="setLiveRoundFilter('r4')" style="padding: 8px 18px; font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); border-radius: 4px; cursor: pointer;">R4</button>
       </div>
 
       <!-- Augusta-Style Masters Leaderboard -->
@@ -1886,10 +1907,39 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 240px 1fr; gap: 0; border: 1px solid rgba(191,155,59,0.1); border-radius: 8px; overflow: hidden; height: 600px;">
+      <style>
+        /* Chat mobile responsive: stack sidebar above messages on narrow screens */
+        @media (max-width: 768px) {
+          #chat-grid { grid-template-columns: 1fr !important; height: auto !important; }
+          #chat-sidebar { max-height: 200px; border-right: none !important; border-bottom: 1px solid rgba(191,155,59,0.08); }
+          #chat-sidebar .chat-channel { padding: 8px 14px !important; }
+        }
+        /* Pin button (only visible on hover) */
+        .chat-msg-wrap { position: relative; }
+        .chat-msg-wrap .chat-pin-btn { display: none; position: absolute; top: 6px; right: 10px; background: rgba(191,155,59,0.12); border: 1px solid rgba(191,155,59,0.2); border-radius: 3px; color: var(--gold); font-size: 10px; padding: 2px 8px; cursor: pointer; font-family: var(--font-ui); letter-spacing: 0.08em; }
+        .chat-msg-wrap:hover .chat-pin-btn { display: inline-block; }
+      </style>
+
+      <!-- Mobile channel picker (visible only below 768px) -->
+      <div id="chat-mobile-picker" style="display: none; margin-bottom: 12px;">
+        <select id="chat-channel-select" onchange="selectChannel(this.value)" style="width: 100%; background: var(--green-dark); color: var(--cream); font-family: var(--font-ui); font-size: 13px; padding: 10px 12px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.1); outline: none;">
+          <option value="lounge"># clubhouse-lounge</option>
+          <option value="announcements"># announcements</option>
+          <option value="recaps"># round-recaps</option>
+          <option value="availability"># athlete-availability</option>
+          <option value="chairman"># the-back-nine</option>
+          <option value="deals"># deal-room</option>
+        </select>
+      </div>
+
+      <div id="chat-grid" style="display: grid; grid-template-columns: 240px 1fr; gap: 0; border: 1px solid rgba(191,155,59,0.1); border-radius: 8px; overflow: hidden; height: 600px;">
 
         <!-- Channel Sidebar -->
-        <div style="background: rgba(6,15,10,0.6); border-right: 1px solid rgba(191,155,59,0.08); overflow-y: auto;">
+        <div id="chat-sidebar" style="background: rgba(6,15,10,0.6); border-right: 1px solid rgba(191,155,59,0.08); overflow-y: auto;">
+          <!-- Chat search -->
+          <div style="padding: 12px 14px; border-bottom: 1px solid rgba(191,155,59,0.06);">
+            <input type="text" id="chat-search-input" oninput="filterChatMessages()" placeholder="Search messages..." style="width: 100%; background: rgba(0,0,0,0.3); color: var(--cream); font-family: var(--font-ui); font-size: 12px; padding: 8px 10px; border-radius: 3px; border: 1px solid rgba(191,155,59,0.08); outline: none;">
+          </div>
           <div style="padding: 16px; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(191,155,59,0.4);">General</div>
 
           <div class="chat-channel active" onclick="selectChannel('lounge')" id="ch-lounge" style="padding: 10px 16px; cursor: pointer; background: rgba(42,94,70,0.3); border-left: 3px solid var(--gold);">
@@ -1941,6 +1991,9 @@
             </div>
             <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.2);">Private Community</span>
           </div>
+
+          <!-- Pinned messages sticky bar -->
+          <div id="chatPinnedBar" style="display:none; padding: 12px 20px; border-bottom: 1px solid rgba(191,155,59,0.1); background: rgba(191,155,59,0.03); max-height: 150px; overflow-y: auto;"></div>
 
           <!-- Messages (loaded from API) -->
           <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px;">
@@ -2040,7 +2093,23 @@
           </div>
           <div class="account-actions">
             <a href="mailto:hello@cartpathclub.com?subject=Concierge%20Request" class="acct-btn gold">Contact Concierge</a>
-            <a href="mailto:hello@cartpathclub.com?subject=Billing%20Inquiry" class="acct-btn outline">Contact About Billing</a>
+          </div>
+        </div>
+
+        <!-- Billing -->
+        <div class="account-card">
+          <h3>Billing &amp; Subscription</h3>
+          <p style="font-family: var(--font-body); font-size: 0.95rem; color: rgba(245,240,225,0.45); margin: 12px 0 16px; line-height: 1.6;">Manage your subscription, update your card, and download invoices through our secure Stripe billing portal.</p>
+          <div id="billingSummary" style="margin-bottom: 16px; padding: 14px 16px; background: rgba(191,155,59,0.04); border: 1px solid rgba(191,155,59,0.1); border-radius: 4px; font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);">
+            <div style="color:rgba(245,240,225,0.35);">Loading billing info...</div>
+          </div>
+          <div class="account-actions">
+            <button onclick="openBillingPortal()" class="acct-btn gold" style="border:none;cursor:pointer;">Manage Billing</button>
+          </div>
+
+          <h4 style="font-family: var(--font-display); font-size: 13px; color: rgba(245,240,225,0.55); margin: 24px 0 10px; letter-spacing: 0.1em; text-transform: uppercase;">Payment History</h4>
+          <div id="paymentHistory" style="font-family: var(--font-ui); font-size: 13px;">
+            <div style="padding: 20px; text-align: center; color: rgba(245,240,225,0.3);">Loading…</div>
           </div>
         </div>
 
@@ -2271,6 +2340,11 @@
       setTimeout(loadMyRequests, 100);
     }
 
+    // First-login onboarding tour (silently no-ops if already onboarded)
+    if (typeof startOnboardingIfFirstLogin === 'function') {
+      setTimeout(startOnboardingIfFirstLogin, 1500);
+    }
+
     // Personalize dashboard stats
     try {
       var roundList = typeof getSavedRounds === 'function' ? getSavedRounds() : [];
@@ -2432,10 +2506,121 @@
 
   var lsInterval = null;
 
+  var lsCurrentRoundFilter = 'total';
+  var lsCachedData = null;
+
+  function setLiveRoundFilter(round) {
+    lsCurrentRoundFilter = round;
+    // Update button styles
+    document.querySelectorAll('.ls-round-btn').forEach(function(btn) {
+      var active = btn.getAttribute('data-round') === round;
+      btn.style.background = active ? 'rgba(191,155,59,0.15)' : 'transparent';
+      btn.style.border = active ? '1px solid var(--gold)' : '1px solid rgba(191,155,59,0.15)';
+      btn.style.color = active ? 'var(--gold)' : 'rgba(245,240,225,0.5)';
+    });
+    // Re-render with cached data
+    if (lsCachedData) renderLeaderboard(lsCachedData);
+  }
+
+  function loadLiveSchedule() {
+    fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/scores/schedule?count=5')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var upcoming = data.Upcoming || [];
+        var container = document.getElementById('ls-schedule');
+        if (!container) return;
+        if (upcoming.length === 0) {
+          container.innerHTML = '<div style="min-width: 180px; padding: 14px 16px; background: rgba(27,77,46,0.15); border: 1px solid rgba(191,155,59,0.08); border-radius: 6px; color: rgba(245,240,225,0.3); font-family: var(--font-ui); font-size: 12px;">No upcoming events</div>';
+          return;
+        }
+        var html = '';
+        upcoming.forEach(function(t) {
+          var d = t.StartDate ? new Date(t.StartDate) : null;
+          var dateStr = d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+          var isMajor = t.IsMajor || t.IsSignature;
+          html += '<div style="min-width: 220px; flex-shrink: 0; padding: 16px 18px; background: ' + (isMajor ? 'rgba(191,155,59,0.08)' : 'rgba(27,77,46,0.2)') + '; border: 1px solid ' + (isMajor ? 'rgba(191,155,59,0.2)' : 'rgba(191,155,59,0.06)') + '; border-radius: 6px;">';
+          html += '<div style="font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.2em; color: ' + (isMajor ? 'var(--gold)' : 'rgba(245,240,225,0.35)') + '; margin-bottom: 4px; text-transform: uppercase;">' + (dateStr || 'UPCOMING') + (t.IsMajor ? ' &middot; MAJOR' : (t.IsSignature ? ' &middot; SIG' : '')) + '</div>';
+          html += '<div style="font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--cream); line-height: 1.3;">' + escapeHtmlMR(t.Name || '') + '</div>';
+          if (t.Venue) html += '<div style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35); margin-top: 4px;">' + escapeHtmlMR(t.Venue) + '</div>';
+          html += '</div>';
+        });
+        container.innerHTML = html;
+      })
+      .catch(function() {
+        var container = document.getElementById('ls-schedule');
+        if (container) container.style.display = 'none';
+      });
+  }
+
+  function renderLeaderboard(data) {
+    var t = data.Tournament || {};
+    var players = data.Players || [];
+    var tbody = document.getElementById('ls-leaderboard-body');
+    if (players.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;font-family:Georgia,serif;font-size:13px;color:#999;">No scores available yet.</td></tr>';
+      return;
+    }
+
+    // Build rows based on round filter
+    var html = '';
+    players.slice(0, 15).forEach(function(p, idx) {
+      var total = p.TotalScore || 0;
+      var totalStr = total < 0 ? total.toString() : (total === 0 ? 'E' : '+' + total);
+      var totalColor = total < 0 ? '#C62828' : '#1a1a1a';
+
+      var today, todayStr = '--', todayColor = '#666';
+      if (lsCurrentRoundFilter === 'total') {
+        today = p.TodayScore;
+      } else {
+        // Specific round filter (r1-r4): use Rounds[i].Score
+        var roundIdx = parseInt(lsCurrentRoundFilter.charAt(1)) - 1;
+        var round = (p.Rounds || [])[roundIdx];
+        if (round) {
+          var rscore = (round.Score || 0);
+          var rpar = (round.Par || t.Par || 72);
+          today = rscore > 0 ? rscore - rpar : null;
+        }
+      }
+      if (today !== null && today !== undefined) {
+        todayStr = today < 0 ? today.toString() : (today === 0 ? 'E' : '+' + today);
+        todayColor = today < 0 ? '#C62828' : '#1a1a1a';
+      }
+
+      var thru = p.TotalThrough || '--';
+      if (thru === '18' || thru === 18) thru = 'F';
+
+      var nameParts = (p.Name || '').split(' ');
+      var lastName = nameParts[nameParts.length - 1].toUpperCase();
+      var isTop3 = idx < 3;
+      var isLeader = idx === 0;
+
+      // Avatar: headshot if available, else initials circle
+      var initials = nameParts.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+      var avatarHtml;
+      if (p.HeadshotUrl) {
+        avatarHtml = '<span style="display:inline-block;width:34px;height:34px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:10px;background:#ddd;"><img src="' + p.HeadshotUrl + '" width="34" height="34" style="display:block;width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML=\'' + initials + '\';this.parentNode.style.cssText=\'display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1B4D2E;color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:700;vertical-align:middle;margin-right:10px;\'"></span>';
+      } else {
+        avatarHtml = '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1B4D2E;color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:700;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
+      }
+
+      html += '<tr style="border-bottom: 1px solid #E8E4D8;' + (isTop3 ? 'background:rgba(212,175,55,0.04);' : '') + (isLeader ? 'border-left:3px solid #D4A843;' : '') + '">';
+      html += '<td style="padding:14px 16px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:' + (isTop3 ? '#C9A84C' : '#888') + ';">' + (isLeader ? '<span style="color:#D4A843;margin-right:2px;">&#9679;</span>' : '') + (p.Rank || idx + 1) + '</td>';
+      html += '<td style="padding:14px 16px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:0.02em;">' + avatarHtml + lastName + '</td>';
+      html += '<td style="padding:14px 16px;text-align:center;"><span style="display:inline-block;min-width:36px;padding:4px 8px;background:' + (today < 0 ? 'rgba(198,40,40,0.06)' : 'transparent') + ';border-radius:3px;font-family:Georgia,serif;font-size:14px;font-weight:700;color:' + todayColor + ';">' + todayStr + '</span></td>';
+      html += '<td style="padding:14px 16px;text-align:center;font-family:Inter,sans-serif;font-size:12px;color:#AAA;">' + thru + '</td>';
+      html += '<td style="padding:14px 16px;text-align:center;"><span style="display:inline-block;min-width:42px;padding:5px 10px;background:' + (total < 0 ? 'rgba(198,40,40,0.08)' : 'transparent') + ';border-radius:3px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:' + totalColor + ';">' + totalStr + '</span></td>';
+      html += '</tr>';
+    });
+
+    tbody.innerHTML = html;
+  }
+
   function loadLiveScores() {
+    loadLiveSchedule();
     fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/scores/current')
       .then(function(r) { return r.json(); })
       .then(function(data) {
+        lsCachedData = data;
         var t = data.Tournament || {};
         var players = data.Players || [];
 
@@ -2466,53 +2651,22 @@
           document.getElementById('ls-leader-score').style.color = score < 0 ? '#C62828' : '#1a1a1a';
           var thru = leader.TotalThrough;
           document.getElementById('ls-leader-thru').textContent = thru ? 'THRU ' + thru : '';
-          // Avatar initials
+          // Avatar: headshot if available, else initials
           var avatarEl = document.getElementById('ls-leader-avatar');
           if (avatarEl && leader.Name) {
-            var nameParts = leader.Name.split(' ');
-            avatarEl.textContent = nameParts.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+            if (leader.HeadshotUrl) {
+              avatarEl.innerHTML = '<img src="' + leader.HeadshotUrl + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="var n=this.parentNode;n.textContent=\'' + leader.Name.split(' ').map(function(x){return x.charAt(0);}).join('').substring(0,2).toUpperCase() + '\';">';
+              avatarEl.style.padding = '0';
+              avatarEl.style.overflow = 'hidden';
+            } else {
+              var ns = leader.Name.split(' ');
+              avatarEl.textContent = ns.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+            }
           }
         }
 
-        // Leaderboard table
-        var tbody = document.getElementById('ls-leaderboard-body');
-        if (players.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;font-family:var(--font-ui);font-size:13px;color:#999;">No scores available yet.</td></tr>';
-          return;
-        }
-
-        var html = '';
-        players.slice(0, 15).forEach(function(p, idx) {
-          var total = p.TotalScore || 0;
-          var totalStr = total < 0 ? total.toString() : (total === 0 ? 'E' : '+' + total);
-          var totalColor = total < 0 ? '#C62828' : '#1a1a1a';
-
-          var today = p.TodayScore;
-          var todayStr = '--';
-          var todayColor = '#666';
-          if (today !== null && today !== undefined) {
-            todayStr = today < 0 ? today.toString() : (today === 0 ? 'E' : '+' + today);
-            todayColor = today < 0 ? '#C62828' : '#1a1a1a';
-          }
-
-          var thru = p.TotalThrough || '--';
-          if (thru === '18' || thru === 18) thru = 'F';
-
-          var name = (p.Name || '').split(' ');
-          var lastName = name[name.length - 1].toUpperCase();
-          var isTop3 = idx < 3;
-          var isLeader = idx === 0;
-
-          html += '<tr style="border-bottom: 1px solid #E8E4D8;' + (isTop3 ? 'background:rgba(212,175,55,0.04);' : '') + (isLeader ? 'border-left:3px solid #D4A843;' : '') + '">';
-          html += '<td style="padding:14px 16px;font-family:Georgia,serif;font-size:15px;font-weight:700;color:' + (isTop3 ? '#C9A84C' : '#888') + ';">' + (isLeader ? '<span style="color:#D4A843;margin-right:2px;">&#9679;</span>' : '') + (p.Rank || idx + 1) + '</td>';
-          html += '<td style="padding:14px 16px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:0.02em;">' + lastName + '</td>';
-          html += '<td style="padding:14px 16px;text-align:center;"><span style="display:inline-block;min-width:36px;padding:4px 8px;background:' + (today < 0 ? 'rgba(198,40,40,0.06)' : 'transparent') + ';border-radius:3px;font-family:Georgia,serif;font-size:14px;font-weight:700;color:' + todayColor + ';">' + todayStr + '</span></td>';
-          html += '<td style="padding:14px 16px;text-align:center;font-family:Inter,sans-serif;font-size:12px;color:#AAA;">' + thru + '</td>';
-          html += '<td style="padding:14px 16px;text-align:center;"><span style="display:inline-block;min-width:42px;padding:5px 10px;background:' + (total < 0 ? 'rgba(198,40,40,0.08)' : 'transparent') + ';border-radius:3px;font-family:Georgia,serif;font-size:16px;font-weight:700;color:' + totalColor + ';">' + totalStr + '</span></td>';
-          html += '</tr>';
-        });
-
-        tbody.innerHTML = html;
+        // Leaderboard (uses the new renderLeaderboard with round-filter support)
+        renderLeaderboard(data);
 
         // Timestamp
         var now = new Date();
@@ -2543,6 +2697,10 @@
       showChatAdminPanel();
     } else {
       stopChatPolling();
+    }
+    if (tab === 'account') {
+      if (typeof loadBillingInfo === 'function') loadBillingInfo();
+      if (typeof loadPaymentHistory === 'function') loadPaymentHistory();
     }
   };
 
@@ -2702,6 +2860,9 @@
       url += '&since=' + lastMessageTimestamp;
     }
 
+    // Also load pinned messages (only on full refresh, not append)
+    if (!append) loadPinnedMessages(roomId);
+
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -2712,6 +2873,7 @@
         }
         if (messages.length === 0) return;
 
+        var isAdmin = isChatAdmin();
         var html = append ? '' : '';
         messages.forEach(function(m) {
           var time = new Date(m.createdAt || m.timestamp);
@@ -2724,10 +2886,15 @@
           var tierLabel = m.userTier === 'chairman' ? 'CHAIRMAN' : 'EXECUTIVE';
           var borderColor = m.userTier === 'chairman' ? 'rgba(191,155,59,0.4)' : 'rgba(245,240,225,0.15)';
 
-          html += '<div style="display:flex;gap:12px;margin-bottom:20px;">';
+          var searchKey = ((m.userName || '') + ' ' + (m.content || '')).toLowerCase();
+          html += '<div class="chat-msg-wrap" data-chat-search="' + escapeAttrMR(searchKey) + '" style="display:flex;gap:12px;margin-bottom:20px;">';
+          if (isAdmin && m.messageId && m.timestamp) {
+            var pinLabel = m.pinned ? 'Unpin' : 'Pin';
+            html += '<button class="chat-pin-btn" onclick="togglePinMessage(\'' + escapeAttrMR(roomId) + '\', \'' + escapeAttrMR(String(m.timestamp)) + '\', ' + (m.pinned ? 'false' : 'true') + ')">' + pinLabel + '</button>';
+          }
           html += '<div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);border:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:12px;font-weight:600;color:' + tierColor + ';flex-shrink:0;">' + (m.userInitials || '??') + '</div>';
-          html += '<div>';
-          html += '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + (m.userName || 'Unknown') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">' + timeStr + '</span></div>';
+          html += '<div style="flex:1;min-width:0;">';
+          html += '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + (m.userName || 'Unknown') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">' + timeStr + '</span>' + (m.pinned ? ' <span style="font-family:var(--font-ui);font-size:9px;color:var(--gold);margin-left:6px;">&#128204; PINNED</span>' : '') + '</div>';
           html += '<div style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.65);line-height:1.5;">' + (m.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
 
           // Photos
@@ -2763,10 +2930,75 @@
           messagesDiv.innerHTML = html;
         }
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        // Re-apply search filter if there's a query active
+        filterChatMessages();
       })
       .catch(function(err) {
         console.error('Chat load error:', err);
       });
+  }
+
+  // Hide/show messages based on the chat search input.
+  function filterChatMessages() {
+    var input = document.getElementById('chat-search-input');
+    if (!input) return;
+    var q = (input.value || '').trim().toLowerCase();
+    var wraps = document.querySelectorAll('.chat-msg-wrap');
+    wraps.forEach(function(el) {
+      var text = el.getAttribute('data-chat-search') || '';
+      if (!q || text.indexOf(q) !== -1) {
+        el.style.display = '';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  }
+
+  // Is the logged-in user an admin (Dylan/Mayo)? Admins see the pin button.
+  function isChatAdmin() {
+    var email = (sessionStorage.getItem('cartpath_member_email') || '').toLowerCase();
+    var adminEmails = ['dylan@williamsdigital.io', 'dylan@cartpathclub.com', 'msowell@cartpathclub.com'];
+    return adminEmails.indexOf(email) !== -1;
+  }
+
+  // Load pinned messages for the current channel and render them in a sticky bar
+  // above the scrolling messages area.
+  function loadPinnedMessages(roomId) {
+    fetch(CHAT_API + '/' + roomId + '/pinned')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var pinned = data.pinned || [];
+        var bar = document.getElementById('chatPinnedBar');
+        if (!bar) return;
+        if (pinned.length === 0) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        bar.style.display = 'block';
+        var html = '<div style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.2em;color:var(--gold);margin-bottom:6px;text-transform:uppercase;">&#128204; Pinned</div>';
+        pinned.forEach(function(m) {
+          html += '<div style="padding:8px 10px;margin-bottom:6px;background:rgba(191,155,59,0.05);border-left:2px solid var(--gold);border-radius:3px;">';
+          html += '<div style="font-family:var(--font-ui);font-size:11px;color:var(--cream);font-weight:600;margin-bottom:2px;">' + escapeHtmlMR(m.userName || 'Member') + '</div>';
+          html += '<div style="font-family:var(--font-ui);font-size:12px;color:rgba(245,240,225,0.6);line-height:1.4;">' + escapeHtmlMR(m.content || '') + '</div>';
+          html += '</div>';
+        });
+        bar.innerHTML = html;
+      })
+      .catch(function() { /* silent */ });
+  }
+
+  // Admin-only: pin/unpin a message via the chat-admin Lambda
+  function togglePinMessage(roomId, timestamp, pinned) {
+    var token = sessionStorage.getItem('cartpath_admin_token') || '';
+    if (!token) { alert('Admin token not found. Log in as admin to pin messages.'); return; }
+    fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat-admin/pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ roomId: roomId, timestamp: parseInt(timestamp, 10), pinned: pinned }),
+    })
+      .then(function(r) { return r.json(); })
+      .then(function() {
+        lastMessageTimestamp = 0;
+        loadMessages();
+      })
+      .catch(function(err) { console.error('pin failed:', err); });
   }
 
   function sendMessage() {
@@ -3905,6 +4137,211 @@
       }, 1000);
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // ONBOARDING — first-login welcome tour
+  // Shows an overlay with 5 steps, then marks the member as onboarded.
+  // ═════════════════════════════════════════════════════════════
+
+  var onboardingSteps = [
+    {
+      title: 'Welcome to CartPath',
+      body: 'A private community for members who treat the golf course like a boardroom. Take 30 seconds — we\'ll show you around.',
+      highlight: null,
+    },
+    {
+      title: 'Browse the Roster',
+      body: 'Our roster of professional athletes, coaches, and legends is in the Roster tab. Request a round with any of them.',
+      highlight: 'roster',
+    },
+    {
+      title: 'Request a Match',
+      body: 'Click "Request This Experience" on any athlete card. Fill out the form, and our team reviews within 24 hours before sending you a quote.',
+      highlight: 'roster',
+    },
+    {
+      title: 'Live Tournament Scores',
+      body: 'Track the PGA Tour in real time — live leaderboard, player headshots, round-by-round filter.',
+      highlight: 'livescores',
+    },
+    {
+      title: 'Manage Billing & Stats',
+      body: 'Your Account tab has your handicap, payment history, and billing portal. Update your card, download invoices, and track your scores over time.',
+      highlight: 'account',
+    },
+  ];
+
+  var onboardingIndex = 0;
+
+  async function startOnboardingIfFirstLogin() {
+    var token = getCognitoIdToken();
+    if (!token) return;
+    try {
+      var res = await fetch(API_BASE + '/members/me', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) return;
+      var data = await res.json();
+      var onboarded = data.member?.onboarded;
+      if (onboarded === true) return;
+      onboardingIndex = 0;
+      renderOnboardingStep();
+    } catch {}
+  }
+
+  function renderOnboardingStep() {
+    var step = onboardingSteps[onboardingIndex];
+    if (!step) return closeOnboarding(true);
+
+    var isLast = onboardingIndex === onboardingSteps.length - 1;
+    var existing = document.getElementById('onboardingOverlay');
+    if (existing) existing.remove();
+
+    // Highlight nav tab if applicable
+    document.querySelectorAll('.nav-tab').forEach(function(t) {
+      t.style.boxShadow = '';
+    });
+    if (step.highlight) {
+      var tab = document.querySelector('.nav-tab[data-tab="' + step.highlight + '"]');
+      if (tab) tab.style.boxShadow = '0 0 0 2px var(--gold)';
+    }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'onboardingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.innerHTML =
+      '<div style="max-width:440px;width:100%;background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:10px;padding:36px 32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
+        '<div style="font-family:var(--font-ui);font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">Step ' + (onboardingIndex + 1) + ' of ' + onboardingSteps.length + '</div>' +
+        '<h2 style="font-family:var(--font-display);font-size:1.8rem;font-weight:500;color:var(--cream);margin-bottom:16px;">' + escapeHtmlMR(step.title) + '</h2>' +
+        '<p style="font-family:var(--font-body);font-size:15px;line-height:1.7;color:rgba(245,240,225,0.65);margin-bottom:28px;">' + escapeHtmlMR(step.body) + '</p>' +
+        '<div style="display:flex;gap:10px;justify-content:center;">' +
+          (onboardingIndex === 0
+            ? '<button onclick="closeOnboarding(true)" style="padding:12px 24px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:rgba(245,240,225,0.6);cursor:pointer;font-family:var(--font-ui);font-size:12px;letter-spacing:1px;">Skip</button>'
+            : '<button onclick="prevOnboardingStep()" style="padding:12px 24px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:rgba(245,240,225,0.6);cursor:pointer;font-family:var(--font-ui);font-size:12px;letter-spacing:1px;">Back</button>') +
+          '<button onclick="' + (isLast ? 'closeOnboarding(true)' : 'nextOnboardingStep()') + '" style="padding:12px 32px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">' + (isLast ? 'Got It' : 'Next') + '</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+  }
+
+  function nextOnboardingStep() {
+    onboardingIndex++;
+    renderOnboardingStep();
+  }
+
+  function prevOnboardingStep() {
+    if (onboardingIndex > 0) {
+      onboardingIndex--;
+      renderOnboardingStep();
+    }
+  }
+
+  async function closeOnboarding(save) {
+    var overlay = document.getElementById('onboardingOverlay');
+    if (overlay) overlay.remove();
+    document.querySelectorAll('.nav-tab').forEach(function(t) { t.style.boxShadow = ''; });
+
+    if (save) {
+      var token = getCognitoIdToken();
+      if (token) {
+        try {
+          await fetch(API_BASE + '/members/me/mark-onboarded', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+        } catch {}
+      }
+    }
+  }
+
+  // ═════════════════════════════════════════════════════════════
+  // BILLING — Stripe customer portal + payment history
+  // ═════════════════════════════════════════════════════════════
+
+  async function openBillingPortal() {
+    var token = getCognitoIdToken();
+    if (!token) { showToast('Please log in first', 'error'); return; }
+
+    showToast('Opening billing portal...');
+    try {
+      var res = await fetch(API_BASE + '/members/billing-portal', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+      });
+      if (!res.ok) {
+        var err = await res.json().catch(function() { return {}; });
+        throw new Error(err.error || 'Unable to open billing portal');
+      }
+      var data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  async function loadBillingInfo() {
+    var token = getCognitoIdToken();
+    if (!token) return;
+
+    try {
+      var res = await fetch(API_BASE + '/members/me', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) return;
+      var data = await res.json();
+      var m = data.member || {};
+
+      var summaryEl = document.getElementById('billingSummary');
+      if (summaryEl) {
+        var tierLabel = m.membership_tier === 'chairman' ? 'Chairman' : 'Executive';
+        var annual = m.membership_tier === 'chairman' ? '$30,000' : '$20,000';
+        var nextRenewal = m.dues_current_period_end
+          ? new Date(m.dues_current_period_end).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          : '—';
+        summaryEl.innerHTML =
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:rgba(245,240,225,0.35);">Tier</span><span style="color:var(--cream);font-weight:600;">' + tierLabel + ' Member</span></div>' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:rgba(245,240,225,0.35);">Annual</span><span style="color:var(--cream);font-weight:600;">' + annual + '</span></div>' +
+          '<div style="display:flex;justify-content:space-between;"><span style="color:rgba(245,240,225,0.35);">Next Renewal</span><span style="color:var(--cream);font-weight:600;">' + nextRenewal + '</span></div>';
+      }
+    } catch {}
+  }
+
+  async function loadPaymentHistory() {
+    var container = document.getElementById('paymentHistory');
+    if (!container) return;
+
+    var token = getCognitoIdToken();
+    if (!token) {
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(245,240,225,0.3);">Log in to see payment history.</div>';
+      return;
+    }
+
+    try {
+      var res = await fetch(API_BASE + '/members/me/payments', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!res.ok) throw new Error();
+      var data = await res.json();
+      var payments = data.payments || [];
+
+      if (payments.length === 0) {
+        container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(245,240,225,0.3);">No payments yet.</div>';
+        return;
+      }
+
+      var html = '<div style="border: 1px solid rgba(191,155,59,0.08); border-radius: 6px; overflow: hidden;">';
+      payments.forEach(function(p, idx) {
+        var date = p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+        var amt = '$' + ((p.amount_cents || 0) / 100).toLocaleString();
+        var type = (p.type || '').replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+        var statusColor = p.status === 'succeeded' ? '#6DC86D' : p.status === 'pending' ? 'var(--gold)' : '#E57373';
+        html += '<div style="display: grid; grid-template-columns: 120px 1fr 100px 100px; gap: 12px; padding: 12px 16px; align-items: center;' + (idx === 0 ? '' : ' border-top: 1px solid rgba(191,155,59,0.04);') + '">';
+        html += '<div style="color: rgba(245,240,225,0.5);">' + date + '</div>';
+        html += '<div style="color: var(--cream);">' + type + '</div>';
+        html += '<div style="color: var(--cream); font-weight: 600; text-align: right;">' + amt + '</div>';
+        html += '<div style="text-align: right;"><span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: ' + statusColor + '; border: 1px solid ' + statusColor + '40;">' + (p.status || 'Unknown') + '</span></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    } catch {
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(229,115,115,0.6);">Unable to load payment history.</div>';
     }
   }
 
