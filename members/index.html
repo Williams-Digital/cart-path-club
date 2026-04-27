@@ -1167,6 +1167,186 @@
     /* Defensive guards */
     img, svg, video { max-width: 100%; height: auto; }
     p, h1, h2, h3, a { word-wrap: break-word; overflow-wrap: break-word; }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRADING CARDS — member-facing athlete roster
+       Premium feel: gold-bordered photo at top, dark green body,
+       stats in serif numerals, gold price.
+       ═══════════════════════════════════════════════════════════ */
+    .trading-card {
+      position: relative;
+      background: linear-gradient(165deg, #0f3024 0%, #091d14 100%);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 0 rgba(191, 155, 59, 0.15) inset,
+        0 0 0 1px rgba(191, 155, 59, 0.18),
+        0 12px 32px rgba(0, 0, 0, 0.5),
+        0 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .trading-card:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 1px 0 rgba(191, 155, 59, 0.25) inset,
+        0 0 0 1px rgba(191, 155, 59, 0.35),
+        0 20px 48px rgba(0, 0, 0, 0.6),
+        0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    /* Gold inner frame — like a card border */
+    .tc-frame {
+      margin: 8px;
+      border: 1px solid rgba(191, 155, 59, 0.35);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #091D14;
+    }
+    /* Photo: full-bleed, fixed aspect to keep cards uniform */
+    .tc-photo {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background-size: cover;
+      background-position: center top;
+      background-color: #1B4D2E;
+      border-bottom: 1px solid rgba(191, 155, 59, 0.25);
+      position: relative;
+    }
+    .tc-photo::after {
+      /* Subtle vignette so the card body transition is smooth */
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(9, 29, 20, 0.5) 100%);
+      pointer-events: none;
+    }
+    .tc-photo--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(191,155,59,0.18), rgba(27,77,46,0.6));
+    }
+    .tc-initials {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 64px;
+      font-weight: 700;
+      color: rgba(191, 155, 59, 0.7);
+      letter-spacing: 0.04em;
+    }
+    .tc-body {
+      padding: 18px 20px 20px;
+    }
+    .tc-header {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(191, 155, 59, 0.1);
+    }
+    .tc-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--cream);
+      margin: 0 0 4px;
+      letter-spacing: 0.01em;
+    }
+    .tc-sport {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.9;
+    }
+    .tc-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .tc-stat {
+      text-align: center;
+      padding: 8px 6px;
+      background: rgba(191, 155, 59, 0.04);
+      border: 1px solid rgba(191, 155, 59, 0.08);
+      border-radius: 4px;
+    }
+    .tc-stat-label {
+      font-family: var(--font-ui);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.4);
+      margin-bottom: 4px;
+    }
+    .tc-stat-value {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+    .tc-bio {
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(245, 240, 225, 0.55);
+      margin: 0 0 16px;
+      /* Clamp to 4 lines to keep card heights uniform */
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(191, 155, 59, 0.1);
+    }
+    .tc-price-label {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.35);
+      margin-bottom: 2px;
+    }
+    .tc-price-value {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1.2;
+    }
+    .tc-cta {
+      background: linear-gradient(135deg, #BF9B3B 0%, #A88630 100%);
+      color: #091D14;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s ease, box-shadow 0.15s ease;
+    }
+    .tc-cta:hover {
+      box-shadow: 0 0 0 2px rgba(191, 155, 59, 0.25);
+    }
+    .tc-cta:active {
+      transform: translateY(1px);
+    }
+    @media (max-width: 480px) {
+      .tc-footer { flex-direction: column; align-items: stretch; }
+      .tc-cta { width: 100%; }
+    }
   </style>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxT9KdJga5N-IOoBNWkIwDfdsyHIHMZ6E&libraries=places" async defer></script>
 </head>
@@ -1345,287 +1525,20 @@
     <!-- ===================== ROSTER ===================== -->
     <div class="tab-content" id="tab-roster">
 
-      <h2 class="section-title" style="font-size:1.6rem;margin-bottom:24px;">Athlete Roster</h2>
-
-      <div class="roster-filters">
-        <button class="filter-btn active" data-filter="all" onclick="filterRoster('all')">All Athletes</button>
-        <button class="filter-btn" data-filter="5" onclick="filterRoster('5')">5-Star Legends</button>
-        <button class="filter-btn" data-filter="4" onclick="filterRoster('4')">4-Star All-Stars</button>
-        <button class="filter-btn" data-filter="3" onclick="filterRoster('3')">3-Star Champions</button>
-      </div>
-
-      <!-- 5-Star Legends -->
-      <div class="roster-tier-section" data-tier="5" id="tier-5">
-        <div class="tier-header">
-          <span class="tier-star five">5-STAR</span>
-          <h2>Legends</h2>
-          <span class="tier-range">$5,000 - $15,000</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
+        <div>
+          <h2 class="section-title" style="font-size:1.6rem;margin-bottom:4px;">Athlete Roster</h2>
+          <p style="font-family:var(--font-body);font-size:1rem;color:rgba(245,240,225,0.45);">Hand-picked athletes available for private rounds with members.</p>
         </div>
-        <div class="roster-grid">
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">CB</div>
-            <div class="athlete-details">
-              <h3>Charles Barkley</h3>
-              <div class="athlete-meta">Auburn -- TNT HQ -- NBA Hall of Fame</div>
-              <div class="athlete-bio">Sir Charles brings the same energy to the golf course that made him one of basketball's most iconic personalities. Expect unforgettable stories, relentless trash talk, and a swing that has become legendary for all the right reasons.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$10,000 - $12,000</span>
-                <span class="athlete-availability by-request">By Request</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Charles%20Barkley" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">HW</div>
-            <div class="athlete-details">
-              <h3>Hines Ward</h3>
-              <div class="athlete-meta">UGA -- Super Bowl MVP</div>
-              <div class="athlete-bio">One of the toughest wide receivers to ever play the game brings that same competitive drive to every round. Super Bowl XL MVP and an infectious energy that makes every hole feel like gameday.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$6,000 - $8,000</span>
-                <span class="athlete-availability moderate">Moderate Availability</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Hines%20Ward" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">CB</div>
-            <div class="athlete-details">
-              <h3>Champ Bailey</h3>
-              <div class="athlete-meta">UGA -- Pro Football Hall of Fame</div>
-              <div class="athlete-bio">The greatest cornerback in Broncos history and a 12x Pro Bowler. Champ's quiet intensity and strategic mind translate to a focused, premium golf experience.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$5,000 - $7,000</span>
-                <span class="athlete-availability moderate">Moderate Availability</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Champ%20Bailey" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">ER</div>
-            <div class="athlete-details">
-              <h3>Ed Reed</h3>
-              <div class="athlete-meta">Miami -- Hall of Fame Safety</div>
-              <div class="athlete-bio">The most instinctive safety in NFL history reads the golf course the way he read quarterbacks. Ed's football IQ translates into sharp course management and compelling conversation.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$5,000 - $7,000</span>
-                <span class="athlete-availability moderate">Moderate Availability</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Ed%20Reed" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">CW</div>
-            <div class="athlete-details">
-              <h3>Charles Woodson</h3>
-              <div class="athlete-meta">Michigan -- NFL Hall of Fame</div>
-              <div class="athlete-bio">Heisman Trophy winner and NFL Defensive Player of the Year. Woodson's competitive fire and versatility made him one of football's greatest defenders -- and a formidable golf partner.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$6,000 - $9,000</span>
-                <span class="athlete-availability by-request">By Request</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Charles%20Woodson" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">KS</div>
-            <div class="athlete-details">
-              <h3>Kirby Smart <span class="coach-badge">COACH</span></h3>
-              <div class="athlete-meta">UGA Head Coach -- National Champion</div>
-              <div class="athlete-bio">The architect of Georgia's back-to-back national championships. Coach Smart brings unmatched intensity, preparation, and leadership to every round. An elite experience reserved for offseason windows.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$12,000 - $15,000</span>
-                <span class="athlete-availability offseason">Offseason Only</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Kirby%20Smart" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar five-star">TT</div>
-            <div class="athlete-details">
-              <h3>Tommy Tuberville <span class="coach-badge">COACH</span></h3>
-              <div class="athlete-meta">Auburn HC -- U.S. Senator</div>
-              <div class="athlete-bio">From leading Auburn to an undefeated season to serving in the U.S. Senate, Coach Tuberville brings decades of stories from the intersection of sports, leadership, and politics.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$8,000 - $12,000</span>
-                <span class="athlete-availability by-request">By Request</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Tommy%20Tuberville" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
+        <div style="display:flex;gap:8px;">
+          <button class="filter-btn active" data-rfilter="all" onclick="filterRosterCards('all')">All</button>
+          <button class="filter-btn" data-rfilter="athlete" onclick="filterRosterCards('athlete')">Athletes</button>
+          <button class="filter-btn" data-rfilter="coach" onclick="filterRosterCards('coach')">Coaches</button>
         </div>
       </div>
 
-      <!-- 4-Star All-Stars -->
-      <div class="roster-tier-section" data-tier="4" id="tier-4">
-        <div class="tier-header">
-          <span class="tier-star four">4-STAR</span>
-          <h2>All-Stars</h2>
-          <span class="tier-range">$1,500 - $6,000</span>
-        </div>
-        <div class="roster-grid">
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">MS</div>
-            <div class="athlete-details">
-              <h3>Matthew Stafford</h3>
-              <div class="athlete-meta">UGA -- Super Bowl Champion</div>
-              <div class="athlete-bio">The arm that delivered the Rams a Super Bowl title. Stafford is a serious golfer with a smooth swing and the same cool composure under pressure that defined his NFL career.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$4,000 - $6,000</span>
-                <span class="athlete-availability moderate">Moderate Availability</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Matthew%20Stafford" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">PP</div>
-            <div class="athlete-details">
-              <h3>Patrick Peterson</h3>
-              <div class="athlete-meta">Auburn -- 9x Pro Bowl</div>
-              <div class="athlete-bio">One of the most decorated defensive backs of his generation. Peterson's athleticism and competitive spirit make him a dynamic golf partner who brings energy to every hole.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$3,500 - $5,000</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Patrick%20Peterson" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">DP</div>
-            <div class="athlete-details">
-              <h3>David Pollack</h3>
-              <div class="athlete-meta">UGA -- ESPN Analyst</div>
-              <div class="athlete-bio">A Georgia legend who transitioned from dominant defensive end to one of college football's most respected voices. Pollack brings insight, charisma, and a passion for the game.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$2,500 - $4,000</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20David%20Pollack" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">RB</div>
-            <div class="athlete-details">
-              <h3>Ronnie Brown</h3>
-              <div class="athlete-meta">Auburn -- Miami Dolphins</div>
-              <div class="athlete-bio">Part of Auburn's legendary backfield, Brown's combination of power and finesse made him a top-2 NFL draft pick. A natural competitor who brings the same drive to the golf course.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$2,000 - $3,500</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Ronnie%20Brown" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">JC</div>
-            <div class="athlete-details">
-              <h3>Jason Campbell</h3>
-              <div class="athlete-meta">Auburn -- NFL Quarterback</div>
-              <div class="athlete-bio">Auburn's BCS National Championship quarterback who went on to a decade-long NFL career. Campbell's leadership and poise make him one of the most personable athletes on the roster.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$1,500 - $2,500</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Jason%20Campbell" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">TR</div>
-            <div class="athlete-details">
-              <h3>Tavares Robinson <span class="coach-badge">COACH</span></h3>
-              <div class="athlete-meta">UGA O-Line Coach</div>
-              <div class="athlete-bio">A key member of Kirby Smart's championship staff. Coach Robinson's hands-on approach and deep football knowledge make for a unique and insightful round.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$3,500 - $5,500</span>
-                <span class="athlete-availability offseason">Offseason</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Tavares%20Robinson" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar four-star">JJ</div>
-            <div class="athlete-details">
-              <h3>Jonas Jennings <span class="coach-badge">COACH</span></h3>
-              <div class="athlete-meta">Auburn -- Coach</div>
-              <div class="athlete-bio">A former NFL offensive lineman who has transitioned into coaching. Jennings brings a lineman's toughness and team-first mentality to every experience.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$2,500 - $4,000</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Jonas%20Jennings" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- 3-Star Champions -->
-      <div class="roster-tier-section" data-tier="3" id="tier-3">
-        <div class="tier-header">
-          <span class="tier-star three">3-STAR</span>
-          <h2>Champions</h2>
-          <span class="tier-range">$800 - $2,500</span>
-        </div>
-        <div class="roster-grid">
-
-          <div class="athlete-card">
-            <div class="athlete-avatar three-star">CR</div>
-            <div class="athlete-details">
-              <h3>Carlos Rogers</h3>
-              <div class="athlete-meta">Auburn -- 2x Pro Bowl</div>
-              <div class="athlete-bio">A shutdown corner who earned two Pro Bowl selections. Rogers' competitiveness and football acumen make for engaging conversation and a spirited round.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$1,500 - $2,500</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Carlos%20Rogers" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar three-star">TJ</div>
-            <div class="athlete-details">
-              <h3>Tim Jennings</h3>
-              <div class="athlete-meta">UGA -- 2x Pro Bowl</div>
-              <div class="athlete-bio">A two-time Pro Bowl cornerback who led the NFL in interceptions. Jennings brings playmaker energy and genuine warmth to every golf outing.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$1,000 - $2,000</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Tim%20Jennings" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-          <div class="athlete-card">
-            <div class="athlete-avatar three-star">MM</div>
-            <div class="athlete-details">
-              <h3>Mohamed Massaquoi</h3>
-              <div class="athlete-meta">UGA -- Cleveland Browns</div>
-              <div class="athlete-bio">Georgia's all-time great receiver who brought big-play ability to the NFL. Massaquoi's laid-back personality and love of golf make him a natural fit for a relaxed, enjoyable round.</div>
-              <div class="athlete-footer">
-                <span class="athlete-price">$800 - $1,500</span>
-                <span class="athlete-availability available">Available</span>
-                <a href="mailto:hello@cartpathclub.com?subject=Experience%20Request%3A%20Mohamed%20Massaquoi" class="request-btn">Request This Experience</a>
-              </div>
-            </div>
-          </div>
-
-        </div>
+      <div id="rosterCardGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:24px;">
+        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(245,240,225,0.3);font-family:var(--font-ui);font-size:14px;">Loading roster...</div>
       </div>
 
     </div>
@@ -2340,6 +2253,11 @@
       setTimeout(loadMyRequests, 100);
     }
 
+    // Pre-load the roster so the trading cards appear instantly when tapped
+    if (typeof loadMemberRoster === 'function') {
+      setTimeout(loadMemberRoster, 200);
+    }
+
     // First-login onboarding tour (silently no-ops if already onboarded)
     if (typeof startOnboardingIfFirstLogin === 'function') {
       setTimeout(startOnboardingIfFirstLogin, 1500);
@@ -2411,27 +2329,136 @@
     });
   });
 
-  // ===================== ROSTER FILTER =====================
-  function filterRoster(tier) {
-    // Update filter buttons
+  // ===================== DYNAMIC ROSTER (trading cards) =====================
+  // Pulls from /athletes/roster (admin-managed). Renders each athlete as a
+  // baseball-card-style card: photo on top, name + sport, stats chips, bio,
+  // price, request CTA. Members tap "Request a Round" to open the booking
+  // modal (defined elsewhere as openMatchRequestModal).
+
+  let allRosterAthletes_member = [];
+  let currentRosterFilter = 'all';
+
+  async function loadMemberRoster() {
+    var grid = document.getElementById('rosterCardGrid');
+    if (!grid) return;
+    try {
+      var res = await fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/athletes/roster');
+      if (!res.ok) throw new Error();
+      var data = await res.json();
+      allRosterAthletes_member = data.athletes || [];
+      renderMemberRosterCards();
+    } catch (err) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(229,115,115,0.5);font-family:var(--font-ui);font-size:14px;">Unable to load roster. Please try again.</div>';
+    }
+  }
+
+  function renderMemberRosterCards() {
+    var grid = document.getElementById('rosterCardGrid');
+    if (!grid) return;
+
+    var filtered = allRosterAthletes_member;
+    if (currentRosterFilter === 'athlete') {
+      filtered = filtered.filter(function(a) { return a.type !== 'coach'; });
+    } else if (currentRosterFilter === 'coach') {
+      filtered = filtered.filter(function(a) { return a.type === 'coach'; });
+    }
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(245,240,225,0.3);font-family:var(--font-ui);font-size:14px;">No athletes available yet. Check back soon.</div>';
+      return;
+    }
+
+    var html = '';
+    filtered.forEach(function(a) {
+      html += renderTradingCard(a);
+    });
+    grid.innerHTML = html;
+  }
+
+  function renderTradingCard(a) {
+    var name = (a.name || '').replace(/[<>"']/g, '');
+    var sport = (a.sport || '').replace(/[<>"']/g, '');
+    var school = (a.school || '').replace(/[<>"']/g, '');
+    var story = (a.story || '').replace(/[<>"']/g, '');
+    var initials = name.split(' ').map(function(n){return n[0]}).join('').toUpperCase().slice(0, 2);
+
+    // Photo: full-bleed top of the card, dark gradient overlay at bottom for legibility
+    var photoBlock;
+    if (a.photo_url) {
+      photoBlock = '<div class="tc-photo" style="background-image:url(\'' + a.photo_url + '\');"></div>';
+    } else {
+      photoBlock = '<div class="tc-photo tc-photo--placeholder"><div class="tc-initials">' + initials + '</div></div>';
+    }
+
+    // Stats chips (only render the ones that exist)
+    var stats = [];
+    if (a.handicap) stats.push({ label: 'Handicap', value: a.handicap });
+    if (school) {
+      // Try to split school/location like "Auburn · Atlanta, GA"
+      stats.push({ label: 'Affiliation', value: school });
+    }
+    if (a.tier && a.tier >= 4) {
+      stats.push({ label: 'Tier', value: (a.tier === 5 ? 'Legend' : 'All-Star') });
+    }
+
+    var statsBlock = '';
+    if (stats.length > 0) {
+      statsBlock = '<div class="tc-stats">';
+      stats.forEach(function(s) {
+        statsBlock += '<div class="tc-stat"><div class="tc-stat-label">' + s.label + '</div><div class="tc-stat-value">' + s.value + '</div></div>';
+      });
+      statsBlock += '</div>';
+    }
+
+    // Price
+    var priceText;
+    if (a.price_min && a.price_max && a.price_min !== a.price_max) {
+      priceText = '$' + Number(a.price_min).toLocaleString() + ' – $' + Number(a.price_max).toLocaleString();
+    } else if (a.price_min || a.price_max) {
+      priceText = '$' + Number(a.price_min || a.price_max).toLocaleString();
+    } else {
+      priceText = 'By Request';
+    }
+
+    var bioBlock = story
+      ? '<p class="tc-bio">' + story + '</p>'
+      : '';
+
+    return ''
+      + '<article class="trading-card" data-type="' + (a.type || 'athlete') + '">'
+      +   '<div class="tc-frame">'
+      +     photoBlock
+      +     '<div class="tc-body">'
+      +       '<div class="tc-header">'
+      +         '<h3 class="tc-name">' + name + '</h3>'
+      +         '<div class="tc-sport">' + sport + '</div>'
+      +       '</div>'
+      +       statsBlock
+      +       bioBlock
+      +       '<div class="tc-footer">'
+      +         '<div class="tc-price">'
+      +           '<div class="tc-price-label">Per Round</div>'
+      +           '<div class="tc-price-value">' + priceText + '</div>'
+      +         '</div>'
+      +         '<button class="tc-cta" onclick="openMatchRequestModal(\'' + name.replace(/'/g, "\\'") + '\')">Request a Round</button>'
+      +       '</div>'
+      +     '</div>'
+      +   '</div>'
+      + '</article>';
+  }
+
+  function filterRosterCards(filter) {
+    currentRosterFilter = filter;
     var btns = document.querySelectorAll('.filter-btn');
     for (var i = 0; i < btns.length; i++) {
       btns[i].classList.remove('active');
-      if (btns[i].getAttribute('data-filter') === tier) {
-        btns[i].classList.add('active');
-      }
+      if (btns[i].getAttribute('data-rfilter') === filter) btns[i].classList.add('active');
     }
-
-    // Show/hide tiers
-    var sections = document.querySelectorAll('.roster-tier-section');
-    for (var i = 0; i < sections.length; i++) {
-      if (tier === 'all' || sections[i].getAttribute('data-tier') === tier) {
-        sections[i].style.display = 'block';
-      } else {
-        sections[i].style.display = 'none';
-      }
-    }
+    renderMemberRosterCards();
   }
+
+  // Backward compat — switchTab calls filterRoster on tab open
+  function filterRoster(filter) { filterRosterCards(filter === 'all' ? 'all' : filter); }
 
   // ===================== MOBILE MENU =====================
   function toggleMobileMenu() {
@@ -2690,6 +2717,7 @@
   var origSwitchTabLS = switchTab;
   switchTab = function(tab) {
     origSwitchTabLS(tab);
+    if (tab === 'roster') loadMemberRoster();
     if (tab === 'livescores') loadLiveScores();
     if (tab === 'chat') {
       loadMessages();

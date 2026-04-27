@@ -1304,6 +1304,7 @@
         <button id="toggleMembers" onclick="setAppType('members')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--gold); color: var(--bg);">Members</button>
         <button id="toggleAthletes" onclick="setAppType('athletes')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Athletes</button>
         <button id="toggleBookings" onclick="setAppType('bookings')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Bookings</button>
+        <button id="toggleRoster" onclick="setAppType('roster')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Roster</button>
       </div>
 
       <!-- Stats -->
@@ -1431,32 +1432,304 @@
         members: document.getElementById('toggleMembers'),
         athletes: document.getElementById('toggleAthletes'),
         bookings: document.getElementById('toggleBookings'),
+        roster: document.getElementById('toggleRoster'),
       };
       Object.keys(btns).forEach(function(k) {
-        btns[k].style.background = 'var(--bg-card)';
-        btns[k].style.color = 'var(--cream-muted)';
+        if (btns[k]) {
+          btns[k].style.background = 'var(--bg-card)';
+          btns[k].style.color = 'var(--cream-muted)';
+        }
       });
-      btns[type].style.background = 'var(--gold)';
-      btns[type].style.color = 'var(--bg)';
+      if (btns[type]) {
+        btns[type].style.background = 'var(--gold)';
+        btns[type].style.color = 'var(--bg)';
+      }
 
       // Show/hide stats, chart, filter tabs based on mode
       var statsRow = document.getElementById('statsRow');
       var chartSection = document.getElementById('chartSection');
       var filterTabs = document.getElementById('filterTabs');
       var searchDate = document.querySelector('.search-date-row');
+      var hideExtraUI = (type === 'bookings' || type === 'roster');
+      if (statsRow) statsRow.style.display = hideExtraUI ? 'none' : '';
+      if (chartSection) chartSection.style.display = hideExtraUI ? 'none' : '';
+      if (filterTabs) filterTabs.style.display = hideExtraUI ? 'none' : '';
+      if (searchDate) searchDate.style.display = hideExtraUI ? 'none' : '';
+
       if (type === 'bookings') {
-        if (statsRow) statsRow.style.display = 'none';
-        if (chartSection) chartSection.style.display = 'none';
-        if (filterTabs) filterTabs.style.display = 'none';
-        if (searchDate) searchDate.style.display = 'none';
         renderBookings();
+      } else if (type === 'roster') {
+        renderRoster();
       } else {
-        if (statsRow) statsRow.style.display = '';
-        if (chartSection) chartSection.style.display = '';
-        if (filterTabs) filterTabs.style.display = '';
-        if (searchDate) searchDate.style.display = '';
         applyClientFilters();
         updateStats();
+      }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // ROSTER MANAGEMENT
+    // ═════════════════════════════════════════════════════════════
+
+    let allRosterAthletes = [];
+    let editingRosterAthleteId = null;
+    let pendingPhotoUrl = null;
+
+    async function fetchRoster() {
+      try {
+        var res = await fetch(API + '/admin/roster', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) return [];
+        var data = await res.json();
+        return data.athletes || [];
+      } catch (err) { console.error(err); return []; }
+    }
+
+    async function renderRoster() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading roster...</div></div>';
+
+      allRosterAthletes = await fetchRoster();
+
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">';
+      html += '<h2 style="font-family:Inter,sans-serif;font-size:1.5rem;font-weight:600;color:var(--cream);margin:0;">Athlete Roster</h2>';
+      html += '<button onclick="openRosterForm(null)" style="padding:10px 24px;background:var(--gold);color:var(--bg);border:none;border-radius:4px;cursor:pointer;font-family:Inter,sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">+ Add Athlete</button>';
+      html += '</div>';
+
+      if (allRosterAthletes.length === 0) {
+        html += '<div class="table-wrapper"><div class="empty-state"><div class="empty-state-icon">&#127948;</div><div class="empty-state-title">No athletes yet</div><div class="empty-state-text">Click "+ Add Athlete" to add the first member of your roster.</div></div></div>';
+      } else {
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">';
+        allRosterAthletes.forEach(function(a) {
+          var statusColor = a.listing_status === 'active' ? '#6DC86D' : 'var(--cream-dim)';
+          var photoStyle = a.photo_url
+            ? `background-image:url('${escapeAttr(a.photo_url)}');background-size:cover;background-position:center;`
+            : 'background:linear-gradient(135deg,rgba(191,155,59,0.15),rgba(27,77,46,0.4));display:flex;align-items:center;justify-content:center;';
+          var initials = a.name.split(' ').map(function(n){return n[0]}).join('').toUpperCase().slice(0,2);
+
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">';
+          html += '<div style="height:160px;' + photoStyle + 'position:relative;">';
+          if (!a.photo_url) {
+            html += '<div style="font-family:Georgia,serif;font-size:32px;color:rgba(191,155,59,0.4);font-weight:700;">' + initials + '</div>';
+          }
+          html += '<div style="position:absolute;top:8px;right:8px;padding:3px 10px;border-radius:12px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.6);color:' + statusColor + ';">' + a.listing_status + '</div>';
+          html += '</div>';
+          html += '<div style="padding:14px 16px;">';
+          html += '<div style="font-family:Inter,sans-serif;font-size:15px;font-weight:600;color:var(--cream);margin-bottom:2px;">' + escapeHtml(a.name) + '</div>';
+          html += '<div style="font-family:Inter,sans-serif;font-size:11px;color:var(--cream-muted);margin-bottom:10px;">' + escapeHtml(a.sport || '') + (a.school ? ' &middot; ' + escapeHtml(a.school) : '') + '</div>';
+          if (a.price_min || a.price_max) {
+            var priceLabel = a.price_min === a.price_max
+              ? '$' + (a.price_min || 0).toLocaleString()
+              : '$' + (a.price_min || 0).toLocaleString() + ' – $' + (a.price_max || 0).toLocaleString();
+            html += '<div style="font-family:Inter,sans-serif;font-size:12px;color:var(--gold);font-weight:600;margin-bottom:10px;">' + priceLabel + '/round</div>';
+          }
+          html += '<div style="display:flex;gap:8px;">';
+          html += '<button onclick="openRosterForm(\'' + escapeAttr(a.id) + '\')" style="flex:1;padding:7px 12px;background:rgba(191,155,59,0.1);border:1px solid var(--border-light);color:var(--cream);border-radius:3px;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;letter-spacing:0.5px;">Edit</button>';
+          html += '<button onclick="deleteRosterAthlete(\'' + escapeAttr(a.id) + '\', \'' + escapeAttr(a.name) + '\')" style="padding:7px 12px;background:none;border:1px solid rgba(229,115,115,0.3);color:#E57373;border-radius:3px;cursor:pointer;font-family:Inter,sans-serif;font-size:11px;letter-spacing:0.5px;">Delete</button>';
+          html += '</div>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+
+      area.innerHTML = html;
+    }
+
+    function openRosterForm(athleteId) {
+      editingRosterAthleteId = athleteId;
+      pendingPhotoUrl = null;
+
+      var existing = athleteId ? allRosterAthletes.find(function(a) { return a.id === athleteId; }) : null;
+      var title = existing ? 'Edit Athlete' : 'Add Athlete';
+
+      var photoPreview = existing && existing.photo_url
+        ? `<div style="margin-bottom:14px;"><img src="${escapeAttr(existing.photo_url)}" id="rosterPhotoPreview" style="width:100%;max-height:240px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light);"></div>`
+        : `<div id="rosterPhotoPlaceholder" style="margin-bottom:14px;height:120px;background:rgba(191,155,59,0.05);border:1px dashed var(--border-light);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--cream-dim);font-family:Inter,sans-serif;font-size:12px;">No photo selected</div>`;
+
+      var overlay = document.getElementById('modalOverlay');
+      var modal = overlay.querySelector('.modal');
+      modal.style.maxWidth = '560px';
+      modal.style.maxHeight = '90vh';
+      modal.style.overflowY = 'auto';
+      modal.innerHTML =
+        '<div class="modal-title">' + title + '</div>' +
+
+        photoPreview +
+        '<div style="margin-bottom:16px;">' +
+          '<label style="display:inline-block;padding:9px 16px;background:rgba(191,155,59,0.12);border:1px solid var(--border-light);border-radius:4px;color:var(--gold);font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;">' +
+            (existing && existing.photo_url ? 'Replace Photo' : 'Upload Photo') +
+            '<input type="file" id="rosterPhotoInput" accept="image/*" style="display:none;" onchange="handleRosterPhotoSelect(this)">' +
+          '</label>' +
+          '<span id="rosterPhotoStatus" style="margin-left:12px;font-family:Inter,sans-serif;font-size:11px;color:var(--cream-dim);"></span>' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Name *</label>' +
+        '<input type="text" id="rosterName" value="' + escapeAttr(existing?.name || '') + '" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;margin-bottom:12px;">' +
+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Sport / Title *</label>' +
+            '<input type="text" id="rosterSport" value="' + escapeAttr(existing?.sport || '') + '" placeholder="NFL, NBA Coach, etc." style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;margin-bottom:12px;">' +
+          '</div>' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">School / Team</label>' +
+            '<input type="text" id="rosterSchool" value="' + escapeAttr(existing?.school || '') + '" placeholder="Auburn, Atlanta GA" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;margin-bottom:12px;">' +
+          '</div>' +
+        '</div>' +
+
+        '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Bio</label>' +
+        '<textarea id="rosterStory" rows="4" placeholder="Career highlights, signature accomplishments, what makes them unique on the course..." style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:13px;font-family:Inter,sans-serif;resize:vertical;margin-bottom:12px;">' + escapeHtml(existing?.story || '') + '</textarea>' +
+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Min Price</label>' +
+            '<input type="number" id="rosterPriceMin" value="' + (existing?.price_min || '') + '" placeholder="3000" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;">' +
+          '</div>' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Max Price</label>' +
+            '<input type="number" id="rosterPriceMax" value="' + (existing?.price_max || '') + '" placeholder="5000" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;">' +
+          '</div>' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Handicap</label>' +
+            '<input type="text" id="rosterHandicap" value="' + escapeAttr(existing?.handicap || '') + '" placeholder="9" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;">' +
+          '</div>' +
+        '</div>' +
+
+        '<p style="color:var(--cream-dim);font-size:11px;margin-top:8px;margin-bottom:18px;">Members see "$X,XXX – $Y,YYY/round" on the trading card. Leave blank to show "By Request".</p>' +
+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Type</label>' +
+            '<select id="rosterType" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;">' +
+              '<option value="athlete"' + (existing?.type === 'athlete' || !existing ? ' selected' : '') + '>Athlete</option>' +
+              '<option value="coach"' + (existing?.type === 'coach' ? ' selected' : '') + '>Coach</option>' +
+            '</select>' +
+          '</div>' +
+          '<div>' +
+            '<label style="display:block;font-size:11px;font-weight:600;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Status</label>' +
+            '<select id="rosterStatus" style="width:100%;padding:10px 12px;background:var(--bg);border:1px solid var(--border-light);border-radius:4px;color:var(--cream);font-size:14px;font-family:Inter,sans-serif;">' +
+              '<option value="active"' + (!existing || existing.listing_status === 'active' ? ' selected' : '') + '>Active (visible to members)</option>' +
+              '<option value="inactive"' + (existing?.listing_status === 'inactive' ? ' selected' : '') + '>Inactive (hidden)</option>' +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+
+        '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+          '<button onclick="closeModal()" style="padding:10px 20px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:13px;">Cancel</button>' +
+          '<button onclick="saveRosterAthlete()" style="padding:10px 24px;background:var(--gold);border:none;border-radius:4px;color:var(--bg);cursor:pointer;font-size:13px;font-weight:600;">' + (existing ? 'Save Changes' : 'Add Athlete') + '</button>' +
+        '</div>';
+      overlay.style.display = 'flex';
+    }
+
+    async function handleRosterPhotoSelect(input) {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      var status = document.getElementById('rosterPhotoStatus');
+      if (file.size > 8 * 1024 * 1024) {
+        status.textContent = 'Image too large (max 8MB)';
+        status.style.color = '#E57373';
+        return;
+      }
+      status.textContent = 'Uploading...';
+      status.style.color = 'var(--gold)';
+
+      try {
+        // Get presigned URL
+        var presignRes = await fetch(API + '/admin/roster/photo-upload-url', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            athlete_id: editingRosterAthleteId,
+            filename: file.name,
+            content_type: file.type
+          })
+        });
+        if (!presignRes.ok) throw new Error('Failed to get upload URL');
+        var presignData = await presignRes.json();
+
+        // Upload to S3
+        var uploadRes = await fetch(presignData.upload_url, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file
+        });
+        if (!uploadRes.ok) throw new Error('Upload failed');
+
+        pendingPhotoUrl = presignData.public_url;
+        status.textContent = 'Uploaded';
+        status.style.color = '#6DC86D';
+
+        // Show preview
+        var ph = document.getElementById('rosterPhotoPlaceholder');
+        if (ph) {
+          ph.outerHTML = '<div style="margin-bottom:14px;"><img src="' + presignData.public_url + '" id="rosterPhotoPreview" style="width:100%;max-height:240px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light);"></div>';
+        } else {
+          var preview = document.getElementById('rosterPhotoPreview');
+          if (preview) preview.src = presignData.public_url;
+        }
+      } catch (err) {
+        status.textContent = 'Upload failed: ' + err.message;
+        status.style.color = '#E57373';
+      }
+    }
+
+    async function saveRosterAthlete() {
+      var name = document.getElementById('rosterName').value.trim();
+      var sport = document.getElementById('rosterSport').value.trim();
+      if (!name || !sport) { showToast('Name and sport are required', 'error'); return; }
+
+      var existing = editingRosterAthleteId
+        ? allRosterAthletes.find(function(a) { return a.id === editingRosterAthleteId; })
+        : null;
+
+      var payload = {
+        name: name,
+        sport: sport,
+        school: document.getElementById('rosterSchool').value.trim() || null,
+        story: document.getElementById('rosterStory').value.trim() || null,
+        price_min: parseInt(document.getElementById('rosterPriceMin').value) || 0,
+        price_max: parseInt(document.getElementById('rosterPriceMax').value) || 0,
+        handicap: document.getElementById('rosterHandicap').value.trim() || null,
+        type: document.getElementById('rosterType').value,
+        listing_status: document.getElementById('rosterStatus').value,
+      };
+      if (pendingPhotoUrl) payload.photo_url = pendingPhotoUrl;
+
+      try {
+        var url = API + '/admin/roster' + (editingRosterAthleteId ? '/' + editingRosterAthleteId : '');
+        var method = editingRosterAthleteId ? 'PATCH' : 'POST';
+        var res = await fetch(url, {
+          method: method,
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Save failed');
+        }
+        closeModal();
+        showToast(editingRosterAthleteId ? 'Athlete updated' : 'Athlete added to roster');
+        await renderRoster();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteRosterAthlete(id, name) {
+      if (!confirm('Delete ' + name + ' from the roster? This cannot be undone.')) return;
+      try {
+        var res = await fetch(API + '/admin/roster/' + id, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Delete failed');
+        }
+        showToast(name + ' removed');
+        await renderRoster();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
       }
     }
 
