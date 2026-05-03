@@ -264,7 +264,7 @@
       letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
     }
 
-    /* ── Chat (Locker Room) — single channel ── */
+    /* ── Chat (Clubhouse) — single channel ── */
     .chat-single {
       display: flex;
       flex-direction: column;
@@ -398,7 +398,7 @@
         <button class="tab" data-tab="rounds" onclick="setTab('rounds')">Rounds <span id="roundsCount" style="opacity:0.5;font-weight:400;"></span></button>
         <button class="tab" data-tab="scores" onclick="setTab('scores')">My Scores</button>
         <button class="tab" data-tab="earnings" onclick="setTab('earnings')">Earnings</button>
-        <button class="tab" data-tab="chat" onclick="setTab('chat')">Locker Room</button>
+        <button class="tab" data-tab="chat" onclick="setTab('chat')">Clubhouse</button>
         <button class="tab" data-tab="assistants" onclick="setTab('assistants')">Assistants</button>
       </div>
 
@@ -503,11 +503,11 @@
         <div id="earnRecent"><div class="empty-state">Loading...</div></div>
       </section>
 
-      <!-- ── Chat (Locker Room) ── -->
+      <!-- ── Chat (Clubhouse) ── -->
       <section class="tab-panel" id="panel-chat">
         <div class="section-row">
           <div>
-            <h1 class="section-title">Locker Room</h1>
+            <h1 class="section-title">Clubhouse</h1>
             <div class="section-hint" style="margin-top:6px;">Athletes only. Members never see this.</div>
           </div>
         </div>
@@ -1165,9 +1165,9 @@
       }
     }
 
-    // ── Locker Room (single channel) ──
+    // ── Clubhouse (single channel) ──
     var CHAT_API = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat';
-    var LOCKER_ROOM = 'athlete-locker-room';
+    var CLUBHOUSE = 'athlete-clubhouse';
     var chatLastTimestamp = 0;
     var chatPollTimer = null;
 
@@ -1179,7 +1179,7 @@
 
     async function loadChatMessages(append) {
       try {
-        var url = CHAT_API + '/' + LOCKER_ROOM + '/messages?role=athlete&limit=100';
+        var url = CHAT_API + '/' + CLUBHOUSE + '/messages?role=athlete&limit=100';
         if (append && chatLastTimestamp) url += '&since=' + chatLastTimestamp;
         var res = await fetch(url);
         if (!res.ok) return;
@@ -1228,7 +1228,7 @@
       input.value = '';
       var initials = (athlete.name || '').split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
       try {
-        var res = await fetch(CHAT_API + '/' + LOCKER_ROOM + '/messages', {
+        var res = await fetch(CHAT_API + '/' + CLUBHOUSE + '/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
