@@ -1819,6 +1819,28 @@
         .chat-msg-wrap { position: relative; }
         .chat-msg-wrap .chat-pin-btn { display: none; position: absolute; top: 6px; right: 10px; background: rgba(191,155,59,0.12); border: 1px solid rgba(191,155,59,0.2); border-radius: 3px; color: var(--gold); font-size: 10px; padding: 2px 8px; cursor: pointer; font-family: var(--font-ui); letter-spacing: 0.08em; }
         .chat-msg-wrap:hover .chat-pin-btn { display: inline-block; }
+        /* Reaction picker — visible on hover */
+        .chat-msg-wrap .chat-react-btn { display: none; position: absolute; top: 6px; right: 60px; background: rgba(245,240,225,0.06); border: 1px solid rgba(245,240,225,0.12); border-radius: 14px; color: rgba(245,240,225,0.6); font-size: 12px; padding: 2px 9px; cursor: pointer; font-family: var(--font-ui); }
+        .chat-msg-wrap:hover .chat-react-btn { display: inline-block; }
+        .chat-msg-wrap .chat-react-btn:hover { background: rgba(191,155,59,0.12); color: var(--gold); border-color: var(--gold); }
+        .chat-react-popover { position: absolute; top: -36px; right: 60px; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.25); border-radius: 22px; padding: 4px 8px; display: flex; gap: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 6; }
+        .chat-react-popover button { background: none; border: none; cursor: pointer; padding: 4px 6px; font-size: 18px; border-radius: 50%; transition: transform 0.15s; }
+        .chat-react-popover button:hover { transform: scale(1.25); background: rgba(245,240,225,0.06); }
+        .chat-react-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 12px; background: rgba(245,240,225,0.06); border: 1px solid rgba(245,240,225,0.08); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+        .chat-react-chip:hover { border-color: rgba(191,155,59,0.4); background: rgba(191,155,59,0.08); }
+        .chat-react-chip.mine { border-color: var(--gold); background: rgba(191,155,59,0.15); }
+        /* Unread dot */
+        .chat-unread-dot { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-left: 6px; vertical-align: middle; }
+        .chat-unread-dot.show { display: inline-block; }
+        /* @mention chips inside messages */
+        .chat-mention { display: inline-block; padding: 1px 6px; background: rgba(191,155,59,0.16); border-radius: 3px; color: var(--gold); font-weight: 600; }
+        .chat-mention.is-me { background: rgba(232, 74, 95, 0.2); color: #FFB0BB; }
+        /* Mention autocomplete dropdown */
+        .chat-mention-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; transition: background 0.1s; }
+        .chat-mention-item:hover, .chat-mention-item.active { background: rgba(191,155,59,0.1); }
+        .chat-mention-item .av { width: 28px; height: 28px; border-radius: 50%; background-size: cover; background-position: center; flex-shrink: 0; background-color: rgba(245,240,225,0.06); display: flex; align-items: center; justify-content: center; font-size: 11px; color: rgba(245,240,225,0.5); }
+        .chat-mention-item .nm { font-family: var(--font-ui); font-size: 13px; color: var(--cream); }
+        .chat-mention-item .sub { font-size: 10px; color: rgba(245,240,225,0.4); margin-top: 1px; }
       </style>
 
       <!-- Mobile channel picker (visible only below 768px) -->
@@ -1843,67 +1865,76 @@
           </div>
           <div style="padding: 16px; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(191,155,59,0.4);">General</div>
 
-          <div class="chat-channel active" onclick="selectChannel('lounge')" id="ch-lounge" style="padding: 10px 16px; cursor: pointer; background: rgba(42,94,70,0.3); border-left: 3px solid var(--gold);">
-            <div style="font-family: var(--font-ui); font-size: 13px; color: var(--cream); font-weight: 500;"># clubhouse-lounge</div>
+          <div class="chat-channel active" onclick="selectChannel('lounge')" id="ch-lounge" style="padding: 10px 16px; cursor: pointer; background: rgba(42,94,70,0.3); border-left: 3px solid var(--gold); position: relative;">
+            <div style="font-family: var(--font-ui); font-size: 13px; color: var(--cream); font-weight: 500;"># clubhouse-lounge<span class="chat-unread-dot" id="unread-lounge"></span></div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(245,240,225,0.3); margin-top: 2px;">Main gathering spot</div>
           </div>
 
-          <div class="chat-channel" onclick="selectChannel('announcements')" id="ch-announcements" style="padding: 10px 16px; cursor: pointer;">
-            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># announcements</div>
+          <div class="chat-channel" onclick="selectChannel('announcements')" id="ch-announcements" style="padding: 10px 16px; cursor: pointer; position: relative;">
+            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># announcements<span class="chat-unread-dot" id="unread-announcements"></span></div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(245,240,225,0.2); margin-top: 2px;">Official updates</div>
           </div>
 
           <div style="padding: 16px 16px 8px; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(191,155,59,0.4);">Rounds</div>
 
-          <div class="chat-channel" onclick="selectChannel('recaps')" id="ch-recaps" style="padding: 10px 16px; cursor: pointer;">
-            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># round-recaps</div>
+          <div class="chat-channel" onclick="selectChannel('recaps')" id="ch-recaps" style="padding: 10px 16px; cursor: pointer; position: relative;">
+            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># round-recaps<span class="chat-unread-dot" id="unread-recaps"></span></div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(245,240,225,0.2); margin-top: 2px;">Share highlights</div>
           </div>
 
-          <div class="chat-channel" onclick="selectChannel('availability')" id="ch-availability" style="padding: 10px 16px; cursor: pointer;">
-            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># athlete-availability</div>
+          <div class="chat-channel" onclick="selectChannel('availability')" id="ch-availability" style="padding: 10px 16px; cursor: pointer; position: relative;">
+            <div style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.6);"># athlete-availability<span class="chat-unread-dot" id="unread-availability"></span></div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(245,240,225,0.2); margin-top: 2px;">Real-time openings</div>
           </div>
 
           <div style="padding: 16px 16px 8px; font-family: var(--font-ui); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(191,155,59,0.4);">Back Nine Exclusive</div>
 
-          <div class="chat-channel" onclick="selectChannel('chairman')" id="ch-chairman" style="padding: 10px 16px; cursor: pointer;">
+          <div class="chat-channel" onclick="selectChannel('chairman')" id="ch-chairman" style="padding: 10px 16px; cursor: pointer; position: relative;">
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="font-family: var(--font-ui); font-size: 13px; color: var(--gold);"># the-back-nine</span>
               <span style="font-family: var(--font-ui); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; color: var(--gold); background: rgba(191,155,59,0.1); padding: 2px 6px; border-radius: 2px;">PRIVATE</span>
+              <span class="chat-unread-dot" id="unread-chairman"></span>
             </div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(191,155,59,0.3); margin-top: 2px;">Top tier only</div>
           </div>
 
-          <div class="chat-channel" onclick="selectChannel('deals')" id="ch-deals" style="padding: 10px 16px; cursor: pointer;">
-            <div style="font-family: var(--font-ui); font-size: 13px; color: var(--gold);"># deal-room</div>
+          <div class="chat-channel" onclick="selectChannel('deals')" id="ch-deals" style="padding: 10px 16px; cursor: pointer; position: relative;">
+            <div style="font-family: var(--font-ui); font-size: 13px; color: var(--gold);"># deal-room<span class="chat-unread-dot" id="unread-deals"></span></div>
             <div style="font-family: var(--font-ui); font-size: 10px; color: rgba(191,155,59,0.3); margin-top: 2px;">Business opportunities</div>
           </div>
         </div>
 
         <!-- Chat Messages -->
-        <div style="display: flex; flex-direction: column; background: rgba(9,29,20,0.4);">
+        <div style="display: flex; flex-direction: column; background: rgba(9,29,20,0.4); position: relative;">
 
-          <!-- Channel Header -->
-          <div id="chatHeader" style="padding: 16px 20px; border-bottom: 1px solid rgba(191,155,59,0.06); display: flex; justify-content: space-between; align-items: center;">
+          <!-- Channel Header — populated dynamically by selectChannel() -->
+          <div id="chatHeader" style="padding: 16px 20px; border-bottom: 1px solid rgba(191,155,59,0.06); display: flex; justify-content: space-between; align-items: center; gap: 12px;">
             <div>
-              <span style="font-family: var(--font-ui); font-size: 15px; font-weight: 600; color: var(--cream);"># clubhouse-lounge</span>
-              <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.3); margin-left: 12px;">Main gathering spot</span>
+              <span style="font-family: var(--font-ui); font-size: 15px; font-weight: 600; color: var(--cream);">Loading...</span>
             </div>
-            <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.2);">Private Community</span>
+            <div id="chatPresenceBadge" style="display: flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.45);">
+              <span style="width: 7px; height: 7px; border-radius: 50%; background: #6DC86D; display: inline-block;"></span>
+              <span id="chatPresenceCount">— online</span>
+            </div>
           </div>
 
           <!-- Pinned messages sticky bar -->
           <div id="chatPinnedBar" style="display:none; padding: 12px 20px; border-bottom: 1px solid rgba(191,155,59,0.1); background: rgba(191,155,59,0.03); max-height: 150px; overflow-y: auto;"></div>
 
-          <!-- Messages (loaded from API) -->
-          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px;">
+          <!-- Messages -->
+          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; position: relative;" onscroll="onChatScroll()">
             <div style="text-align:center;padding:40px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.2);">Select a channel to start chatting.</div>
           </div>
 
+          <!-- Floating "↓ New messages" pill -->
+          <button id="chatNewMsgPill" onclick="scrollChatToBottom()" style="display: none; position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%); padding: 7px 16px; background: linear-gradient(135deg, #A88630, #BF9B3B); border: none; border-radius: 20px; color: #091D14; cursor: pointer; font-family: var(--font-ui); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; box-shadow: 0 4px 14px rgba(0,0,0,0.4); z-index: 5;">New messages ↓</button>
+
+          <!-- @mention autocomplete dropdown -->
+          <div id="chatMentionPopover" style="display: none; position: absolute; bottom: 70px; left: 20px; max-height: 220px; overflow-y: auto; min-width: 240px; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.25); border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10;"></div>
+
           <!-- Message Input -->
           <div style="padding: 16px 20px; border-top: 1px solid rgba(191,155,59,0.06); display: flex; gap: 12px; align-items: center;">
-            <input type="text" id="chatInput" placeholder="Message #clubhouse-lounge" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 14px; padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.08); outline: none;" onkeypress="if(event.key==='Enter')sendMessage()">
+            <input type="text" id="chatInput" placeholder="Message" autocomplete="off" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 14px; padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.08); outline: none;" onkeyup="onChatInputKeyup(event)" onkeydown="onChatInputKeydown(event)">
             <button onclick="sendMessage()" style="background: var(--gold); color: var(--green-deep); border: none; width: 40px; height: 40px; border-radius: 4px; cursor: pointer; font-size: 16px;">&#8593;</button>
           </div>
         </div>
@@ -1925,7 +1956,11 @@
 
       <!-- Profile Header -->
       <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 40px; padding: 32px; background: rgba(16,53,42,0.4); border: 1px solid rgba(191,155,59,0.1); border-radius: 8px; flex-wrap: wrap;">
-        <div id="acct-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--green-dark); border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 28px; font-weight: 700; color: var(--gold); flex-shrink: 0;">--</div>
+        <div style="position: relative; flex-shrink: 0;">
+          <div id="acct-avatar" style="width: 80px; height: 80px; border-radius: 50%; background: var(--green-dark) center/cover no-repeat; border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 28px; font-weight: 700; color: var(--gold);">--</div>
+          <button onclick="document.getElementById('avatarFileInput').click()" title="Change photo" style="position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #091D14; border: 2px solid var(--green-deep); cursor: pointer; font-family: var(--font-ui); font-size: 14px; padding: 0; display: flex; align-items: center; justify-content: center;" aria-label="Change photo">&#9998;</button>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="uploadMemberAvatar(this)">
+        </div>
         <div style="flex: 1; min-width: 200px;">
           <div id="acct-name" style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; color: var(--cream); margin-bottom: 4px;">--</div>
           <div id="acct-email" style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.4); margin-bottom: 8px;">--</div>
@@ -2161,11 +2196,17 @@
     document.getElementById('acct-email').textContent = user.email || '--';
     document.getElementById('acct-company').textContent = user.company || '--';
 
-    // Avatar initials
+    // Avatar — show photo if present, otherwise initials
     var avatarEl = document.getElementById('acct-avatar');
     if (avatarEl) {
-      var initials = fullName.split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
-      avatarEl.textContent = initials;
+      var savedAvatar = sessionStorage.getItem('cartpath_member_avatar');
+      if (savedAvatar) {
+        avatarEl.style.backgroundImage = 'url("' + savedAvatar + '")';
+        avatarEl.textContent = '';
+      } else {
+        var initials = fullName.split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+        avatarEl.textContent = initials;
+      }
     }
 
     // Handicap from saved rounds
@@ -3149,9 +3190,18 @@
     var ch = chatChannelInfo[channelId];
     if (!ch) return;
 
+    // Dynamic header — the actual current channel + description
     var header = document.getElementById('chatHeader');
     if (header) {
-      header.innerHTML = '<div><span style="font-family:var(--font-ui);font-size:15px;font-weight:600;color:var(--cream);">' + ch.name + '</span><span style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.3);margin-left:12px;">' + ch.desc + '</span></div>';
+      header.innerHTML =
+        '<div>' +
+          '<span style="font-family:var(--font-ui);font-size:15px;font-weight:600;color:var(--cream);">' + ch.name + '</span>' +
+          '<span style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.3);margin-left:12px;">' + ch.desc + '</span>' +
+        '</div>' +
+        '<div id="chatPresenceBadge" style="display:flex;align-items:center;gap:6px;font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.45);">' +
+          '<span style="width:7px;height:7px;border-radius:50%;background:#6DC86D;display:inline-block;"></span>' +
+          '<span id="chatPresenceCount">' + (window.chatOnlineCount || '—') + ' online</span>' +
+        '</div>';
     }
 
     var input = document.getElementById('chatInput');
@@ -3167,8 +3217,12 @@
       activeEl.style.borderLeft = '3px solid var(--gold)';
     }
 
+    // Mark this channel read (clears its unread dot)
+    markChannelRead(channelId);
+
     lastMessageTimestamp = 0;
     loadMessages();
+    if (window.fetchChatPresence) window.fetchChatPresence();
   }
 
   function loadMessages(append) {
@@ -3178,42 +3232,50 @@
       url += '&since=' + lastMessageTimestamp;
     }
 
-    // Also load pinned messages (only on full refresh, not append)
-    if (!append) loadPinnedMessages(roomId);
+    // Refresh pinned messages every poll so a freshly pinned message appears
+    loadPinnedMessages(roomId);
 
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var messages = data.messages || [];
         if (messages.length === 0 && !append) {
-          document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;padding:40px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.2);">No messages yet. Be the first to post.</div>';
+          document.getElementById('chatMessages').innerHTML = renderEmptyChannelState(currentChannel);
           return;
         }
         if (messages.length === 0) return;
 
         var isAdmin = isChatAdmin();
-        var html = append ? '' : '';
+        var myName = sessionStorage.getItem('cartpath_member_name') || '';
+        var html = '';
         messages.forEach(function(m) {
-          var time = new Date(m.createdAt || m.timestamp);
-          var h = time.getHours() % 12 || 12;
-          var min = time.getMinutes();
-          var ampm = time.getHours() >= 12 ? 'PM' : 'AM';
-          var timeStr = h + ':' + (min < 10 ? '0' : '') + min + ' ' + ampm;
+          var timeStr = formatChatTimestamp(m.createdAt || m.timestamp);
 
           var tierColor = m.userTier === 'chairman' ? 'var(--gold)' : 'rgba(245,240,225,0.4)';
           var tierLabel = m.userTier === 'chairman' ? 'CHAIRMAN' : 'EXECUTIVE';
           var borderColor = m.userTier === 'chairman' ? 'rgba(191,155,59,0.4)' : 'rgba(245,240,225,0.15)';
 
           var searchKey = ((m.userName || '') + ' ' + (m.content || '')).toLowerCase();
-          html += '<div class="chat-msg-wrap" data-chat-search="' + escapeAttrMR(searchKey) + '" style="display:flex;gap:12px;margin-bottom:20px;">';
+          var attrTs = escapeAttrMR(String(m.timestamp));
+          var attrId = escapeAttrMR(m.messageId || '');
+          html += '<div class="chat-msg-wrap" data-chat-search="' + escapeAttrMR(searchKey) + '" data-msg-id="' + attrId + '" data-msg-ts="' + attrTs + '" style="display:flex;gap:12px;margin-bottom:20px;">';
           if (isAdmin && m.messageId && m.timestamp) {
             var pinLabel = m.pinned ? 'Unpin' : 'Pin';
-            html += '<button class="chat-pin-btn" onclick="togglePinMessage(\'' + escapeAttrMR(roomId) + '\', \'' + escapeAttrMR(String(m.timestamp)) + '\', ' + (m.pinned ? 'false' : 'true') + ')">' + pinLabel + '</button>';
+            html += '<button class="chat-pin-btn" onclick="togglePinMessage(\'' + escapeAttrMR(roomId) + '\', \'' + attrTs + '\', ' + (m.pinned ? 'false' : 'true') + ')">' + pinLabel + '</button>';
           }
-          html += '<div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);border:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:12px;font-weight:600;color:' + tierColor + ';flex-shrink:0;">' + (m.userInitials || '??') + '</div>';
+          // React button (visible on hover)
+          if (m.messageId) {
+            html += '<button class="chat-react-btn" onclick="openReactionPicker(this, \'' + escapeAttrMR(roomId) + '\', \'' + attrId + '\')" title="Add reaction">+</button>';
+          }
+          // Avatar — photo if present, otherwise initials
+          if (m.userAvatar) {
+            html += '<img src="' + escapeAttrMR(m.userAvatar) + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid ' + borderColor + ';flex-shrink:0;" loading="lazy" alt="">';
+          } else {
+            html += '<div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);border:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:12px;font-weight:600;color:' + tierColor + ';flex-shrink:0;">' + (m.userInitials || '??') + '</div>';
+          }
           html += '<div style="flex:1;min-width:0;">';
-          html += '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + (m.userName || 'Unknown') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">' + timeStr + '</span>' + (m.pinned ? ' <span style="font-family:var(--font-ui);font-size:9px;color:var(--gold);margin-left:6px;">&#128204; PINNED</span>' : '') + '</div>';
-          html += '<div style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.65);line-height:1.5;">' + (m.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+          html += '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + escapeHtmlMR(m.userName || 'Unknown') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">' + timeStr + '</span>' + (m.pinned ? ' <span style="font-family:var(--font-ui);font-size:9px;color:var(--gold);margin-left:6px;">&#128204; PINNED</span>' : '') + '</div>';
+          html += '<div style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.78);line-height:1.5;">' + renderChatBody(m.content || '', myName) + '</div>';
 
           // Photos
           if (m.photos && m.photos.length > 0) {
@@ -3230,7 +3292,8 @@
             Object.keys(m.reactions).forEach(function(emoji) {
               var users = m.reactions[emoji] || [];
               if (users.length > 0) {
-                html += '<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;background:rgba(245,240,225,0.06);border:1px solid rgba(245,240,225,0.08);font-size:13px;cursor:default;" title="' + users.join(', ') + '">' + emoji + ' <span style="font-size:11px;color:rgba(245,240,225,0.5);font-weight:600;">' + users.length + '</span></span>';
+                var mine = myName && users.indexOf(myName) !== -1;
+                html += '<span class="chat-react-chip' + (mine ? ' mine' : '') + '" onclick="toggleReaction(\'' + escapeAttrMR(roomId) + '\', \'' + escapeAttrMR(m.messageId || '') + '\', \'' + emoji + '\')" title="' + escapeAttrMR(users.join(', ')) + '">' + emoji + ' <span style="font-size:11px;color:rgba(245,240,225,0.5);font-weight:600;">' + users.length + '</span></span>';
               }
             });
             html += '</div>';
@@ -3242,18 +3305,172 @@
         });
 
         var messagesDiv = document.getElementById('chatMessages');
+        var wasNearBottom = isNearBottom(messagesDiv);
         if (append) {
           messagesDiv.insertAdjacentHTML('beforeend', html);
         } else {
           messagesDiv.innerHTML = html;
         }
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        if (!append || wasNearBottom) {
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+          hideNewMsgPill();
+        } else {
+          showNewMsgPill();
+        }
         // Re-apply search filter if there's a query active
         filterChatMessages();
+        // Save the last-seen timestamp for unread tracking
+        if (lastMessageTimestamp > 0) markChannelSeen(currentChannel, lastMessageTimestamp);
       })
       .catch(function(err) {
         console.error('Chat load error:', err);
       });
+  }
+
+  // Convert plain message text to HTML with @mention chips
+  function renderChatBody(content, myName) {
+    var escaped = escapeHtmlMR(content);
+    // @MentionName up to 2 words (matches first-last)
+    return escaped.replace(/@([A-Za-z][A-Za-z0-9_]*(?:\s[A-Z][A-Za-z]+)?)/g, function(match, name) {
+      var isMe = myName && name.toLowerCase() === myName.toLowerCase();
+      return '<span class="chat-mention' + (isMe ? ' is-me' : '') + '">@' + name + '</span>';
+    });
+  }
+
+  // "Just now", "5m", "2h", "Yesterday at 3:42 PM", or full date
+  function formatChatTimestamp(input) {
+    var time = new Date(input);
+    var ms = Date.now() - time.getTime();
+    var sec = Math.floor(ms / 1000);
+    if (sec < 60) return 'Just now';
+    if (sec < 3600) return Math.floor(sec / 60) + 'm';
+    if (sec < 86400) return Math.floor(sec / 3600) + 'h';
+    var h = time.getHours() % 12 || 12;
+    var min = time.getMinutes();
+    var ampm = time.getHours() >= 12 ? 'PM' : 'AM';
+    var clock = h + ':' + (min < 10 ? '0' : '') + min + ' ' + ampm;
+    if (sec < 172800) return 'Yesterday at ' + clock;
+    return time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + clock;
+  }
+
+  // Channel-specific empty-state copy with prompts
+  function renderEmptyChannelState(channelId) {
+    var copy = ({
+      lounge: 'Quiet in here. Drop a "good morning" or share what course you\'re playing this weekend.',
+      announcements: 'Nothing here yet. Stay tuned for official updates from CartPath.',
+      recaps: 'No round recaps yet. Played somewhere good lately? Share the story — and a photo if you have one.',
+      availability: 'No openings posted yet. Check back — when an athlete frees up a date, it\'ll appear here in real time.',
+      chairman: 'Back Nine members only. Talk shop, deals, or weekend tee times.',
+      deals: 'No deals posted yet. Members close real business in this room — when it\'s your turn, you\'ll know.',
+    })[channelId] || 'No messages yet. Be the first to post.';
+    return '<div style="text-align:center;padding:60px 30px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.4);max-width:420px;margin:0 auto;line-height:1.6;">' + copy + '</div>';
+  }
+
+  function isNearBottom(el) {
+    if (!el) return true;
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < 80;
+  }
+  function showNewMsgPill() {
+    var p = document.getElementById('chatNewMsgPill');
+    if (p) p.style.display = 'inline-block';
+  }
+  function hideNewMsgPill() {
+    var p = document.getElementById('chatNewMsgPill');
+    if (p) p.style.display = 'none';
+  }
+  function scrollChatToBottom() {
+    var el = document.getElementById('chatMessages');
+    if (el) el.scrollTop = el.scrollHeight;
+    hideNewMsgPill();
+  }
+  function onChatScroll() {
+    var el = document.getElementById('chatMessages');
+    if (isNearBottom(el)) hideNewMsgPill();
+  }
+
+  // ── Reactions: open picker
+  var ALLOWED_REACTIONS = ['👍', '🔥', '⛳', '🏌️', '💪', '👏'];
+  function openReactionPicker(btn, roomId, messageId) {
+    // Remove any other open popover
+    document.querySelectorAll('.chat-react-popover').forEach(function(el) { el.remove(); });
+
+    var wrap = btn.closest('.chat-msg-wrap');
+    var popover = document.createElement('div');
+    popover.className = 'chat-react-popover';
+    ALLOWED_REACTIONS.forEach(function(emoji) {
+      var b = document.createElement('button');
+      b.textContent = emoji;
+      b.onclick = function(ev) {
+        ev.stopPropagation();
+        toggleReaction(roomId, messageId, emoji);
+        popover.remove();
+      };
+      popover.appendChild(b);
+    });
+    wrap.appendChild(popover);
+    // Close on outside click
+    setTimeout(function() {
+      document.addEventListener('click', function close(e) {
+        if (!popover.contains(e.target)) { popover.remove(); document.removeEventListener('click', close); }
+      });
+    }, 0);
+  }
+
+  function toggleReaction(roomId, messageId, emoji) {
+    var userName = sessionStorage.getItem('cartpath_member_name') || 'Member';
+    fetch(CHAT_API + '/' + roomId + '/messages/' + messageId + '/react', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emoji: emoji, userName: userName }),
+    }).then(function(r) { return r.json(); })
+      .then(function() { lastMessageTimestamp = 0; loadMessages(); })
+      .catch(function(err) { console.error('Reaction error:', err); });
+  }
+
+  // ── Unread tracking (localStorage per-channel last-seen ts) ──
+  function unreadKey() {
+    var email = (sessionStorage.getItem('cartpath_member_email') || 'anon').toLowerCase();
+    return 'cartpath_chat_seen_' + email;
+  }
+  function getSeenMap() {
+    try { return JSON.parse(localStorage.getItem(unreadKey()) || '{}'); } catch { return {}; }
+  }
+  function setSeenMap(m) {
+    try { localStorage.setItem(unreadKey(), JSON.stringify(m)); } catch {}
+  }
+  function markChannelSeen(channelId, ts) {
+    var m = getSeenMap();
+    if (!m[channelId] || ts > m[channelId]) {
+      m[channelId] = ts;
+      setSeenMap(m);
+    }
+    var dot = document.getElementById('unread-' + channelId);
+    if (dot) dot.classList.remove('show');
+  }
+  function markChannelRead(channelId) {
+    var m = getSeenMap();
+    m[channelId] = Date.now();
+    setSeenMap(m);
+    var dot = document.getElementById('unread-' + channelId);
+    if (dot) dot.classList.remove('show');
+  }
+  // Poll every 60s: ask each channel for its latest message and dot it if newer than last-seen
+  function pollUnreadCounts() {
+    var seen = getSeenMap();
+    Object.keys(chatChannelMap).forEach(function(localId) {
+      if (localId === currentChannel) return;
+      var roomId = chatChannelMap[localId];
+      fetch(CHAT_API + '/' + roomId + '/messages?limit=1')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var latest = (data.messages || [])[0];
+          if (!latest) return;
+          var seenTs = seen[localId] || 0;
+          var dot = document.getElementById('unread-' + localId);
+          if (dot && latest.timestamp > seenTs) dot.classList.add('show');
+        })
+        .catch(function() {});
+    });
   }
 
   // Hide/show messages based on the chat search input.
@@ -3327,9 +3544,18 @@
     var userName = sessionStorage.getItem('cartpath_member_name') || 'Member';
     var initials = userName.split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2);
     var tier = sessionStorage.getItem('cartpath_member_tier') || 'executive';
+    var avatar = sessionStorage.getItem('cartpath_member_avatar') || null;
+    var senderEmail = sessionStorage.getItem('cartpath_member_email') || '';
     var roomId = chatChannelMap[currentChannel] || currentChannel;
 
+    // Pull mentions from the message (matches @Name or @Name Last)
+    var mentions = [];
+    var mre = /@([A-Za-z][A-Za-z0-9_]*(?:\s[A-Z][A-Za-z]+)?)/g;
+    var mm;
+    while ((mm = mre.exec(msg)) !== null) mentions.push(mm[1]);
+
     input.value = '';
+    closeMentionPopover();
 
     fetch(CHAT_API + '/' + roomId + '/messages', {
       method: 'POST',
@@ -3338,7 +3564,10 @@
         userName: userName,
         userInitials: initials,
         userTier: tier,
-        content: msg
+        userAvatar: avatar,
+        senderEmail: senderEmail,
+        content: msg,
+        mentions: mentions,
       })
     })
     .then(function(r) { return r.json(); })
@@ -3351,6 +3580,154 @@
     .catch(function(err) {
       console.error('Send error:', err);
     });
+  }
+
+  // ── @mention autocomplete ──
+  var mentionList = [];          // [{name, kind:'member'|'athlete', avatar, sub}]
+  var mentionListLoaded = false;
+  var mentionActiveIndex = 0;
+
+  async function loadMentionables() {
+    if (mentionListLoaded) return;
+    var token = getCognitoIdToken();
+    if (!token) return;
+    try {
+      var res = await fetch(API_BASE + '/members/me/mentionables', {
+        headers: { Authorization: 'Bearer ' + token },
+      });
+      if (!res.ok) return;
+      var data = await res.json();
+      mentionList = (data.members || []).map(function(m) {
+        return { name: m.name, kind: 'member', avatar: m.avatar, sub: (m.tier || 'member').toUpperCase() };
+      }).concat((data.athletes || []).map(function(a) {
+        return { name: a.name, kind: 'athlete', avatar: a.avatar, sub: 'ATHLETE' };
+      }));
+      mentionListLoaded = true;
+    } catch {}
+  }
+
+  function closeMentionPopover() {
+    var p = document.getElementById('chatMentionPopover');
+    if (p) { p.style.display = 'none'; p.innerHTML = ''; }
+  }
+
+  function getCurrentMentionQuery() {
+    var input = document.getElementById('chatInput');
+    if (!input) return null;
+    var val = input.value;
+    var pos = input.selectionStart;
+    var before = val.substring(0, pos);
+    var m = before.match(/@([A-Za-z][A-Za-z0-9_ ]{0,30})$/);
+    return m ? m[1] : null;
+  }
+
+  function renderMentionPopover() {
+    var q = getCurrentMentionQuery();
+    var p = document.getElementById('chatMentionPopover');
+    if (!p) return;
+    if (q === null) { closeMentionPopover(); return; }
+    if (!mentionListLoaded) loadMentionables();
+
+    var lc = q.toLowerCase();
+    var matches = mentionList.filter(function(it) {
+      return it.name && it.name.toLowerCase().indexOf(lc) !== -1;
+    }).slice(0, 8);
+
+    if (matches.length === 0) { closeMentionPopover(); return; }
+
+    if (mentionActiveIndex >= matches.length) mentionActiveIndex = 0;
+
+    var html = '';
+    matches.forEach(function(it, idx) {
+      var initials = (it.name || '?').split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+      var avatarHtml = it.avatar
+        ? '<div class="av" style="background-image:url(\'' + it.avatar + '\');"></div>'
+        : '<div class="av">' + initials + '</div>';
+      html += '<div class="chat-mention-item' + (idx === mentionActiveIndex ? ' active' : '') + '" data-name="' + escapeAttrMR(it.name) + '" onmousedown="event.preventDefault();applyMention(\'' + escapeAttrMR(it.name) + '\')">'
+        + avatarHtml
+        + '<div><div class="nm">' + escapeHtmlMR(it.name) + '</div><div class="sub">' + escapeHtmlMR(it.sub || '') + '</div></div>'
+        + '</div>';
+    });
+    p.innerHTML = html;
+    p.style.display = 'block';
+    p._matches = matches;
+  }
+
+  function applyMention(name) {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    var val = input.value;
+    var pos = input.selectionStart;
+    var before = val.substring(0, pos);
+    var after = val.substring(pos);
+    var newBefore = before.replace(/@([A-Za-z][A-Za-z0-9_ ]{0,30})$/, '@' + name + ' ');
+    input.value = newBefore + after;
+    input.focus();
+    var newPos = newBefore.length;
+    input.setSelectionRange(newPos, newPos);
+    closeMentionPopover();
+  }
+
+  function onChatInputKeydown(event) {
+    var p = document.getElementById('chatMentionPopover');
+    var open = p && p.style.display === 'block' && p._matches && p._matches.length > 0;
+    if (open) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        mentionActiveIndex = (mentionActiveIndex + 1) % p._matches.length;
+        renderMentionPopover();
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        mentionActiveIndex = (mentionActiveIndex - 1 + p._matches.length) % p._matches.length;
+        renderMentionPopover();
+        return;
+      }
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        applyMention(p._matches[mentionActiveIndex].name);
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeMentionPopover();
+        return;
+      }
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function onChatInputKeyup(event) {
+    if (['ArrowUp','ArrowDown','Enter','Tab','Escape'].indexOf(event.key) !== -1) return;
+    mentionActiveIndex = 0;
+    renderMentionPopover();
+  }
+
+  // ── Presence heartbeat ──
+  window.fetchChatPresence = function() {
+    fetch(CHAT_API + '/presence?role=member')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        window.chatOnlineCount = d.online;
+        var el = document.getElementById('chatPresenceCount');
+        if (el) el.textContent = d.online + ' online';
+      })
+      .catch(function() {});
+  };
+
+  function sendChatHeartbeat() {
+    var email = sessionStorage.getItem('cartpath_member_email') || '';
+    var name = sessionStorage.getItem('cartpath_member_name') || '';
+    if (!email) return;
+    fetch(CHAT_API + '/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, name: name, role: 'member' }),
+    }).catch(function() {});
   }
 
   // ── COURSE DIRECTORY ──
@@ -3729,19 +4106,38 @@
     .then(function(d) { if (d.success) alert('Permissions updated.'); });
   }
 
-  // Poll for new messages every 3 seconds
+  // Poll for new messages every 3 seconds. Also polls unread + presence + heartbeat on a slower cadence.
+  var chatHeartbeatInterval = null;
+  var chatUnreadInterval = null;
+  var chatPresenceInterval = null;
+
   function startChatPolling() {
     if (chatPollInterval) clearInterval(chatPollInterval);
-    chatPollInterval = setInterval(function() {
-      loadMessages(true);
-    }, 3000);
+    chatPollInterval = setInterval(function() { loadMessages(true); }, 3000);
+
+    // Pre-load mentionables once
+    loadMentionables();
+
+    // Send initial heartbeat now, then every 30s
+    sendChatHeartbeat();
+    if (!chatHeartbeatInterval) chatHeartbeatInterval = setInterval(sendChatHeartbeat, 30000);
+
+    // Presence count: refresh every 20s
+    if (window.fetchChatPresence) window.fetchChatPresence();
+    if (!chatPresenceInterval) chatPresenceInterval = setInterval(function() {
+      if (window.fetchChatPresence) window.fetchChatPresence();
+    }, 20000);
+
+    // Unread badges: poll every 60s for inactive channels
+    pollUnreadCounts();
+    if (!chatUnreadInterval) chatUnreadInterval = setInterval(pollUnreadCounts, 60000);
   }
 
   function stopChatPolling() {
-    if (chatPollInterval) {
-      clearInterval(chatPollInterval);
-      chatPollInterval = null;
-    }
+    if (chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
+    if (chatHeartbeatInterval) { clearInterval(chatHeartbeatInterval); chatHeartbeatInterval = null; }
+    if (chatPresenceInterval) { clearInterval(chatPresenceInterval); chatPresenceInterval = null; }
+    if (chatUnreadInterval) { clearInterval(chatUnreadInterval); chatUnreadInterval = null; }
   }
 
   function showChatForTier(tier) {
@@ -4533,11 +4929,68 @@
       var res = await fetch(API_BASE + '/members/me', { headers: { 'Authorization': 'Bearer ' + token } });
       if (!res.ok) return;
       var data = await res.json();
+      // Stash avatar (used in chat) — fire-and-forget side effect
+      if (data.member?.avatar_url) {
+        sessionStorage.setItem('cartpath_member_avatar', data.member.avatar_url);
+      }
       var onboarded = data.member?.onboarded;
       if (onboarded === true) return;
       onboardingIndex = 0;
       renderOnboardingStep();
     } catch {}
+  }
+
+  // ── Member avatar upload ──
+  async function uploadMemberAvatar(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var token = getCognitoIdToken();
+    if (!token) { showToast && showToast('Please log in', 'error'); return; }
+
+    // Local preview while we upload
+    var avatarEl = document.getElementById('acct-avatar');
+    var localUrl = URL.createObjectURL(file);
+    if (avatarEl) {
+      avatarEl.style.backgroundImage = 'url("' + localUrl + '")';
+      avatarEl.textContent = '';
+      avatarEl.style.opacity = '0.6';
+    }
+
+    try {
+      var presign = await fetch(API_BASE + '/members/me/avatar-upload-url', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, content_type: file.type || 'image/jpeg' }),
+      });
+      if (!presign.ok) throw new Error('presign failed');
+      var pj = await presign.json();
+      var put = await fetch(pj.upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'image/jpeg' },
+        body: file,
+      });
+      if (!put.ok) throw new Error('upload failed');
+
+      var save = await fetch(API_BASE + '/members/me/avatar', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_url: pj.public_url }),
+      });
+      if (!save.ok) throw new Error('save failed');
+
+      sessionStorage.setItem('cartpath_member_avatar', pj.public_url);
+      if (avatarEl) {
+        avatarEl.style.backgroundImage = 'url("' + pj.public_url + '")';
+        avatarEl.style.opacity = '1';
+      }
+      if (typeof showToast === 'function') showToast('Avatar updated.');
+    } catch (err) {
+      console.error('avatar upload error:', err);
+      if (typeof showToast === 'function') showToast('Avatar upload failed.', 'error');
+      if (avatarEl) avatarEl.style.opacity = '1';
+    } finally {
+      input.value = '';
+    }
   }
 
   function renderOnboardingStep() {
