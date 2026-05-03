@@ -1394,6 +1394,115 @@
       .tc-footer { flex-direction: column; align-items: stretch; }
       .tc-cta { width: 100%; }
     }
+
+    /* ===================== LUXURY TOAST ===================== */
+    .cp-toast-stack {
+      position: fixed; top: 24px; right: 24px; z-index: 100000;
+      display: flex; flex-direction: column; gap: 10px;
+      pointer-events: none; max-width: calc(100vw - 48px);
+    }
+    .cp-toast {
+      pointer-events: auto;
+      position: relative; overflow: hidden;
+      display: flex; align-items: flex-start; gap: 12px;
+      min-width: 280px; max-width: 380px;
+      padding: 14px 18px 14px 22px;
+      background: rgba(9, 29, 20, 0.96);
+      border: 1px solid rgba(191, 155, 59, 0.28);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        0 2px 10px rgba(191, 155, 59, 0.08),
+        inset 0 1px 0 rgba(245, 240, 225, 0.04);
+      animation: cp-toast-in 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+      font-family: var(--font-ui);
+      color: var(--cream);
+    }
+    .cp-toast--out { animation: cp-toast-out 0.3s ease-in forwards; }
+    @keyframes cp-toast-in {
+      from { opacity: 0; transform: translateX(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    @keyframes cp-toast-out {
+      to { opacity: 0; transform: translateX(20px) scale(0.97); }
+    }
+    .cp-toast__bar {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+      background: linear-gradient(180deg, #CCAB52 0%, #A88630 100%);
+    }
+    .cp-toast--error .cp-toast__bar { background: linear-gradient(180deg, #E57373 0%, #C0392B 100%); }
+    .cp-toast--info .cp-toast__bar { background: linear-gradient(180deg, #BF9B3B 0%, #7DB3D8 100%); }
+
+    .cp-toast__icon {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+      background: rgba(191, 155, 59, 0.16);
+      border: 1px solid rgba(191, 155, 59, 0.4);
+      color: var(--gold);
+    }
+    .cp-toast--error .cp-toast__icon {
+      background: rgba(229, 115, 115, 0.14);
+      border-color: rgba(229, 115, 115, 0.45);
+      color: #E57373;
+    }
+    .cp-toast--info .cp-toast__icon {
+      background: rgba(125, 179, 216, 0.14);
+      border-color: rgba(125, 179, 216, 0.45);
+      color: #7DB3D8;
+    }
+
+    .cp-toast__body { flex: 1; min-width: 0; line-height: 1.4; }
+    .cp-toast__title {
+      font-size: 13px; font-weight: 600; color: var(--cream);
+      letter-spacing: 0.01em;
+    }
+    .cp-toast__sub {
+      font-size: 12px; color: rgba(245, 240, 225, 0.55);
+      margin-top: 3px;
+    }
+
+    .cp-toast__close {
+      position: absolute; top: 6px; right: 8px;
+      background: none; border: none; cursor: pointer;
+      color: rgba(245, 240, 225, 0.3);
+      font-size: 18px; line-height: 1; padding: 4px 8px;
+      transition: color 0.15s;
+    }
+    .cp-toast__close:hover { color: var(--gold); }
+
+    .cp-toast__progress {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: rgba(245, 240, 225, 0.04);
+    }
+    .cp-toast__progress-bar {
+      height: 100%; width: 100%;
+      background: linear-gradient(90deg, #CCAB52, #A88630);
+      transform-origin: left center;
+      animation: cp-toast-progress linear forwards;
+    }
+    .cp-toast--error .cp-toast__progress-bar { background: linear-gradient(90deg, #E57373, #C0392B); }
+    .cp-toast--info .cp-toast__progress-bar { background: linear-gradient(90deg, #BF9B3B, #7DB3D8); }
+    @keyframes cp-toast-progress {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    @media (max-width: 640px) {
+      .cp-toast-stack {
+        top: auto; bottom: 16px; right: 16px; left: 16px;
+        max-width: none; align-items: stretch;
+      }
+      .cp-toast { min-width: 0; max-width: none; }
+      @keyframes cp-toast-in {
+        from { opacity: 0; transform: translateY(16px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes cp-toast-out {
+        to { opacity: 0; transform: translateY(16px) scale(0.97); }
+      }
+    }
   </style>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxT9KdJga5N-IOoBNWkIwDfdsyHIHMZ6E&libraries=places" async defer></script>
 </head>
@@ -2742,7 +2851,7 @@
       input.value = '';
       await refreshBookingMessages();
     } catch {
-      alert('Failed to send.');
+      showToast('Failed to send', 'error');
     } finally {
       btn.disabled = false;
     }
@@ -2785,9 +2894,9 @@
         throw new Error(err.error || 'Review failed');
       }
       closeReviewModal();
-      alert('Thanks for the feedback.');
+      showToast('Thanks for the feedback');
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || 'Something went wrong', 'error');
     }
   }
 
@@ -4010,7 +4119,7 @@
       temp.select();
       document.execCommand('copy');
       document.body.removeChild(temp);
-      alert('Referral link copied!');
+      showToast('Referral link copied');
     }
   }
 
@@ -4435,12 +4544,12 @@
   function submitRound(e) {
     e.preventDefault();
     if (!selectedCourse) {
-      alert('Please select a golf course.');
+      showToast('Please select a golf course', 'error');
       return false;
     }
     var total = parseInt(document.getElementById('totalScore').value);
     if (!total || total < 50 || total > 150) {
-      alert('Please enter a valid total score (or fill in the scorecard).');
+      showToast('Please enter a valid total score (or fill in the scorecard)', 'error');
       return false;
     }
 
@@ -4609,14 +4718,55 @@
     return sessionStorage.getItem('cartpath_id_token') || sessionStorage.getItem('cartpath_access_token') || '';
   }
 
-  function showToast(msg, kind) {
-    kind = kind || 'success';
+  // Luxury toast — deep green card, gold left bar, shield icon, slide-in stack.
+  // showToast(msg) | showToast(msg, 'error') | showToast(msg, 'info') | showToast({title, body, kind, duration})
+  function showToast(msgOrOpts, kindArg) {
+    var opts = (typeof msgOrOpts === 'object' && msgOrOpts !== null)
+      ? msgOrOpts
+      : { title: msgOrOpts, kind: kindArg || 'success' };
+    var kind = opts.kind || 'success';
+    var duration = opts.duration || 4000;
+
+    var stack = document.getElementById('cp-toast-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'cp-toast-stack';
+      stack.className = 'cp-toast-stack';
+      document.body.appendChild(stack);
+    }
+
+    var icons = {
+      success: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3 3L13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      error: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 4v5M8 12v.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+      info: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 7v5M8 4v.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    };
+
     var t = document.createElement('div');
-    t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:14px 28px;border-radius:6px;color:#0D2A1E;font-family:var(--font-ui);font-size:14px;font-weight:600;z-index:10000;box-shadow:0 4px 20px rgba(0,0,0,0.3);background:' + (kind === 'error' ? '#E57373' : '#BF9B3B') + ';';
-    document.body.appendChild(t);
-    setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 2500);
-    setTimeout(function() { t.remove(); }, 3000);
+    t.className = 'cp-toast cp-toast--' + kind;
+    t.innerHTML =
+      '<div class="cp-toast__bar"></div>' +
+      '<div class="cp-toast__icon">' + (icons[kind] || icons.info) + '</div>' +
+      '<div class="cp-toast__body">' +
+        '<div class="cp-toast__title">' + escapeToastHtml(opts.title || '') + '</div>' +
+        (opts.body ? '<div class="cp-toast__sub">' + escapeToastHtml(opts.body) + '</div>' : '') +
+      '</div>' +
+      '<button class="cp-toast__close" aria-label="Dismiss">×</button>' +
+      '<div class="cp-toast__progress"><div class="cp-toast__progress-bar" style="animation-duration:' + duration + 'ms;"></div></div>';
+
+    stack.appendChild(t);
+
+    function dismiss() {
+      t.classList.add('cp-toast--out');
+      setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 300);
+    }
+    t.querySelector('.cp-toast__close').addEventListener('click', dismiss);
+    setTimeout(dismiss, duration);
+    return t;
+  }
+  function escapeToastHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = String(s == null ? '' : s);
+    return d.innerHTML;
   }
 
   // Rewrite all request-btn mailto links to use the modal
