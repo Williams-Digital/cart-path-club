@@ -6,6 +6,12 @@
   <meta name="robots" content="noindex, nofollow">
   <title>CartPath - Athlete Portal</title>
   <link rel="icon" href="/assets/cartpath-shield.png">
+  <link rel="manifest" href="/athletes/portal/manifest.webmanifest">
+  <meta name="theme-color" content="#091D14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CartPath Athlete">
+  <link rel="apple-touch-icon" href="/assets/cartpath-shield.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com">
@@ -303,6 +309,7 @@
         <button class="tab active" data-tab="availability" onclick="setTab('availability')">Availability</button>
         <button class="tab" data-tab="rounds" onclick="setTab('rounds')">Rounds <span id="roundsCount" style="opacity:0.5;font-weight:400;"></span></button>
         <button class="tab" data-tab="scores" onclick="setTab('scores')">My Scores</button>
+        <button class="tab" data-tab="earnings" onclick="setTab('earnings')">Earnings</button>
         <button class="tab" data-tab="assistants" onclick="setTab('assistants')">Assistants</button>
       </div>
 
@@ -375,6 +382,38 @@
         <div id="scoresContainer"><div class="empty-state">Loading...</div></div>
       </section>
 
+      <!-- ── Earnings ── -->
+      <section class="tab-panel" id="panel-earnings">
+        <div class="section-row">
+          <div>
+            <h1 class="section-title">Earnings</h1>
+            <div class="section-hint" style="margin-top:6px;">Lifetime payouts, this month, and what's pending.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:24px;">
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Lifetime Paid</div>
+            <div id="earnLifetime" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">This Month</div>
+            <div id="earnMonth" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Pending</div>
+            <div id="earnPending" style="font-family:var(--font-display);font-size:24px;color:var(--gold);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Rounds Done</div>
+            <div id="earnRounds" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+        </div>
+
+        <div style="font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Recent Bookings</div>
+        <div id="earnRecent"><div class="empty-state">Loading...</div></div>
+      </section>
+
       <!-- ── Assistants ── -->
       <section class="tab-panel" id="panel-assistants">
         <div class="section-row">
@@ -439,6 +478,20 @@
       <label class="form-label">Date Played</label>
       <input type="date" id="scoreDate" class="form-input">
 
+      <label class="form-label">Member Played With (optional)</label>
+      <select id="scoreBookingId" class="form-input" style="background:var(--green-deep);">
+        <option value="">— Independent round —</option>
+      </select>
+      <div style="font-size:11px;color:rgba(245,240,225,0.35);margin:-8px 0 14px;">Tagging a booking shows this round in the member's recent activity feed.</div>
+
+      <label class="form-label">Member Score (optional)</label>
+      <input type="number" id="scoreMemberScore" class="form-input" placeholder="e.g. 92" min="40" max="200">
+
+      <label class="form-label">Scorecard Photo (optional)</label>
+      <input type="file" id="scoreCardFile" accept="image/*" style="display:block;width:100%;color:rgba(245,240,225,0.7);font-family:var(--font-ui);font-size:13px;margin-bottom:14px;">
+      <div id="scoreCardPreview" style="display:none;margin-bottom:14px;"></div>
+      <input type="hidden" id="scoreCardUrl">
+
       <label class="form-label">Notes (optional)</label>
       <textarea class="form-textarea" id="scoreNotes" placeholder="Conditions, highlights, anything to remember..."></textarea>
 
@@ -487,6 +540,13 @@
   </div>
 
   <script>
+    // ── PWA ──
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/athletes/portal/sw.js').catch(function() {});
+      });
+    }
+
     // ── Config ──
     var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
     var token = new URLSearchParams(window.location.search).get('token');
@@ -523,6 +583,7 @@
         p.classList.toggle('active', p.id === 'panel-' + name);
       });
       if (name === 'scores') loadScores();
+      if (name === 'earnings') loadEarnings();
     }
 
     // ── Init ──
@@ -1001,6 +1062,51 @@
       }
     }
 
+    // ── Earnings ──
+    function fmtCents(c) {
+      var n = Number(c || 0) / 100;
+      return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    async function loadEarnings() {
+      var recent = document.getElementById('earnRecent');
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/earnings?token=' + token);
+        if (!res.ok) throw new Error('Failed');
+        var data = await res.json();
+        var s = data.summary || {};
+        document.getElementById('earnLifetime').textContent = fmtCents(s.lifetime_paid_cents);
+        document.getElementById('earnMonth').textContent = fmtCents(s.this_month_cents);
+        document.getElementById('earnPending').textContent = fmtCents(s.pending_payout_cents);
+        document.getElementById('earnRounds').textContent = s.rounds_completed || '0';
+
+        var recentRows = data.recent || [];
+        if (recentRows.length === 0) {
+          recent.innerHTML = '<div class="empty-state">No completed rounds yet.</div>';
+          return;
+        }
+        var html = '';
+        recentRows.forEach(function(r) {
+          var date = r.preferred_date ? new Date(r.preferred_date.slice(0,10) + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          var stateColor = r.athlete_paid_at ? '#6DC86D' : (r.workflow_state === 'completed' ? '#BF9B3B' : 'rgba(245,240,225,0.4)');
+          var stateLabel = r.athlete_paid_at ? 'Paid' : (r.workflow_state === 'completed' ? 'Pending Payout' : (r.workflow_state || ''));
+          html += '<div class="info-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">';
+          html += '<div>';
+          html += '<div style="font-family:var(--font-display);font-size:15px;color:var(--cream);font-weight:500;">' + escapeHtml(r.member_name || 'Member') + '</div>';
+          html += '<div style="font-size:12px;color:rgba(245,240,225,0.45);margin-top:2px;">' + escapeHtml(r.course || '') + ' · ' + escapeHtml(date) + '</div>';
+          html += '</div>';
+          html += '<div style="text-align:right;">';
+          html += '<div style="font-family:var(--font-display);font-size:18px;color:var(--cream);font-weight:600;">' + fmtCents(r.athlete_payout_cents) + '</div>';
+          html += '<div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:' + stateColor + ';margin-top:2px;">' + stateLabel + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+        recent.innerHTML = html;
+      } catch {
+        recent.innerHTML = '<div class="empty-state" style="color:rgba(229,115,115,0.6);">Unable to load earnings.</div>';
+      }
+    }
+
     // ── My Scores ──
     var scoresLoaded = false;
 
@@ -1055,15 +1161,92 @@
       }
     }
 
-    function openLogScore() {
+    var bookingsForLog = [];
+    async function ensureBookingsForLog() {
+      if (bookingsForLog.length) return;
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/bookings?token=' + token);
+        if (!res.ok) return;
+        var data = await res.json();
+        bookingsForLog = (data.bookings || []).filter(function(b) {
+          return ['confirmed','completed','paid'].indexOf(b.workflow_state) !== -1;
+        });
+      } catch {}
+    }
+
+    async function openLogScore() {
       document.getElementById('scoreVal').value = '';
       document.getElementById('scorePar').value = '72';
       document.getElementById('scoreCourse').value = '';
       document.getElementById('scoreNotes').value = '';
+      document.getElementById('scoreMemberScore').value = '';
+      document.getElementById('scoreCardFile').value = '';
+      document.getElementById('scoreCardUrl').value = '';
+      document.getElementById('scoreCardPreview').style.display = 'none';
+      document.getElementById('scoreCardPreview').innerHTML = '';
+
+      // Populate booking select
+      await ensureBookingsForLog();
+      var sel = document.getElementById('scoreBookingId');
+      sel.innerHTML = '<option value="">— Independent round —</option>';
+      bookingsForLog.forEach(function(b) {
+        var date = b.preferred_date ? new Date(b.preferred_date.slice(0,10) + 'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+        var opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = (b.member_name || 'Member') + ' · ' + (b.course || '') + ' · ' + date;
+        opt.dataset.course = b.course || '';
+        opt.dataset.date = (b.preferred_date || '').slice(0,10);
+        sel.appendChild(opt);
+      });
+      sel.onchange = function() {
+        var o = sel.options[sel.selectedIndex];
+        if (o && o.value) {
+          if (o.dataset.course) document.getElementById('scoreCourse').value = o.dataset.course;
+          if (o.dataset.date) document.getElementById('scoreDate').value = o.dataset.date;
+        }
+      };
+
       var today = new Date();
       var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       document.getElementById('scoreDate').value = todayStr;
       document.getElementById('logScoreModal').style.display = 'flex';
+    }
+
+    // Scorecard photo upload — local preview + presigned PUT
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'scoreCardFile') {
+        var f = e.target.files && e.target.files[0];
+        if (!f) return;
+        var preview = document.getElementById('scoreCardPreview');
+        preview.style.display = 'block';
+        preview.innerHTML = '<div style="font-size:11px;color:var(--gold);margin-bottom:6px;">Uploading...</div><img style="max-width:120px;border-radius:6px;border:1px solid rgba(191,155,59,0.2);" src="' + URL.createObjectURL(f) + '">';
+        uploadScorecard(f).then(function(url) {
+          document.getElementById('scoreCardUrl').value = url;
+          preview.querySelector('div').textContent = 'Uploaded ✓';
+          preview.querySelector('div').style.color = '#6DC86D';
+        }).catch(function(err) {
+          preview.querySelector('div').textContent = 'Upload failed';
+          preview.querySelector('div').style.color = '#E57373';
+          console.error(err);
+        });
+      }
+    });
+
+    async function uploadScorecard(file) {
+      var presignRes = await fetch(API_BASE + '/athletes/portal/scorecard-upload-url?token=' + token, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, content_type: file.type || 'image/jpeg' }),
+      });
+      if (!presignRes.ok) throw new Error('presign failed');
+      var presign = await presignRes.json();
+      var putRes = await fetch(presign.upload_url, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type || 'image/jpeg' },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error('S3 upload failed');
+      return presign.public_url;
     }
 
     async function submitScore() {
@@ -1082,6 +1265,11 @@
       btn.disabled = true;
       btn.textContent = 'Saving...';
 
+      var bookingId = document.getElementById('scoreBookingId').value || null;
+      var memberScoreRaw = document.getElementById('scoreMemberScore').value;
+      var memberScore = memberScoreRaw ? parseInt(memberScoreRaw, 10) : null;
+      var scorecardUrl = document.getElementById('scoreCardUrl').value || null;
+
       try {
         var res = await fetch(API_BASE + '/athletes/portal/scores?token=' + token, {
           method: 'POST',
@@ -1092,6 +1280,9 @@
             course_par: par,
             played_at: date || null,
             notes: notes || null,
+            booking_id: bookingId,
+            member_score: memberScore,
+            scorecard_url: scorecardUrl,
           }),
         });
         if (!res.ok) {

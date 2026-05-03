@@ -1306,6 +1306,10 @@
         <button id="toggleBookings" onclick="setAppType('bookings')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Bookings</button>
         <button id="toggleRoster" onclick="setAppType('roster')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Roster</button>
         <button id="toggleAvailability" onclick="setAppType('availability')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Availability</button>
+        <button id="toggleTimeline" onclick="setAppType('timeline')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Timeline</button>
+        <button id="toggleRevenue" onclick="setAppType('revenue')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Revenue</button>
+        <button id="toggleChurn" onclick="setAppType('churn')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">At Risk</button>
+        <button id="toggleReviewsTab" onclick="setAppType('reviews')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Reviews</button>
       </div>
 
       <!-- Stats -->
@@ -1435,6 +1439,10 @@
         bookings: document.getElementById('toggleBookings'),
         roster: document.getElementById('toggleRoster'),
         availability: document.getElementById('toggleAvailability'),
+        timeline: document.getElementById('toggleTimeline'),
+        revenue: document.getElementById('toggleRevenue'),
+        churn: document.getElementById('toggleChurn'),
+        reviews: document.getElementById('toggleReviewsTab'),
       };
       Object.keys(btns).forEach(function(k) {
         if (btns[k]) {
@@ -1452,7 +1460,7 @@
       var chartSection = document.getElementById('chartSection');
       var filterTabs = document.getElementById('filterTabs');
       var searchDate = document.querySelector('.search-date-row');
-      var hideExtraUI = (type === 'bookings' || type === 'roster' || type === 'availability');
+      var hideExtraUI = (['bookings','roster','availability','timeline','revenue','churn','reviews'].indexOf(type) !== -1);
       if (statsRow) statsRow.style.display = hideExtraUI ? 'none' : '';
       if (chartSection) chartSection.style.display = hideExtraUI ? 'none' : '';
       if (filterTabs) filterTabs.style.display = hideExtraUI ? 'none' : '';
@@ -1464,9 +1472,241 @@
         renderRoster();
       } else if (type === 'availability') {
         renderAvailability();
+      } else if (type === 'timeline') {
+        renderTimeline();
+      } else if (type === 'revenue') {
+        renderRevenue();
+      } else if (type === 'churn') {
+        renderChurn();
+      } else if (type === 'reviews') {
+        renderReviewsList();
       } else {
         applyClientFilters();
         updateStats();
+      }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // TIMELINE — week-at-a-glance booking grid
+    // ═════════════════════════════════════════════════════════════
+
+    let timelineWeekStart = null;
+
+    async function renderTimeline() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading timeline...</div></div>';
+
+      if (!timelineWeekStart) {
+        var d = new Date();
+        d.setDate(d.getDate() - d.getDay()); // Sunday of this week
+        timelineWeekStart = d.toISOString().slice(0, 10);
+      }
+      var from = timelineWeekStart;
+      var toDate = new Date(timelineWeekStart + 'T12:00:00');
+      toDate.setDate(toDate.getDate() + 13); // 2 weeks
+      var to = toDate.toISOString().slice(0, 10);
+
+      try {
+        var res = await fetch(API + '/admin/timeline?from=' + from + '&to=' + to, {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) throw new Error('Failed');
+        var data = await res.json();
+        var bookings = data.bookings || [];
+
+        // Group by date
+        var byDate = {};
+        bookings.forEach(function(b) {
+          var d = (b.preferred_date || '').slice(0, 10);
+          (byDate[d] = byDate[d] || []).push(b);
+        });
+
+        var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">';
+        html += '<div style="font-family:\'Playfair Display\',serif;font-size:1.6rem;color:var(--cream);">' + new Date(from + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric'}) + ' — ' + new Date(to + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + '</div>';
+        html += '<div style="display:flex;gap:6px;">';
+        html += '<button onclick="shiftTimeline(-7)" style="padding:7px 12px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:12px;">← Week</button>';
+        html += '<button onclick="shiftTimeline(0)" style="padding:7px 12px;background:none;border:1px solid var(--gold);border-radius:4px;color:var(--gold);cursor:pointer;font-size:12px;">This Week</button>';
+        html += '<button onclick="shiftTimeline(7)" style="padding:7px 12px;background:none;border:1px solid var(--border-light);border-radius:4px;color:var(--cream);cursor:pointer;font-size:12px;">Week →</button>';
+        html += '</div></div>';
+
+        // Day grid
+        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px;">';
+        for (var i = 0; i < 14; i++) {
+          var dt = new Date(from + 'T12:00:00');
+          dt.setDate(dt.getDate() + i);
+          var key = dt.toISOString().slice(0, 10);
+          var dayBookings = byDate[key] || [];
+          var dayLabel = dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          var isToday = key === new Date().toISOString().slice(0, 10);
+          html += '<div style="background:var(--bg-card);border:1px solid ' + (isToday ? 'var(--gold)' : 'var(--border-light)') + ';border-radius:6px;padding:10px;min-height:140px;">';
+          html += '<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:' + (isToday ? 'var(--gold)' : 'var(--cream-muted)') + ';margin-bottom:8px;">' + dayLabel + '</div>';
+          dayBookings.forEach(function(b) {
+            var stateColor = ({
+              completed: '#6DC86D', confirmed: 'var(--gold)', paid: '#7DB3D8',
+              quoted: '#BF9B3B', awaiting_member_approval: '#BF9B3B', requested: 'var(--cream-muted)', pending_review: 'var(--cream-muted)',
+            })[b.workflow_state] || 'var(--cream-muted)';
+            html += '<div style="background:rgba(245,240,225,0.04);border-left:3px solid ' + stateColor + ';padding:6px 8px;margin-bottom:4px;border-radius:3px;font-size:11px;">';
+            html += '<div style="color:var(--cream);font-weight:600;">' + esc(b.athlete_name || 'Athlete') + '</div>';
+            html += '<div style="color:var(--cream-muted);font-size:10px;">w/ ' + esc(b.member_name || 'Member') + '</div>';
+            html += '<div style="color:var(--cream-muted);font-size:10px;">' + esc(b.course || '') + '</div>';
+            html += '</div>';
+          });
+          html += '</div>';
+        }
+        html += '</div>';
+
+        // Legend
+        html += '<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--cream-muted);padding-top:8px;border-top:1px solid var(--border-light);">';
+        html += '<div><span style="display:inline-block;width:12px;height:12px;background:#6DC86D;vertical-align:middle;border-radius:2px;margin-right:5px;"></span>Completed</div>';
+        html += '<div><span style="display:inline-block;width:12px;height:12px;background:var(--gold);vertical-align:middle;border-radius:2px;margin-right:5px;"></span>Confirmed</div>';
+        html += '<div><span style="display:inline-block;width:12px;height:12px;background:#7DB3D8;vertical-align:middle;border-radius:2px;margin-right:5px;"></span>Paid</div>';
+        html += '<div><span style="display:inline-block;width:12px;height:12px;background:var(--cream-muted);vertical-align:middle;border-radius:2px;margin-right:5px;"></span>Other</div>';
+        html += '</div>';
+
+        area.innerHTML = html;
+      } catch (err) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-title">Unable to load</div></div>';
+      }
+    }
+
+    function shiftTimeline(deltaDays) {
+      if (deltaDays === 0) {
+        timelineWeekStart = null;
+      } else {
+        var d = new Date(timelineWeekStart + 'T12:00:00');
+        d.setDate(d.getDate() + deltaDays);
+        timelineWeekStart = d.toISOString().slice(0, 10);
+      }
+      renderTimeline();
+    }
+
+    function esc(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; }
+    function fmtDollars(c) { return '$' + Math.floor(Number(c || 0) / 100).toLocaleString('en-US'); }
+
+    // ═════════════════════════════════════════════════════════════
+    // REVENUE
+    // ═════════════════════════════════════════════════════════════
+
+    async function renderRevenue() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading revenue...</div></div>';
+
+      try {
+        var res = await fetch(API + '/admin/revenue', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+        if (!res.ok) throw new Error();
+        var data = await res.json();
+        var m = data.membership || {};
+        var b = data.bookings || {};
+        var tiers = data.tiers || [];
+
+        var html = '<div style="font-family:\'Playfair Display\',serif;font-size:1.6rem;color:var(--cream);margin-bottom:18px;">Revenue Snapshot</div>';
+
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;text-align:center;"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-muted);margin-bottom:6px;">This Month</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;color:var(--gold);">' + fmtDollars(m.this_month_cents) + '</div></div>';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;text-align:center;"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-muted);margin-bottom:6px;">Last Month</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;color:var(--cream);">' + fmtDollars(m.last_month_cents) + '</div></div>';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;text-align:center;"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-muted);margin-bottom:6px;">Trailing 12mo</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;color:var(--cream);">' + fmtDollars(m.trailing_12m_cents) + '</div></div>';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;text-align:center;"><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-muted);margin-bottom:6px;">Lifetime</div><div style="font-family:\'Playfair Display\',serif;font-size:24px;color:var(--cream);">' + fmtDollars(m.lifetime_cents) + '</div></div>';
+        html += '</div>';
+
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px;">';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;">';
+        html += '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Booking Fees (CartPath share)</div>';
+        html += '<div style="font-family:\'Playfair Display\',serif;font-size:22px;color:var(--cream);">' + fmtDollars(b.booking_fees_lifetime) + '</div>';
+        html += '<div style="font-size:12px;color:var(--cream-muted);margin-top:4px;">' + fmtDollars(b.booking_fees_this_month) + ' this month</div>';
+        html += '</div>';
+        html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;">';
+        html += '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">Active Memberships</div>';
+        var totalMembers = tiers.reduce(function(t, x) { return t + Number(x.count); }, 0);
+        html += '<div style="font-family:\'Playfair Display\',serif;font-size:22px;color:var(--cream);">' + totalMembers + '</div>';
+        var byTier = tiers.map(function(t) { return t.count + ' ' + t.membership_tier; }).join(' · ');
+        html += '<div style="font-size:12px;color:var(--cream-muted);margin-top:4px;">' + esc(byTier || '—') + '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div style="font-size:12px;color:var(--cream-muted);">' + (m.payments_this_month || 0) + ' payments this month, ' + (m.failures_last_30d || 0) + ' failures in last 30 days.</div>';
+
+        area.innerHTML = html;
+      } catch (err) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-title">Unable to load</div></div>';
+      }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // CHURN — at-risk members
+    // ═════════════════════════════════════════════════════════════
+
+    async function renderChurn() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Checking risk signals...</div></div>';
+      try {
+        var res = await fetch(API + '/admin/churn', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+        if (!res.ok) throw new Error();
+        var data = await res.json();
+        var members = data.at_risk || [];
+
+        var html = '<div style="font-family:\'Playfair Display\',serif;font-size:1.6rem;color:var(--cream);margin-bottom:6px;">Members at Risk</div>';
+        html += '<div style="font-size:12px;color:var(--cream-muted);margin-bottom:20px;">Active members flagged by inactivity or payment issues.</div>';
+
+        if (members.length === 0) {
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:32px;text-align:center;color:var(--cream-muted);">No members currently flagged. Nice.</div>';
+        } else {
+          members.forEach(function(m) {
+            var lastBooking = m.last_booking_at ? new Date(m.last_booking_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never';
+            html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-left:3px solid #E57373;border-radius:6px;padding:16px 18px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">';
+            html += '<div>';
+            html += '<div style="font-family:\'Playfair Display\',serif;font-size:1.1rem;color:var(--cream);font-weight:500;">' + esc(m.name) + '</div>';
+            html += '<div style="font-size:12px;color:var(--cream-muted);margin-top:2px;">' + esc(m.email) + ' · ' + esc(m.membership_tier || '') + '</div>';
+            html += '<div style="font-size:11px;color:var(--cream-muted);margin-top:4px;">Last booking: ' + lastBooking + ' · ' + (m.rounds_used || 0) + ' rounds</div>';
+            html += '</div>';
+            html += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">';
+            (m.reasons || []).forEach(function(r) {
+              html += '<span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#E57373;background:rgba(229,115,115,0.1);padding:3px 8px;border-radius:3px;border:1px solid rgba(229,115,115,0.3);">' + esc(r) + '</span>';
+            });
+            html += '</div>';
+            html += '</div>';
+          });
+        }
+
+        area.innerHTML = html;
+      } catch (err) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-title">Unable to load</div></div>';
+      }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // REVIEWS LIST
+    // ═════════════════════════════════════════════════════════════
+
+    async function renderReviewsList() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading reviews...</div></div>';
+      try {
+        var res = await fetch(API + '/admin/reviews', { headers: { 'Authorization': 'Bearer ' + getToken() } });
+        if (!res.ok) throw new Error();
+        var data = await res.json();
+        var reviews = data.reviews || [];
+
+        var html = '<div style="font-family:\'Playfair Display\',serif;font-size:1.6rem;color:var(--cream);margin-bottom:18px;">Round Reviews</div>';
+        if (reviews.length === 0) {
+          html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:32px;text-align:center;color:var(--cream-muted);">No reviews yet.</div>';
+        } else {
+          reviews.forEach(function(r) {
+            var stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            var date = r.preferred_date ? new Date(r.preferred_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+            html += '<div style="background:var(--bg-card);border:1px solid var(--border-light);border-radius:6px;padding:18px;margin-bottom:10px;">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;margin-bottom:10px;">';
+            html += '<div><div style="color:var(--cream);font-weight:600;">' + esc(r.member_name) + ' → ' + esc(r.athlete_name) + '</div>';
+            html += '<div style="font-size:11px;color:var(--cream-muted);margin-top:2px;">' + esc(r.course || '') + ' · ' + esc(date) + '</div></div>';
+            html += '<div style="font-size:18px;color:var(--gold);letter-spacing:2px;">' + stars + '</div>';
+            html += '</div>';
+            if (r.comment) html += '<div style="font-size:13px;color:var(--cream-muted);line-height:1.55;font-style:italic;">' + esc(r.comment) + '</div>';
+            html += '</div>';
+          });
+        }
+
+        area.innerHTML = html;
+      } catch (err) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-title">Unable to load</div></div>';
       }
     }
 
