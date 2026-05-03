@@ -2397,9 +2397,6 @@
       // Try to split school/location like "Auburn · Atlanta, GA"
       stats.push({ label: 'Affiliation', value: school });
     }
-    if (a.tier && a.tier >= 4) {
-      stats.push({ label: 'Tier', value: (a.tier === 5 ? 'Legend' : 'All-Star') });
-    }
 
     var statsBlock = '';
     if (stats.length > 0) {
