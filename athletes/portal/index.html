@@ -32,7 +32,7 @@
       min-height: 100vh;
     }
 
-    /* ── Loading / Auth States ── */
+    /* ── Loading / Auth ── */
     .loading-screen, .error-screen {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; text-align: center; padding: 40px;
@@ -50,64 +50,82 @@
     .portal-header {
       background: var(--green-dark);
       border-bottom: 1px solid rgba(191,155,59,0.1);
-      padding: 20px 32px;
+      padding: 18px 32px;
       display: flex; align-items: center; justify-content: space-between;
     }
     .portal-brand { display: flex; align-items: center; gap: 14px; }
-    .portal-brand img { width: 32px; height: auto; }
-    .portal-brand-text { font-family: var(--font-display); font-size: 18px; color: var(--cream); font-weight: 500; }
+    .portal-brand img { width: 28px; height: auto; }
+    .portal-brand-text { font-family: var(--font-display); font-size: 16px; color: var(--cream); font-weight: 500; }
     .portal-athlete { font-size: 13px; color: rgba(245,240,225,0.5); }
     .portal-athlete strong { color: var(--gold); font-weight: 600; }
 
-    /* ── Main Layout ── */
-    .portal-main {
-      max-width: 900px; margin: 0 auto; padding: 40px 32px;
-    }
-    .portal-title {
-      font-family: var(--font-display); font-size: 28px; font-weight: 500;
-      color: var(--cream); margin-bottom: 8px;
-    }
-    .portal-subtitle {
-      font-size: 14px; color: rgba(245,240,225,0.45); margin-bottom: 36px; line-height: 1.6;
-    }
+    /* ── Main ── */
+    .portal-main { max-width: 880px; margin: 0 auto; padding: 32px 28px 60px; }
 
-    /* ── Action Bar ── */
-    .action-bar {
-      display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 4px; border-bottom: 1px solid rgba(191,155,59,0.1);
+      margin-bottom: 28px;
     }
-    .btn {
+    .tab {
+      background: none; border: none; cursor: pointer;
       font-family: var(--font-ui); font-size: 12px; font-weight: 600;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 12px 24px; border-radius: 4px; border: none; cursor: pointer;
-      transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(245,240,225,0.4);
+      padding: 14px 18px; margin-bottom: -1px;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
     }
-    .btn-open { background: var(--open); color: #fff; }
-    .btn-open:hover { background: #34A065; }
-    .btn-blocked { background: var(--blocked); color: #fff; }
-    .btn-blocked:hover { background: #D94436; }
-    .btn-secondary {
-      background: transparent; color: var(--cream); border: 1px solid rgba(245,240,225,0.15);
-    }
-    .btn-secondary:hover { border-color: rgba(245,240,225,0.3); }
+    .tab:hover { color: rgba(245,240,225,0.7); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
 
-    /* ── Calendar Grid ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Section header ── */
+    .section-row {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 22px;
+    }
+    .section-title {
+      font-family: var(--font-display); font-size: 24px; color: var(--cream);
+      font-weight: 500;
+    }
+    .section-hint {
+      font-size: 12px; color: rgba(245,240,225,0.4);
+      max-width: 540px; line-height: 1.6;
+    }
+
+    /* ── Calendar nav ── */
     .calendar-nav {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
+      gap: 12px; margin-bottom: 16px;
     }
+    .cal-nav-left { display: flex; align-items: center; gap: 10px; }
     .calendar-month {
-      font-family: var(--font-display); font-size: 20px; color: var(--cream); font-weight: 500;
+      font-family: var(--font-display); font-size: 19px; color: var(--cream); font-weight: 500;
+      min-width: 160px;
     }
     .calendar-nav-btn {
       background: none; border: 1px solid rgba(191,155,59,0.15); color: var(--gold);
-      width: 36px; height: 36px; border-radius: 4px; cursor: pointer;
-      font-size: 16px; display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
+      width: 32px; height: 32px; border-radius: 4px; cursor: pointer;
+      font-size: 14px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
     }
     .calendar-nav-btn:hover { border-color: var(--gold); background: rgba(191,155,59,0.08); }
+    .btn-today {
+      background: none; border: 1px solid rgba(191,155,59,0.2); color: rgba(245,240,225,0.7);
+      padding: 7px 14px; border-radius: 4px; cursor: pointer;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      transition: all 0.15s;
+    }
+    .btn-today:hover { color: var(--gold); border-color: var(--gold); }
 
+    /* ── Calendar grid ── */
     .calendar-grid {
-      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 40px;
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
+      margin-bottom: 18px; user-select: none;
     }
     .calendar-dow {
       text-align: center; font-size: 10px; font-weight: 600;
@@ -118,70 +136,45 @@
       aspect-ratio: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       border-radius: 6px; font-size: 14px; font-weight: 500;
-      cursor: pointer; transition: all 0.15s; position: relative;
+      cursor: pointer; transition: background 0.1s; position: relative;
       border: 1px solid transparent; color: rgba(245,240,225,0.6);
     }
     .calendar-day:hover { background: rgba(245,240,225,0.04); }
     .calendar-day.empty { cursor: default; }
     .calendar-day.empty:hover { background: transparent; }
     .calendar-day.today { border-color: var(--gold); color: var(--gold); font-weight: 700; }
-    .calendar-day.has-open { background: rgba(45,138,86,0.15); border-color: rgba(45,138,86,0.3); color: var(--cream); }
-    .calendar-day.has-blocked { background: rgba(192,57,43,0.15); border-color: rgba(192,57,43,0.3); color: var(--cream); }
-    .calendar-day.has-open.has-blocked { background: linear-gradient(135deg, rgba(45,138,86,0.15) 50%, rgba(192,57,43,0.15) 50%); border-color: rgba(191,155,59,0.3); }
-    .calendar-day.selected { border-color: var(--gold); background: rgba(191,155,59,0.12); box-shadow: 0 0 0 1px var(--gold); }
-    .calendar-day .day-num { z-index: 1; }
-    .calendar-day .day-dot {
-      width: 5px; height: 5px; border-radius: 50%; margin-top: 3px;
-    }
+    .calendar-day.has-open { background: rgba(45,138,86,0.18); border-color: rgba(45,138,86,0.35); color: var(--cream); }
+    .calendar-day.has-blocked { background: rgba(192,57,43,0.18); border-color: rgba(192,57,43,0.35); color: var(--cream); }
+    .calendar-day.has-open.has-blocked { background: linear-gradient(135deg, rgba(45,138,86,0.18) 50%, rgba(192,57,43,0.18) 50%); border-color: rgba(191,155,59,0.3); }
+    .calendar-day .day-num { z-index: 1; pointer-events: none; }
+    .calendar-day .day-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 3px; pointer-events: none; }
     .dot-open { background: var(--open); }
     .dot-blocked { background: var(--blocked); }
-    .day-dots { display: flex; gap: 3px; }
+    .day-dots { display: flex; gap: 3px; pointer-events: none; }
 
-    /* ── Legend ── */
-    .legend {
-      display: flex; gap: 24px; margin-bottom: 36px; flex-wrap: wrap;
+    /* ── Hint + legend ── */
+    .cal-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+      padding: 14px 0 0; border-top: 1px solid rgba(191,155,59,0.06);
     }
+    .cal-hint {
+      font-size: 11px; color: rgba(245,240,225,0.35);
+      font-style: italic;
+    }
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; }
     .legend-item {
-      display: flex; align-items: center; gap: 8px; font-size: 12px;
+      display: flex; align-items: center; gap: 7px; font-size: 11px;
       color: rgba(245,240,225,0.5);
     }
-    .legend-swatch {
-      width: 12px; height: 12px; border-radius: 3px;
-    }
+    .legend-swatch { width: 11px; height: 11px; border-radius: 3px; }
     .legend-swatch.open { background: rgba(45,138,86,0.3); border: 1px solid rgba(45,138,86,0.5); }
     .legend-swatch.blocked { background: rgba(192,57,43,0.3); border: 1px solid rgba(192,57,43,0.5); }
 
-    /* ── Entries List ── */
-    .entries-section { margin-top: 12px; }
-    .entries-title {
-      font-family: var(--font-ui); font-size: 11px; font-weight: 700;
-      letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
-      margin-bottom: 16px;
-    }
-    .entry-card {
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--green-dark); border: 1px solid rgba(191,155,59,0.06);
-      border-radius: 6px; padding: 16px 20px; margin-bottom: 8px;
-      transition: all 0.2s;
-    }
-    .entry-card:hover { border-color: rgba(191,155,59,0.15); }
-    .entry-left { display: flex; align-items: center; gap: 14px; }
-    .entry-badge {
-      font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-      padding: 4px 10px; border-radius: 3px; white-space: nowrap;
-    }
-    .entry-badge.open { background: rgba(45,138,86,0.15); color: var(--open); }
-    .entry-badge.blocked { background: rgba(192,57,43,0.15); color: var(--blocked); }
-    .entry-dates { font-size: 14px; color: var(--cream); }
-    .entry-notes { font-size: 12px; color: rgba(245,240,225,0.4); margin-top: 2px; }
-    .entry-delete {
-      background: none; border: none; color: rgba(245,240,225,0.2); cursor: pointer;
-      font-size: 18px; padding: 4px 8px; transition: color 0.2s;
-    }
-    .entry-delete:hover { color: var(--blocked); }
+    /* ── Empty states ── */
     .empty-state {
       text-align: center; padding: 48px 20px; color: rgba(245,240,225,0.3);
-      font-size: 14px; line-height: 1.7;
+      font-size: 13px; line-height: 1.7;
     }
 
     /* ── Modal ── */
@@ -192,48 +185,89 @@
     .modal-overlay.show { display: flex; }
     .modal {
       background: var(--green-dark); border: 1px solid rgba(191,155,59,0.15);
-      border-radius: 8px; padding: 32px; width: 100%; max-width: 440px;
+      border-radius: 8px; padding: 28px; width: 100%; max-width: 420px;
     }
     .modal-title {
-      font-family: var(--font-display); font-size: 20px; color: var(--cream);
-      margin-bottom: 24px;
+      font-family: var(--font-display); font-size: 19px; color: var(--cream);
+      margin-bottom: 22px;
     }
+
+    /* Type toggle in modal */
+    .type-toggle {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;
+    }
+    .type-option {
+      padding: 12px; border-radius: 4px; cursor: pointer; text-align: center;
+      font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid rgba(191,155,59,0.1); background: var(--green-deep);
+      color: rgba(245,240,225,0.5); transition: all 0.15s;
+    }
+    .type-option.active.open {
+      background: rgba(45,138,86,0.2); border-color: var(--open); color: var(--cream);
+    }
+    .type-option.active.blocked {
+      background: rgba(192,57,43,0.2); border-color: var(--blocked); color: var(--cream);
+    }
+
     .form-label {
       display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
       text-transform: uppercase; color: rgba(245,240,225,0.5); margin-bottom: 6px;
     }
-    .form-input, .form-select, .form-textarea {
+    .form-input, .form-textarea {
       width: 100%; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.1);
       border-radius: 4px; padding: 10px 14px; color: var(--cream);
-      font-family: var(--font-ui); font-size: 14px; margin-bottom: 16px;
+      font-family: var(--font-ui); font-size: 14px; margin-bottom: 14px;
       outline: none; transition: border-color 0.2s;
     }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
-    .form-textarea { resize: vertical; min-height: 60px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-hint { font-size: 11px; color: rgba(245,240,225,0.3); margin: -10px 0 16px; }
-    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+    .form-input:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-textarea { resize: vertical; min-height: 56px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-hint { font-size: 11px; color: rgba(245,240,225,0.3); margin: -8px 0 14px; }
+
+    .modal-actions { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 6px; }
+    .modal-actions-right { display: flex; gap: 10px; }
     .btn-cancel {
       background: none; border: 1px solid rgba(245,240,225,0.1); color: var(--cream);
-      padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 13px;
+      padding: 9px 18px; border-radius: 4px; cursor: pointer; font-size: 13px;
     }
     .btn-save {
       background: var(--gold); color: var(--green-deep); border: none;
-      padding: 10px 24px; border-radius: 4px; cursor: pointer;
+      padding: 9px 22px; border-radius: 4px; cursor: pointer;
       font-size: 13px; font-weight: 600;
     }
     .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-delete-entry {
+      background: none; border: 1px solid rgba(192,57,43,0.3); color: #E57373;
+      padding: 9px 14px; border-radius: 4px; cursor: pointer; font-size: 12px;
+    }
+    .btn-delete-entry:hover { background: rgba(192,57,43,0.1); }
+
+    /* ── Booking + assistant cards ── */
+    .info-card {
+      background: var(--green-dark); border: 1px solid rgba(191,155,59,0.06);
+      border-radius: 6px; padding: 16px 20px; margin-bottom: 8px;
+    }
+    .badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 3px;
+    }
+    .btn-invite {
+      padding: 9px 16px; background: var(--gold); color: var(--green-deep); border: none;
+      border-radius: 4px; font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+    }
 
     /* ── Responsive ── */
     @media (max-width: 640px) {
-      .portal-header { padding: 16px 20px; flex-direction: column; gap: 8px; align-items: flex-start; }
-      .portal-main { padding: 24px 16px; }
-      .portal-title { font-size: 22px; }
-      .calendar-day { font-size: 12px; }
-      .action-bar { flex-direction: column; }
-      .btn { width: 100%; justify-content: center; }
+      .portal-header { padding: 14px 18px; flex-direction: column; gap: 6px; align-items: flex-start; }
+      .portal-main { padding: 22px 14px 50px; }
+      .section-title { font-size: 20px; }
+      .calendar-day { font-size: 12px; border-radius: 4px; }
+      .calendar-grid { gap: 2px; }
       .form-row { grid-template-columns: 1fr; }
-      .entry-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .tab { padding: 12px 12px; font-size: 11px; }
+      .calendar-month { font-size: 17px; min-width: 130px; }
     }
   </style>
 </head>
@@ -263,72 +297,76 @@
     </header>
 
     <main class="portal-main">
-      <h1 class="portal-title">Availability Calendar</h1>
-      <p class="portal-subtitle">Set the dates you're open to play and block off dates you're unavailable. This information is only visible to the CartPath team to help coordinate bookings.</p>
 
-      <!-- Action Buttons -->
-      <div class="action-bar">
-        <button class="btn btn-open" onclick="openModal('open')">+ Open Date</button>
-        <button class="btn btn-blocked" onclick="openModal('blocked')">+ Block Date</button>
+      <!-- Tabs -->
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="availability" onclick="setTab('availability')">Availability</button>
+        <button class="tab" data-tab="rounds" onclick="setTab('rounds')">Rounds <span id="roundsCount" style="opacity:0.5;font-weight:400;"></span></button>
+        <button class="tab" data-tab="assistants" onclick="setTab('assistants')">Assistants</button>
       </div>
 
-      <!-- View toggle -->
-      <div style="display: flex; gap: 6px; margin-bottom: 12px;" id="view-toggle">
-        <button type="button" class="view-btn" data-view="month" onclick="setCalendarView('month')" style="padding: 7px 16px; background: rgba(191,155,59,0.15); border: 1px solid var(--gold); color: var(--gold); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">Month</button>
-        <button type="button" class="view-btn" data-view="quarter" onclick="setCalendarView('quarter')" style="padding: 7px 16px; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">3-Month</button>
-        <button type="button" class="view-btn" data-view="year" onclick="setCalendarView('year')" style="padding: 7px 16px; background: transparent; border: 1px solid rgba(191,155,59,0.15); color: rgba(245,240,225,0.5); font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer;">Year</button>
-      </div>
-
-      <!-- Calendar -->
-      <div class="calendar-nav">
-        <button class="calendar-nav-btn" onclick="changeMonth(-1)">&larr;</button>
-        <div class="calendar-month" id="calendarMonth"></div>
-        <button class="calendar-nav-btn" onclick="changeMonth(1)">&rarr;</button>
-      </div>
-      <div class="calendar-grid" id="calendarGrid"></div>
-      <div id="calendarExtra" style="margin-top: 16px;"></div>
-
-      <!-- Legend -->
-      <div class="legend">
-        <div class="legend-item"><div class="legend-swatch open"></div> Open / Available</div>
-        <div class="legend-item"><div class="legend-swatch blocked"></div> Blocked / Unavailable</div>
-      </div>
-
-      <!-- Entries List -->
-      <div class="entries-section">
-        <div class="entries-title">Your Availability Entries</div>
-        <div id="entriesList"></div>
-      </div>
-
-      <!-- Booked Rounds -->
-      <div class="entries-section" style="margin-top:40px;">
-        <div class="entries-title">Your Booked Rounds</div>
-        <div id="bookedRoundsContainer"><div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">Loading...</div></div>
-      </div>
-
-      <!-- Assistants -->
-      <div class="entries-section" style="margin-top:40px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-          <div class="entries-title" style="margin:0;">Your Assistants</div>
-          <button onclick="openInviteAssistant()" style="padding:8px 16px;background:var(--gold);color:#091D14;border:none;border-radius:4px;font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">+ Invite Assistant</button>
+      <!-- ── Availability ── -->
+      <section class="tab-panel active" id="panel-availability">
+        <div class="section-row">
+          <h1 class="section-title">Availability</h1>
+          <div class="section-hint">Click and drag across days to mark dates open or blocked. Only the CartPath team sees this.</div>
         </div>
-        <p style="font-family:var(--font-ui);font-size:12px;color:rgba(245,240,225,0.4);margin-bottom:14px;line-height:1.6;">Assistants can view your booked rounds and manage your availability calendar. They cannot submit scores or chat on your behalf.</p>
-        <div id="assistantsContainer"><div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">Loading...</div></div>
-      </div>
+
+        <div class="calendar-nav">
+          <div class="cal-nav-left">
+            <button class="calendar-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month">&larr;</button>
+            <div class="calendar-month" id="calendarMonth"></div>
+            <button class="calendar-nav-btn" onclick="changeMonth(1)" aria-label="Next month">&rarr;</button>
+          </div>
+          <button class="btn-today" onclick="goToToday()">Today</button>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+
+        <div class="cal-footer">
+          <div class="cal-hint">Tip: drag to select multiple days. Click an existing entry to edit or remove it.</div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-swatch open"></div> Open</div>
+            <div class="legend-item"><div class="legend-swatch blocked"></div> Blocked</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Rounds ── -->
+      <section class="tab-panel" id="panel-rounds">
+        <div class="section-row">
+          <h1 class="section-title">Booked Rounds</h1>
+          <div class="section-hint">Confirmed bookings from members. Special requests appear inline.</div>
+        </div>
+        <div id="bookedRoundsContainer"><div class="empty-state">Loading...</div></div>
+      </section>
+
+      <!-- ── Assistants ── -->
+      <section class="tab-panel" id="panel-assistants">
+        <div class="section-row">
+          <div>
+            <h1 class="section-title">Assistants</h1>
+            <div class="section-hint" style="margin-top:6px;">Assistants can manage your calendar and view bookings. They can't submit scores or chat.</div>
+          </div>
+          <button class="btn-invite" onclick="openInviteAssistant()">+ Invite</button>
+        </div>
+        <div id="assistantsContainer"><div class="empty-state">Loading...</div></div>
+      </section>
+
     </main>
   </div>
 
   <!-- Invite Assistant Modal -->
   <div id="inviteAssistantModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;align-items:center;justify-content:center;padding:20px;">
-    <div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:440px;width:100%;padding:28px;">
+    <div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:420px;width:100%;padding:26px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-        <div style="font-family:var(--font-display);font-size:1.3rem;color:var(--cream);">Invite an Assistant</div>
+        <div style="font-family:var(--font-display);font-size:1.25rem;color:var(--cream);">Invite an Assistant</div>
         <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" style="background:none;border:none;color:rgba(245,240,225,0.4);font-size:20px;cursor:pointer;">&times;</button>
       </div>
-      <label style="display:block;font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Name</label>
-      <input type="text" id="invAsstName" style="width:100%;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;padding:10px 12px;color:var(--cream);margin-bottom:14px;font-family:var(--font-ui);font-size:14px;">
-      <label style="display:block;font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Email</label>
-      <input type="email" id="invAsstEmail" style="width:100%;background:#060F0A;border:1px solid rgba(191,155,59,0.15);border-radius:4px;padding:10px 12px;color:var(--cream);margin-bottom:14px;font-family:var(--font-ui);font-size:14px;">
+      <label class="form-label">Name</label>
+      <input type="text" id="invAsstName" class="form-input">
+      <label class="form-label">Email</label>
+      <input type="email" id="invAsstEmail" class="form-input">
       <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.65);margin-bottom:8px;">
         <input type="checkbox" id="invAsstManageAvail" checked> Can manage my availability
       </label>
@@ -336,17 +374,23 @@
         <input type="checkbox" id="invAsstViewBookings" checked> Can view my bookings
       </label>
       <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" style="padding:10px 20px;background:none;border:1px solid rgba(245,240,225,0.2);border-radius:4px;color:var(--cream);cursor:pointer;font-family:var(--font-ui);font-size:13px;">Cancel</button>
-        <button onclick="submitInviteAssistant()" style="padding:10px 24px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:1px;">Send Invite</button>
+        <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" class="btn-cancel">Cancel</button>
+        <button onclick="submitInviteAssistant()" class="btn-save">Send Invite</button>
       </div>
     </div>
   </div>
 
-  <!-- Add/Edit Modal -->
+  <!-- Add/Edit Entry Modal -->
   <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-      <div class="modal-title" id="modalTitle">Add Open Date</div>
+      <div class="modal-title" id="modalTitle">New Availability</div>
       <input type="hidden" id="modalType" value="open">
+      <input type="hidden" id="modalEntryId" value="">
+
+      <div class="type-toggle">
+        <div class="type-option open active" id="typeOpenBtn" onclick="setModalType('open')">Open</div>
+        <div class="type-option blocked" id="typeBlockedBtn" onclick="setModalType('blocked')">Blocked</div>
+      </div>
 
       <div class="form-row">
         <div>
@@ -361,11 +405,14 @@
       <div class="form-hint">Leave end date empty for a single day.</div>
 
       <label class="form-label">Notes (optional)</label>
-      <textarea class="form-textarea" id="modalNotes" placeholder="e.g. Only available mornings, Prefer East Lake, Out of town..."></textarea>
+      <textarea class="form-textarea" id="modalNotes" placeholder="e.g. Mornings only, prefer East Lake..."></textarea>
 
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-save" id="modalSave" onclick="saveEntry()">Save</button>
+        <button class="btn-delete-entry" id="modalDelete" onclick="deleteEntryFromModal()" style="display:none;">Remove</button>
+        <div class="modal-actions-right" style="margin-left:auto;">
+          <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button class="btn-save" id="modalSave" onclick="saveEntry()">Save</button>
+        </div>
       </div>
     </div>
   </div>
@@ -384,7 +431,10 @@
     var dragEnd = null;
     var isDragging = false;
 
-    // ── Toast feedback ──
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+    // ── Toast ──
     function showToast(msg, kind) {
       kind = kind || 'success';
       var t = document.createElement('div');
@@ -395,34 +445,38 @@
       setTimeout(function() { t.remove(); }, 3000);
     }
 
+    // ── Tabs ──
+    function setTab(name) {
+      document.querySelectorAll('.tab').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-tab') === name);
+      });
+      document.querySelectorAll('.tab-panel').forEach(function(p) {
+        p.classList.toggle('active', p.id === 'panel-' + name);
+      });
+    }
+
     // ── Init ──
     (async function init() {
       if (!token) return showError();
-
       try {
-        // Fetch athlete info
         var meRes = await fetch(API_BASE + '/athletes/portal/me?token=' + token);
         if (!meRes.ok) return showError();
         var meData = await meRes.json();
         athlete = meData.athlete;
 
-        // Fetch availability
         await loadEntries();
 
-        // Render
         document.getElementById('athleteName').textContent = athlete.name;
         var now = new Date();
         currentYear = now.getFullYear();
         currentMonth = now.getMonth();
         renderCalendar();
-        renderEntries();
         loadBookedRounds();
         loadAssistants();
 
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('portalContent').style.display = 'block';
 
-        // First-login onboarding
         if (athlete && athlete.onboarded !== true) {
           setTimeout(startAthleteOnboarding, 800);
         }
@@ -432,19 +486,29 @@
       }
     })();
 
-    // ─── Onboarding tour for athletes ───
+    function showError() {
+      document.getElementById('loadingScreen').style.display = 'none';
+      document.getElementById('errorScreen').style.display = 'flex';
+    }
+
+    async function loadEntries() {
+      var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token);
+      if (res.ok) {
+        var data = await res.json();
+        entries = data.availability || [];
+      }
+    }
+
+    // ── Onboarding ──
     var athOnboardSteps = [
-      { title: 'Welcome to CartPath', body: 'You\'re in. Let\'s show you how to manage your availability and see upcoming rounds.' },
-      { title: 'Set Your Availability', body: 'Click and drag across days to mark yourself open or blocked. Our team uses this to coordinate bookings around your schedule.' },
-      { title: 'Track Booked Rounds', body: 'When a member books you, the round appears under "Your Booked Rounds" with their name, course, and any special requests.' },
+      { title: 'Welcome to CartPath', body: 'You\'re in. Three simple tabs: your calendar, your rounds, and your assistants.' },
+      { title: 'Set Your Availability', body: 'Click and drag across days to mark yourself open or blocked. Our team coordinates bookings around your schedule.' },
+      { title: 'Track Booked Rounds', body: 'When a member books you, the round shows up in the Rounds tab with their name, course, and any notes.' },
       { title: 'All Set', body: 'Your availability only shows to the CartPath team — never to members. Update any time.' },
     ];
     var athOnboardIdx = 0;
 
-    function startAthleteOnboarding() {
-      athOnboardIdx = 0;
-      renderAthOnboardStep();
-    }
+    function startAthleteOnboarding() { athOnboardIdx = 0; renderAthOnboardStep(); }
 
     function renderAthOnboardStep() {
       var step = athOnboardSteps[athOnboardIdx];
@@ -476,14 +540,319 @@
       var overlay = document.getElementById('athOnboardOverlay');
       if (overlay) overlay.remove();
       if (save) {
-        try {
-          await fetch(API_BASE + '/athletes/portal/mark-onboarded?token=' + token, { method: 'POST' });
-        } catch {}
+        try { await fetch(API_BASE + '/athletes/portal/mark-onboarded?token=' + token, { method: 'POST' }); } catch {}
       }
     }
 
-    // ─── Assistants management ───
+    // ── Calendar ──
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      renderCalendar();
+    }
 
+    function goToToday() {
+      var now = new Date();
+      currentYear = now.getFullYear();
+      currentMonth = now.getMonth();
+      renderCalendar();
+    }
+
+    function entriesForDate(dateStr) {
+      return entries.filter(function(e) {
+        var s = e.start_date.substring(0, 10);
+        var en = e.end_date.substring(0, 10);
+        return dateStr >= s && dateStr <= en;
+      });
+    }
+
+    function renderCalendar() {
+      document.getElementById('calendarMonth').textContent = MONTHS[currentMonth] + ' ' + currentYear;
+
+      var grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      DAYS.forEach(function(d) {
+        var el = document.createElement('div');
+        el.className = 'calendar-dow';
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+
+      var firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      var today = new Date();
+      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+      for (var i = 0; i < firstDay; i++) {
+        var empty = document.createElement('div');
+        empty.className = 'calendar-day empty';
+        grid.appendChild(empty);
+      }
+
+      for (var d = 1; d <= daysInMonth; d++) {
+        var dateStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        var cell = document.createElement('div');
+        cell.className = 'calendar-day';
+
+        if (dateStr === todayStr) cell.classList.add('today');
+
+        var dayEntries = entriesForDate(dateStr);
+        var hasOpen = dayEntries.some(function(e) { return e.type === 'open'; });
+        var hasBlocked = dayEntries.some(function(e) { return e.type === 'blocked'; });
+
+        if (hasOpen) cell.classList.add('has-open');
+        if (hasBlocked) cell.classList.add('has-blocked');
+
+        var numSpan = document.createElement('span');
+        numSpan.className = 'day-num';
+        numSpan.textContent = d;
+        cell.appendChild(numSpan);
+
+        if (hasOpen || hasBlocked) {
+          var dots = document.createElement('div');
+          dots.className = 'day-dots';
+          if (hasOpen) {
+            var dot = document.createElement('div');
+            dot.className = 'day-dot dot-open';
+            dots.appendChild(dot);
+          }
+          if (hasBlocked) {
+            var dot2 = document.createElement('div');
+            dot2.className = 'day-dot dot-blocked';
+            dots.appendChild(dot2);
+          }
+          cell.appendChild(dots);
+        }
+
+        cell.setAttribute('data-date', dateStr);
+
+        (function(ds, dEntries) {
+          cell.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            dragStart = ds;
+            dragEnd = ds;
+            isDragging = true;
+          });
+          cell.addEventListener('mouseover', function() {
+            if (isDragging) {
+              dragEnd = ds;
+              updateDragVisuals();
+            }
+          });
+          cell.addEventListener('touchstart', function(e) {
+            dragStart = ds; dragEnd = ds; isDragging = true;
+          });
+          // Cache the entries on this day for click-to-edit
+          cell._entries = dEntries;
+        })(dateStr, dayEntries);
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function updateDragVisuals() {
+      if (!dragStart || !dragEnd) return;
+      var from = dragStart < dragEnd ? dragStart : dragEnd;
+      var to = dragStart < dragEnd ? dragEnd : dragStart;
+      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
+        var d = c.getAttribute('data-date');
+        if (d >= from && d <= to) {
+          c.style.background = 'rgba(191,155,59,0.22)';
+          c.style.boxShadow = 'inset 0 0 0 1px rgba(191,155,59,0.4)';
+        } else {
+          c.style.background = '';
+          c.style.boxShadow = '';
+        }
+      });
+    }
+
+    document.addEventListener('mouseup', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      var startCell = dragStart, endCell = dragEnd;
+
+      // Clear drag visuals
+      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
+        c.style.background = ''; c.style.boxShadow = '';
+      });
+
+      if (startCell && endCell) {
+        var from = startCell < endCell ? startCell : endCell;
+        var to = startCell < endCell ? endCell : startCell;
+
+        // Single-day click on an existing entry → open it for edit
+        if (from === to) {
+          var cell = document.querySelector('.calendar-day[data-date="' + from + '"]');
+          if (cell && cell._entries && cell._entries.length > 0) {
+            openEntryForEdit(cell._entries[0]);
+            dragStart = null; dragEnd = null;
+            return;
+          }
+        }
+
+        openModalForNew(from, from === to ? '' : to);
+      }
+      dragStart = null; dragEnd = null;
+    });
+
+    // ── Modal ──
+    function setModalType(type) {
+      document.getElementById('modalType').value = type;
+      document.getElementById('typeOpenBtn').classList.toggle('active', type === 'open');
+      document.getElementById('typeBlockedBtn').classList.toggle('active', type === 'blocked');
+      document.getElementById('modalTitle').textContent = (document.getElementById('modalEntryId').value ? 'Edit' : 'New') + ' ' + (type === 'open' ? 'Open Date' : 'Blocked Date');
+    }
+
+    function openModalForNew(start, end) {
+      document.getElementById('modalEntryId').value = '';
+      document.getElementById('modalStartDate').value = start;
+      document.getElementById('modalEndDate').value = end || '';
+      document.getElementById('modalNotes').value = '';
+      document.getElementById('modalDelete').style.display = 'none';
+      setModalType('open');
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function openEntryForEdit(entry) {
+      document.getElementById('modalEntryId').value = entry.id;
+      document.getElementById('modalStartDate').value = entry.start_date.substring(0, 10);
+      document.getElementById('modalEndDate').value = entry.end_date.substring(0, 10);
+      document.getElementById('modalNotes').value = entry.notes || '';
+      document.getElementById('modalDelete').style.display = 'inline-block';
+      setModalType(entry.type);
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+      document.getElementById('modalEntryId').value = '';
+      document.getElementById('modalStartDate').value = '';
+      document.getElementById('modalEndDate').value = '';
+      document.getElementById('modalNotes').value = '';
+    }
+
+    async function saveEntry() {
+      var entryId = document.getElementById('modalEntryId').value;
+      var type = document.getElementById('modalType').value;
+      var startDate = document.getElementById('modalStartDate').value;
+      var endDate = document.getElementById('modalEndDate').value;
+      var notes = document.getElementById('modalNotes').value.trim();
+
+      if (!startDate) { showToast('Please select a start date', 'error'); return; }
+
+      var saveBtn = document.getElementById('modalSave');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      try {
+        // For edits we delete + recreate (existing API surface doesn't have PATCH)
+        if (entryId) {
+          await fetch(API_BASE + '/athletes/portal/availability/' + entryId + '?token=' + token, { method: 'DELETE' });
+        }
+        var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: type,
+            start_date: startDate,
+            end_date: endDate || startDate,
+            notes: notes || null
+          })
+        });
+
+        if (!res.ok) {
+          var err = await res.json();
+          showToast(err.error || 'Failed to save', 'error');
+          return;
+        }
+
+        await loadEntries();
+        renderCalendar();
+        closeModal();
+        showToast(entryId ? 'Entry updated' : (type === 'open' ? 'Open dates saved' : 'Blocked dates saved'));
+      } catch (err) {
+        showToast('Network error. Please try again.', 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    }
+
+    async function deleteEntryFromModal() {
+      var entryId = document.getElementById('modalEntryId').value;
+      if (!entryId) return;
+      if (!confirm('Remove this availability entry?')) return;
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/availability/' + entryId + '?token=' + token, { method: 'DELETE' });
+        if (res.ok) {
+          await loadEntries();
+          renderCalendar();
+          closeModal();
+          showToast('Entry removed');
+        } else {
+          showToast('Failed to delete', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ── Booked Rounds ──
+    async function loadBookedRounds() {
+      var container = document.getElementById('bookedRoundsContainer');
+      var countSpan = document.getElementById('roundsCount');
+      if (!container) return;
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/bookings?token=' + token);
+        if (!res.ok) throw new Error('Failed');
+        var data = await res.json();
+        var bookings = data.bookings || [];
+
+        if (countSpan) countSpan.textContent = bookings.length ? '(' + bookings.length + ')' : '';
+
+        if (bookings.length === 0) {
+          container.innerHTML = '<div class="empty-state">No confirmed rounds yet.</div>';
+          return;
+        }
+
+        var html = '';
+        bookings.forEach(function(b) {
+          var date = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+          var stateLabel = ({
+            paid: 'Paid — Awaiting Confirmation',
+            confirmed: 'Confirmed',
+            completed: 'Completed',
+          })[b.workflow_state] || b.workflow_state;
+          var stateColor = b.workflow_state === 'completed' ? '#6DC86D' : '#BF9B3B';
+
+          html += '<div class="info-card">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+          html += '<div><div style="font-family:var(--font-display);font-size:15px;color:var(--cream);font-weight:500;">' + escapeHtml(b.member_name || 'Member') + '</div>';
+          html += '<div style="font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(date) + '</div></div>';
+          html += '<div class="badge" style="color:' + stateColor + ';border:1px solid ' + stateColor + '40;">' + stateLabel + '</div>';
+          html += '</div>';
+          html += '<div style="font-size:12px;color:rgba(245,240,225,0.5);">' + escapeHtml(b.course || '') + ' &middot; Group of ' + (b.group_size || 1) + '</div>';
+          if (b.special_requests) {
+            html += '<div style="margin-top:8px;padding:10px;background:rgba(245,240,225,0.03);border-left:2px solid rgba(191,155,59,0.3);font-size:12px;color:rgba(245,240,225,0.55);font-style:italic;">' + escapeHtml(b.special_requests) + '</div>';
+          }
+          html += '</div>';
+        });
+        container.innerHTML = html;
+      } catch {
+        container.innerHTML = '<div class="empty-state" style="color:rgba(229,115,115,0.6);">Unable to load bookings.</div>';
+      }
+    }
+
+    // ── Assistants ──
     async function loadAssistants() {
       var container = document.getElementById('assistantsContainer');
       if (!container) return;
@@ -493,26 +862,26 @@
         var data = await res.json();
         var assistants = data.assistants || [];
         if (assistants.length === 0) {
-          container.innerHTML = '<div style="padding:16px;color:rgba(245,240,225,0.3);font-size:12px;">No assistants yet. Click "+ Invite Assistant" to add one.</div>';
+          container.innerHTML = '<div class="empty-state">No assistants yet. Click "+ Invite" to add one.</div>';
           return;
         }
         var html = '';
         assistants.forEach(function(a) {
           var statusColor = a.status === 'active' ? '#6DC86D' : a.status === 'invited' ? '#BF9B3B' : '#888';
-          html += '<div style="background:var(--green-dark);border:1px solid rgba(191,155,59,0.06);border-radius:6px;padding:14px 18px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">';
+          html += '<div class="info-card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">';
           html += '<div>';
           html += '<div style="font-family:var(--font-ui);font-size:14px;color:var(--cream);font-weight:500;">' + escapeHtml(a.name) + '</div>';
           html += '<div style="font-family:var(--font-ui);font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(a.email) + '</div>';
           html += '</div>';
           html += '<div style="display:flex;align-items:center;gap:10px;">';
-          html += '<span style="font-family:var(--font-ui);font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:' + statusColor + ';padding:3px 8px;border:1px solid ' + statusColor + '40;border-radius:3px;">' + a.status + '</span>';
+          html += '<span class="badge" style="color:' + statusColor + ';border:1px solid ' + statusColor + '40;">' + a.status + '</span>';
           html += '<button onclick="revokeAssistant(\'' + a.id + '\')" style="background:none;border:1px solid rgba(229,115,115,0.3);color:#E57373;padding:5px 10px;border-radius:3px;font-family:var(--font-ui);font-size:10px;cursor:pointer;">Revoke</button>';
           html += '</div>';
           html += '</div>';
         });
         container.innerHTML = html;
       } catch {
-        container.innerHTML = '<div style="padding:16px;color:rgba(229,115,115,0.5);font-size:12px;">Unable to load assistants.</div>';
+        container.innerHTML = '<div class="empty-state" style="color:rgba(229,115,115,0.5);">Unable to load assistants.</div>';
       }
     }
 
@@ -528,14 +897,12 @@
       var name = document.getElementById('invAsstName').value.trim();
       var email = document.getElementById('invAsstEmail').value.trim();
       if (!name || !email) { showToast('Name and email required', 'error'); return; }
-
       try {
         var res = await fetch(API_BASE + '/athletes/portal/assistants?token=' + token, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: name,
-            email: email,
+            name: name, email: email,
             can_manage_availability: document.getElementById('invAsstManageAvail').checked,
             can_view_bookings: document.getElementById('invAsstViewBookings').checked,
           }),
@@ -561,443 +928,6 @@
         loadAssistants();
       } catch (err) {
         showToast(err.message, 'error');
-      }
-    }
-
-    function showError() {
-      document.getElementById('loadingScreen').style.display = 'none';
-      document.getElementById('errorScreen').style.display = 'flex';
-    }
-
-    async function loadEntries() {
-      var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token);
-      if (res.ok) {
-        var data = await res.json();
-        entries = data.availability || [];
-      }
-    }
-
-    // ── Calendar Rendering ──
-    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    function changeMonth(delta) {
-      currentMonth += delta;
-      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-      renderCalendar();
-    }
-
-    var calendarView = 'month';
-
-    function setCalendarView(view) {
-      calendarView = view;
-      document.querySelectorAll('.view-btn').forEach(function(btn) {
-        var active = btn.getAttribute('data-view') === view;
-        btn.style.background = active ? 'rgba(191,155,59,0.15)' : 'transparent';
-        btn.style.border = active ? '1px solid var(--gold)' : '1px solid rgba(191,155,59,0.15)';
-        btn.style.color = active ? 'var(--gold)' : 'rgba(245,240,225,0.5)';
-      });
-      renderCalendar();
-    }
-
-    // Render a compact single-month grid into a container (used for
-    // 3-Month and Year views). Reuses the same dragability by creating
-    // cells with [data-date] so the existing global drag handler works.
-    function renderCompactMonth(year, month, container) {
-      var monthLabel = document.createElement('div');
-      monthLabel.style.cssText = 'font-family: var(--font-display); font-size: 14px; color: var(--cream); font-weight: 500; margin-bottom: 6px; text-align: center; opacity: 0.8;';
-      monthLabel.textContent = MONTHS[month] + ' ' + year;
-      container.appendChild(monthLabel);
-
-      var grid = document.createElement('div');
-      grid.style.cssText = 'display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;';
-
-      DAYS.forEach(function(d) {
-        var el = document.createElement('div');
-        el.style.cssText = 'text-align: center; font-size: 8px; letter-spacing: 0.1em; color: rgba(245,240,225,0.3); padding: 2px 0;';
-        el.textContent = d.charAt(0);
-        grid.appendChild(el);
-      });
-
-      var firstDay = new Date(year, month, 1).getDay();
-      var daysInMonth = new Date(year, month + 1, 0).getDate();
-      var today = new Date();
-      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-
-      for (var i = 0; i < firstDay; i++) {
-        var empty = document.createElement('div');
-        empty.style.aspectRatio = '1';
-        grid.appendChild(empty);
-      }
-      for (var d = 1; d <= daysInMonth; d++) {
-        var dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        var cell = document.createElement('div');
-        cell.className = 'calendar-day';
-        cell.setAttribute('data-date', dateStr);
-        cell.style.cssText = 'aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; border-radius: 3px; cursor: pointer; color: rgba(245,240,225,0.6); border: 1px solid transparent;';
-        if (dateStr === todayStr) cell.style.border = '1px solid var(--gold)';
-
-        var hasOpen = false, hasBlocked = false;
-        entries.forEach(function(e) {
-          var start = e.start_date.substring(0, 10);
-          var end = e.end_date.substring(0, 10);
-          if (dateStr >= start && dateStr <= end) {
-            if (e.type === 'open') hasOpen = true;
-            if (e.type === 'blocked') hasBlocked = true;
-          }
-        });
-        if (hasOpen && hasBlocked) cell.style.background = 'linear-gradient(135deg,rgba(45,138,86,0.3) 50%,rgba(192,57,43,0.3) 50%)';
-        else if (hasOpen) cell.style.background = 'rgba(45,138,86,0.25)';
-        else if (hasBlocked) cell.style.background = 'rgba(192,57,43,0.25)';
-
-        cell.textContent = d;
-        // Reuse the global drag handlers via classname/data-date
-        (function(ds) {
-          cell.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            dragStart = ds; dragEnd = ds; isDragging = true;
-          });
-          cell.addEventListener('mouseover', function() {
-            if (isDragging) { dragEnd = ds; }
-          });
-        })(dateStr);
-        grid.appendChild(cell);
-      }
-      container.appendChild(grid);
-    }
-
-    function renderCalendar() {
-      document.getElementById('calendarMonth').textContent = MONTHS[currentMonth] + ' ' + currentYear;
-
-      var grid = document.getElementById('calendarGrid');
-      grid.innerHTML = '';
-
-      // Day-of-week headers
-      DAYS.forEach(function(d) {
-        var el = document.createElement('div');
-        el.className = 'calendar-dow';
-        el.textContent = d;
-        grid.appendChild(el);
-      });
-
-      var firstDay = new Date(currentYear, currentMonth, 1).getDay();
-      var daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      var today = new Date();
-      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-
-      // Empty cells before first day
-      for (var i = 0; i < firstDay; i++) {
-        var empty = document.createElement('div');
-        empty.className = 'calendar-day empty';
-        grid.appendChild(empty);
-      }
-
-      // Day cells
-      for (var d = 1; d <= daysInMonth; d++) {
-        var dateStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        var cell = document.createElement('div');
-        cell.className = 'calendar-day';
-
-        if (dateStr === todayStr) cell.classList.add('today');
-
-        // Check if this date has entries
-        var hasOpen = false, hasBlocked = false;
-        entries.forEach(function(e) {
-          var start = e.start_date.substring(0, 10);
-          var end = e.end_date.substring(0, 10);
-          if (dateStr >= start && dateStr <= end) {
-            if (e.type === 'open') hasOpen = true;
-            if (e.type === 'blocked') hasBlocked = true;
-          }
-        });
-
-        if (hasOpen) cell.classList.add('has-open');
-        if (hasBlocked) cell.classList.add('has-blocked');
-
-        var numSpan = document.createElement('span');
-        numSpan.className = 'day-num';
-        numSpan.textContent = d;
-        cell.appendChild(numSpan);
-
-        // Dots
-        if (hasOpen || hasBlocked) {
-          var dots = document.createElement('div');
-          dots.className = 'day-dots';
-          if (hasOpen) {
-            var dot = document.createElement('div');
-            dot.className = 'day-dot dot-open';
-            dots.appendChild(dot);
-          }
-          if (hasBlocked) {
-            var dot2 = document.createElement('div');
-            dot2.className = 'day-dot dot-blocked';
-            dots.appendChild(dot2);
-          }
-          cell.appendChild(dots);
-        }
-
-        cell.setAttribute('data-date', dateStr);
-
-        // Drag-to-select: mousedown starts, mousemove extends, mouseup opens modal
-        (function(ds) {
-          cell.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            dragStart = ds;
-            dragEnd = ds;
-            isDragging = true;
-            cell.style.background = 'rgba(191,155,59,0.25)';
-          });
-          cell.addEventListener('mouseover', function() {
-            if (isDragging) {
-              dragEnd = ds;
-              updateDragVisuals();
-            }
-          });
-          // Touch support
-          cell.addEventListener('touchstart', function(e) {
-            dragStart = ds; dragEnd = ds; isDragging = true;
-          });
-        })(dateStr);
-
-        grid.appendChild(cell);
-      }
-
-      // Render additional months for 3-Month or Year views into #calendarExtra
-      var extra = document.getElementById('calendarExtra');
-      if (extra) {
-        extra.innerHTML = '';
-        if (calendarView === 'quarter') {
-          extra.style.cssText = 'margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px;';
-          var m1 = currentMonth + 1, y1 = currentYear; if (m1 > 11) { m1 = 0; y1++; }
-          var m2 = currentMonth + 2, y2 = currentYear; if (m2 > 11) { m2 -= 12; y2++; }
-          var c1 = document.createElement('div'); renderCompactMonth(y1, m1, c1);
-          var c2 = document.createElement('div'); renderCompactMonth(y2, m2, c2);
-          extra.appendChild(c1); extra.appendChild(c2);
-        } else if (calendarView === 'year') {
-          extra.style.cssText = 'margin-top:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;';
-          for (var off = 1; off < 12; off++) {
-            var m = currentMonth + off, y = currentYear;
-            while (m > 11) { m -= 12; y++; }
-            var c = document.createElement('div');
-            renderCompactMonth(y, m, c);
-            extra.appendChild(c);
-          }
-        } else {
-          extra.style.cssText = 'margin-top:16px;';
-        }
-      }
-    }
-
-    function updateDragVisuals() {
-      if (!dragStart || !dragEnd) return;
-      var from = dragStart < dragEnd ? dragStart : dragEnd;
-      var to = dragStart < dragEnd ? dragEnd : dragStart;
-      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
-        var d = c.getAttribute('data-date');
-        if (d >= from && d <= to) {
-          c.style.background = 'rgba(191,155,59,0.22)';
-          c.style.boxShadow = 'inset 0 0 0 1px rgba(191,155,59,0.4)';
-        } else {
-          c.style.background = '';
-          c.style.boxShadow = '';
-        }
-      });
-    }
-
-    document.addEventListener('mouseup', function() {
-      if (!isDragging) return;
-      isDragging = false;
-      if (dragStart && dragEnd) {
-        var from = dragStart < dragEnd ? dragStart : dragEnd;
-        var to = dragStart < dragEnd ? dragEnd : dragStart;
-        document.getElementById('modalStartDate').value = from;
-        document.getElementById('modalEndDate').value = from === to ? '' : to;
-        openModal('open');
-      }
-      // clear visuals (re-render after save anyway)
-      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
-        c.style.background = ''; c.style.boxShadow = '';
-      });
-      dragStart = null; dragEnd = null;
-    });
-
-    // ── Entries List ──
-    function renderEntries() {
-      var container = document.getElementById('entriesList');
-
-      // Sort: upcoming first, then by date
-      var sorted = entries.slice().sort(function(a, b) {
-        return a.start_date.localeCompare(b.start_date);
-      });
-
-      if (sorted.length === 0) {
-        container.innerHTML = '<div class="empty-state">No availability set yet.<br>Use the buttons above to mark dates as open or blocked.</div>';
-        return;
-      }
-
-      container.innerHTML = '';
-      sorted.forEach(function(entry) {
-        var card = document.createElement('div');
-        card.className = 'entry-card';
-
-        var startStr = formatDate(entry.start_date);
-        var endStr = formatDate(entry.end_date);
-        var dateDisplay = startStr === endStr ? startStr : startStr + '  &rarr;  ' + endStr;
-
-        card.innerHTML =
-          '<div class="entry-left">' +
-            '<span class="entry-badge ' + entry.type + '">' + (entry.type === 'open' ? 'Open' : 'Blocked') + '</span>' +
-            '<div>' +
-              '<div class="entry-dates">' + dateDisplay + '</div>' +
-              (entry.notes ? '<div class="entry-notes">' + escapeHtml(entry.notes) + '</div>' : '') +
-            '</div>' +
-          '</div>' +
-          '<button class="entry-delete" title="Remove" data-id="' + entry.id + '">&times;</button>';
-
-        card.querySelector('.entry-delete').addEventListener('click', function() {
-          deleteEntry(entry.id);
-        });
-
-        container.appendChild(card);
-      });
-    }
-
-    function formatDate(dateStr) {
-      var d = new Date(dateStr + 'T12:00:00');
-      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    }
-
-    // ── Modal ──
-    function openModal(type) {
-      document.getElementById('modalType').value = type;
-      document.getElementById('modalTitle').textContent = type === 'open' ? 'Add Open Date' : 'Add Blocked Date';
-      document.getElementById('modalNotes').value = '';
-      // Don't clear start date if it was pre-filled by calendar click
-      document.getElementById('modalOverlay').classList.add('show');
-    }
-
-    function closeModal() {
-      document.getElementById('modalOverlay').classList.remove('show');
-      document.getElementById('modalStartDate').value = '';
-      document.getElementById('modalEndDate').value = '';
-      document.getElementById('modalNotes').value = '';
-    }
-
-    async function saveEntry() {
-      var type = document.getElementById('modalType').value;
-      var startDate = document.getElementById('modalStartDate').value;
-      var endDate = document.getElementById('modalEndDate').value;
-      var notes = document.getElementById('modalNotes').value.trim();
-
-      if (!startDate) {
-        alert('Please select a start date.');
-        return;
-      }
-
-      var saveBtn = document.getElementById('modalSave');
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving...';
-
-      try {
-        var res = await fetch(API_BASE + '/athletes/portal/availability?token=' + token, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: type,
-            start_date: startDate,
-            end_date: endDate || startDate,
-            notes: notes || null
-          })
-        });
-
-        if (!res.ok) {
-          var err = await res.json();
-          showToast(err.error || 'Failed to save. Please try again.', 'error');
-          return;
-        }
-
-        await loadEntries();
-        renderCalendar();
-        renderEntries();
-        closeModal();
-        showToast(type === 'open' ? 'Open dates saved' : 'Blocked dates saved');
-      } catch (err) {
-        showToast('Network error. Please try again.', 'error');
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = 'Save';
-      }
-    }
-
-    async function deleteEntry(id) {
-      if (!confirm('Remove this availability entry?')) return;
-
-      try {
-        var res = await fetch(API_BASE + '/athletes/portal/availability/' + id + '?token=' + token, {
-          method: 'DELETE'
-        });
-
-        if (res.ok) {
-          await loadEntries();
-          renderCalendar();
-          renderEntries();
-          showToast('Entry removed');
-        } else {
-          showToast('Failed to delete. Please try again.', 'error');
-        }
-      } catch (err) {
-        showToast('Network error. Please try again.', 'error');
-      }
-    }
-
-    function escapeHtml(str) {
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
-
-    // ── Booked Rounds ──
-    async function loadBookedRounds() {
-      var container = document.getElementById('bookedRoundsContainer');
-      if (!container) return;
-
-      try {
-        var res = await fetch(API_BASE + '/athletes/portal/bookings?token=' + token);
-        if (!res.ok) throw new Error('Failed');
-        var data = await res.json();
-        var bookings = data.bookings || [];
-
-        if (bookings.length === 0) {
-          container.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(245,240,225,0.3);font-size:13px;">No confirmed rounds yet.</div>';
-          return;
-        }
-
-        var html = '';
-        bookings.forEach(function(b) {
-          var date = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
-          var stateLabel = ({
-            paid: 'Paid — Awaiting Confirmation',
-            confirmed: 'Confirmed',
-            completed: 'Completed',
-          })[b.workflow_state] || b.workflow_state;
-          var stateColor = b.workflow_state === 'completed' ? '#6DC86D' : '#BF9B3B';
-
-          html += '<div style="background:var(--green-dark);border:1px solid rgba(191,155,59,0.06);border-radius:6px;padding:16px 20px;margin-bottom:8px;">';
-          html += '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
-          html += '<div><div style="font-family:var(--font-display);font-size:15px;color:var(--cream);font-weight:500;">' + escapeHtml(b.member_name || 'Member') + '</div>';
-          html += '<div style="font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(date) + '</div></div>';
-          html += '<div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:' + stateColor + ';padding:3px 8px;border:1px solid ' + stateColor + '40;border-radius:3px;">' + stateLabel + '</div>';
-          html += '</div>';
-          html += '<div style="font-size:12px;color:rgba(245,240,225,0.5);">' + escapeHtml(b.course || '') + ' &middot; Group of ' + (b.group_size || 1) + '</div>';
-          if (b.special_requests) {
-            html += '<div style="margin-top:8px;padding:10px;background:rgba(245,240,225,0.03);border-left:2px solid rgba(191,155,59,0.3);font-size:12px;color:rgba(245,240,225,0.55);font-style:italic;">' + escapeHtml(b.special_requests) + '</div>';
-          }
-          html += '</div>';
-        });
-        container.innerHTML = html;
-      } catch {
-        container.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(229,115,115,0.6);font-size:12px;">Unable to load bookings.</div>';
       }
     }
   </script>
