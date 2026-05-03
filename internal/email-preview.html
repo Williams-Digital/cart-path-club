@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CartPath — Email Preview</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --gold: #BF9B3B;
+      --cream: #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    h1 { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 8px; font-weight: 500; }
+    .lead { color: rgba(245,240,225,0.55); font-size: 1rem; max-width: 720px; margin-bottom: 36px; line-height: 1.65; }
+    .lead a { color: var(--gold); text-decoration: none; border-bottom: 1px dotted rgba(191,155,59,0.4); }
+
+    /* Sidebar nav */
+    .layout { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+    @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+
+    .sidebar {
+      position: sticky; top: 24px;
+      background: rgba(16,53,42,0.4);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 10px;
+      padding: 16px 8px;
+    }
+    .sidebar-group {
+      font-family: var(--font-ui); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); padding: 12px 14px 6px;
+    }
+    .sidebar a {
+      display: block; padding: 8px 14px;
+      font-size: 13px; color: rgba(245,240,225,0.7);
+      text-decoration: none; border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover { background: rgba(191,155,59,0.06); color: var(--cream); }
+    .sidebar a.active { background: rgba(191,155,59,0.12); color: var(--gold); }
+
+    /* Email card */
+    .email-card {
+      background: rgba(16,53,42,0.4);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+    .email-meta {
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+      padding-bottom: 14px; margin-bottom: 14px;
+      border-bottom: 1px solid rgba(191,155,59,0.12);
+    }
+    .email-tag {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--gold);
+      padding: 3px 9px; border-radius: 3px;
+      background: rgba(191,155,59,0.1);
+      border: 1px solid rgba(191,155,59,0.25);
+    }
+    .email-tag.member { color: #CCAB52; }
+    .email-tag.athlete { color: #7DB3D8; border-color: rgba(125,179,216,0.3); background: rgba(125,179,216,0.08); }
+    .email-tag.admin { color: rgba(245,240,225,0.6); border-color: rgba(245,240,225,0.15); background: rgba(245,240,225,0.04); }
+    .email-from { font-size: 12px; color: rgba(245,240,225,0.5); }
+    .email-subject {
+      font-family: var(--font-display); font-size: 1.2rem; color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .email-preheader {
+      font-size: 11px; color: rgba(245,240,225,0.4); font-style: italic;
+    }
+    .email-context {
+      font-size: 12px; color: rgba(245,240,225,0.5);
+      margin-top: 10px; line-height: 1.55;
+    }
+
+    /* The actual rendered email */
+    .email-iframe-wrap {
+      background: #060F0A; border-radius: 6px; padding: 0;
+      margin-top: 16px;
+      border: 1px solid rgba(191,155,59,0.06);
+    }
+    iframe.email-frame {
+      width: 100%; min-height: 600px; border: none;
+      display: block; border-radius: 6px;
+    }
+
+    .footnote {
+      font-size: 12px; color: rgba(245,240,225,0.4);
+      max-width: 720px; line-height: 1.65; margin-top: 30px;
+    }
+    .footnote code {
+      background: rgba(245,240,225,0.06); border: 1px solid rgba(245,240,225,0.08);
+      padding: 1px 6px; border-radius: 3px; font-size: 11px;
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Email preview</h1>
+    <p class="lead">
+      Every transactional email CartPath sends, rendered live in the browser.
+      Pulls from the <a href="https://github.com/Williams-Digital/cart-path-club">unified shell</a> we use across all 5 Lambdas.
+      Click any item in the sidebar to jump.
+    </p>
+
+    <div class="layout">
+      <nav class="sidebar" id="sidebar">
+        <div class="sidebar-group">Application flow</div>
+        <a href="#confirm">Application received</a>
+        <a href="#deposit">Deposit received</a>
+        <a href="#admin-app">Admin: new application</a>
+        <a href="#approval">Member approved</a>
+        <a href="#decline">Application declined</a>
+        <a href="#removal">Membership ended</a>
+
+        <div class="sidebar-group">Payment flow</div>
+        <a href="#entry-receipt">Entry fee receipt + dues</a>
+        <a href="#welcome">You're in (welcome)</a>
+
+        <div class="sidebar-group">Booking flow</div>
+        <a href="#booking-admin">Admin: new request</a>
+        <a href="#quote">Member: quote ready</a>
+        <a href="#payment">Member: payment link</a>
+        <a href="#approved-admin">Admin: quote approved</a>
+        <a href="#declined-admin">Admin: quote declined</a>
+        <a href="#reminder">Round reminder (T-2)</a>
+
+        <div class="sidebar-group">Athletes</div>
+        <a href="#athlete-approval">Athlete approved</a>
+        <a href="#athlete-creds">Athlete credentials</a>
+        <a href="#athlete-welcome">Athlete on roster</a>
+        <a href="#athlete-fail">Athlete payment failed</a>
+        <a href="#assistant">Assistant invite</a>
+      </nav>
+
+      <main id="emails"></main>
+    </div>
+
+    <p class="footnote">
+      All emails share a single <code>renderEmail()</code> shell with three voices: <strong>member</strong> (warm), <strong>athlete</strong> (warm), <strong>admin</strong> (utilitarian). Every email includes a hidden preheader for inbox previews and a plain-text fallback for clients that don't render HTML. Buttons are mobile-aware (full-width below 540px).
+    </p>
+  </div>
+
+  <script>
+    // ── Inline copy of the email shell from /tmp/cartpath-app/infrastructure/lambda/_shared/email.mjs ──
+    // (Kept in sync manually — this is preview-only code.)
+
+    const PALETTE = {
+      bgOuter: '#060F0A', bgHeader: '#091D14', bgBody: '#10352A',
+      gold: '#BF9B3B', goldLight: '#CCAB52', goldDark: '#A88630',
+      cream: '#F5F0E1', creamMuted: 'rgba(245,240,225,0.6)',
+      creamFaint: 'rgba(245,240,225,0.35)', divider: 'rgba(191,155,59,0.15)',
+    };
+    const SHIELD_URL = '/assets/cartpath-shield.png';
+
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function fmtDollars(cents) {
+      return '$' + Math.floor(Number(cents || 0) / 100).toLocaleString('en-US');
+    }
+    function detailTable(rows) {
+      return `<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;margin:8px 0;">
+${rows.map(([label, value]) => `<tr>
+<td style="padding:12px 0;border-bottom:1px solid ${PALETTE.divider};color:${PALETTE.creamFaint};font-size:11px;letter-spacing:1.5px;text-transform:uppercase;width:38%;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(label)}</td>
+<td style="padding:12px 0;border-bottom:1px solid ${PALETTE.divider};color:${PALETTE.cream};font-size:14px;font-family:Arial,Helvetica,sans-serif;">${value}</td>
+</tr>`).join('')}
+</table>`;
+    }
+    function buildHero({ kind, eyebrow, title, subtitle }) {
+      const eyebrowColor = kind === 'admin' ? PALETTE.creamFaint : PALETTE.gold;
+      return `<tr><td style="background:${PALETTE.bgHeader};padding:${kind === 'admin' ? '36px' : '48px'} 36px;border-radius:8px 8px 0 0;text-align:center;border-bottom:2px solid ${PALETTE.gold};">
+<img src="${SHIELD_URL}" alt="CartPath" width="${kind === 'admin' ? '44' : '54'}" height="${kind === 'admin' ? '44' : '54'}" style="display:block;margin:0 auto 12px;">
+<h1 style="color:${PALETTE.gold};font-size:${kind === 'admin' ? '20px' : '26px'};margin:0 0 6px;font-weight:300;letter-spacing:8px;font-family:'Playfair Display',Georgia,serif;">CARTPATH</h1>
+${eyebrow ? `<p style="color:${eyebrowColor};font-size:10px;letter-spacing:3px;margin:0 0 24px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(eyebrow)}</p>` : ''}
+<div style="width:44px;height:1px;background:rgba(191,155,59,0.3);margin:0 auto 22px;"></div>
+<h2 style="color:${PALETTE.cream};font-size:${kind === 'admin' ? '20px' : '24px'};font-weight:400;margin:0 0 10px;font-family:'Playfair Display',Georgia,serif;">${escapeHtml(title)}</h2>
+${subtitle ? `<p style="color:${PALETTE.creamMuted};font-size:14px;line-height:1.65;margin:0;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(subtitle)}</p>` : ''}
+</td></tr>`;
+    }
+    function buildCta({ href, label }) {
+      if (!href) return '';
+      return `<div style="text-align:center;margin:28px 0 6px;">
+<a href="${href}" style="display:inline-block;background:linear-gradient(135deg,${PALETTE.goldDark},${PALETTE.gold});color:${PALETTE.bgHeader};padding:15px 38px;border-radius:4px;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:1.6px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(label)}</a>
+</div>`;
+    }
+    function buildFooter({ kind, footerNote }) {
+      const note = footerNote || (kind === 'admin' ? 'CartPath Club · Admin Notifications' : 'CartPath Club · Atlanta, GA');
+      const replyLine = kind === 'admin' ? '' :
+        `<p style="color:${PALETTE.creamMuted};font-size:13px;margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;">Questions? Just reply to this email.</p>
+<p style="color:${PALETTE.gold};font-size:13px;margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;"><a href="mailto:hello@cartpathclub.com" style="color:${PALETTE.gold};text-decoration:none;">hello@cartpathclub.com</a></p>`;
+      return `<tr><td style="background:${PALETTE.bgHeader};padding:26px 36px;text-align:center;border-radius:0 0 8px 8px;border-top:1px solid rgba(191,155,59,0.08);">
+${replyLine}
+<p style="color:rgba(245,240,225,0.18);font-size:10px;letter-spacing:1.5px;margin:0;font-family:Arial,Helvetica,sans-serif;">${escapeHtml(note)}</p>
+</td></tr>`;
+    }
+    function renderEmail({ kind = 'member', subject, preheader, hero, bodyHtml, cta, footerNote }) {
+      const heroData = hero || { title: subject };
+      return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  @media only screen and (max-width: 540px) {
+    .cp-cta { width: 100% !important; padding: 16px 24px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:${PALETTE.bgOuter};font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+${preheader ? `<div style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:${PALETTE.bgOuter};line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(preheader)}</div>` : ''}
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:${PALETTE.bgOuter};">
+<tr><td align="center" style="padding:32px 16px;">
+<table width="600" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;">
+${buildHero({ kind, ...heroData })}
+<tr><td style="background:${PALETTE.bgBody};padding:36px;color:${PALETTE.cream};font-family:Arial,Helvetica,sans-serif;">
+${bodyHtml || ''}
+${cta ? buildCta(cta) : ''}
+</td></tr>
+${buildFooter({ kind, footerNote })}
+</table>
+</td></tr></table></body></html>`;
+    }
+
+    // ── Email definitions — one entry per template ──
+    const EMAILS = [
+      // === Application flow ===
+      {
+        id: 'confirm',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell <andrew@example.com>',
+        context: 'Sent immediately after a member submits the apply form. Asks for the $2,500 deposit before committee review.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Application received, Andrew',
+          preheader: 'Complete your $2,500 deposit to begin review.',
+          hero: {
+            eyebrow: 'Application Received',
+            title: 'Thank you for applying.',
+            subtitle: 'Andrew, we appreciate your interest.',
+          },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 14px;">
+Andrew, thanks for your interest in CartPath.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0;">
+Complete the one-time deposit below and our membership committee will personally review your application within a few business days.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.22);border-radius:6px;padding:26px;margin:24px 0;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 6px;">Membership Deposit</p>
+<div style="font-size:34px;font-weight:700;color:#F5F0E1;margin:6px 0 14px;font-family:'Playfair Display',Georgia,serif;">$2,500</div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.65;margin:0;">One-time deposit to secure your application. The committee reviews each applicant personally once the deposit clears.</p>
+</div>`,
+          cta: { href: '#', label: 'Complete Deposit' },
+        }),
+      },
+      {
+        id: 'deposit',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Sent after the $2,500 deposit clears via Stripe webhook.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Deposit received, Andrew',
+          preheader: 'Your $2,500 deposit cleared. Committee review begins now.',
+          hero: { eyebrow: 'Deposit Confirmed', title: 'Thank you, deposit received.', subtitle: 'Committee review begins now.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 16px;">
+Andrew, your $2,500 deposit cleared. Thank you.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0;">
+The membership committee will review your application personally. You'll hear back within <strong style="color:#F5F0E1;">48 hours</strong> with next steps.
+</p>`,
+        }),
+      },
+      {
+        id: 'admin-app',
+        kind: 'admin',
+        from: 'CartPath <hello@cartpathclub.com> → hello@cartpathclub.com',
+        context: 'Internal alert sent to Mayo + Dylan when a new application comes in. Reply-to is set to the applicant.',
+        opts: () => ({
+          kind: 'admin',
+          subject: 'New application: Andrew Mitchell (Chairman)',
+          preheader: 'andrew@example.com · Mitchell Capital',
+          hero: { eyebrow: 'New Application', title: 'Membership inquiry', subtitle: 'Andrew Mitchell' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0 0 18px;">A new membership application is in. Reply to this email to reach the applicant directly.</p>` + detailTable([
+            ['Name', 'Andrew Mitchell'],
+            ['Email', '<a href="mailto:andrew@example.com" style="color:#BF9B3B;text-decoration:none;">andrew@example.com</a>'],
+            ['Phone', '(404) 555-0142'],
+            ['Company', 'Mitchell Capital — Managing Partner'],
+            ['Tier', '<span style="color:#BF9B3B;font-weight:600;">Chairman</span>'],
+            ['Athletes', 'Marcus Sterling, Hines Ward'],
+          ]),
+          cta: { href: '#', label: 'Review Application' },
+        }),
+      },
+      {
+        id: 'approval',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Sent when Mayo approves an application. CTA goes to Stripe Checkout for annual dues.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Welcome to CartPath, Andrew',
+          preheader: 'Chairman membership · $30,000/year. Activate to unlock the app.',
+          hero: { eyebrow: 'Membership Approved', title: "You're in, Andrew.", subtitle: 'A private community, built around the game.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 16px;">
+You're in, Andrew.
+</p>
+<p style="color:rgba(245,240,225,0.72);font-size:14px;line-height:1.75;margin:0 0 8px;">
+Your application has been approved. Welcome to a private community of executives, athletes, and championship-level minds — built around the game.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.22);border-radius:6px;padding:26px;margin:24px 0;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 6px;">Chairman Membership</p>
+<div style="font-size:32px;font-weight:700;color:#F5F0E1;margin:6px 0 8px;font-family:'Playfair Display',Georgia,serif;">$30,000<span style="font-size:14px;font-weight:400;color:rgba(245,240,225,0.45);"> / year</span></div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.65;margin:0;">Activate your account by completing your annual membership.</p>
+</div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.7;margin:18px 0 0;">
+Your concierge — Mayo and Dylan — will reach out personally to introduce you to the roster and help line up your first round.
+</p>`,
+          cta: { href: '#', label: 'Complete Membership' },
+        }),
+      },
+      {
+        id: 'decline',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Sample Applicant',
+        context: 'Sent when Mayo declines an application from the admin dashboard. Optional reason field renders inline.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Your CartPath application — an update',
+          preheader: 'A note from our membership committee.',
+          hero: { eyebrow: 'Application Update', title: 'A note from the committee' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 18px;">
+Sample, thank you for your interest in CartPath. After careful review, our membership committee has decided not to move forward with your application at this time.
+</p>
+<div style="background:rgba(191,155,59,0.06);border-left:3px solid rgba(191,155,59,0.35);padding:16px 20px;border-radius:0 4px 4px 0;margin:18px 0;"><p style="color:rgba(245,240,225,0.45);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 6px;">From the committee</p><p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0;">We're nearing capacity at the Chairman tier this season. We'd welcome a renewed application in Q3.</p></div>
+<p style="color:rgba(245,240,225,0.65);font-size:14px;line-height:1.75;margin:18px 0 0;">
+We genuinely appreciate the time you took to apply. CartPath is evolving — if your circumstances change, we'd welcome a renewed application down the road.
+</p>`,
+        }),
+      },
+      {
+        id: 'removal',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Sample Member',
+        context: 'Sent when Mayo removes a member from the admin dashboard.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'A note about your CartPath membership',
+          preheader: 'Your membership has been discontinued.',
+          hero: { eyebrow: 'Membership Update', title: 'A note about your membership' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 18px;">
+Sample, we're writing to let you know your CartPath membership has been discontinued, effective immediately.
+</p>
+<p style="color:rgba(245,240,225,0.65);font-size:14px;line-height:1.75;margin:18px 0 0;">
+Any active Stripe subscriptions have been flagged for cancellation. If you believe this was made in error, reply to this email and we'll get back to you the same day.
+</p>`,
+        }),
+      },
+
+      // === Payment flow ===
+      {
+        id: 'entry-receipt',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Sent after the $2,500 entry fee clears (post-approval flow). Hands off to the dues Stripe Checkout.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'One step left, Andrew — complete your membership',
+          preheader: 'Annual dues: $30,000. Activate your Chairman membership.',
+          hero: { eyebrow: 'Step 2 of 2', title: 'Almost there.', subtitle: 'Entry fee received. Chairman dues are next.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 18px;">
+Andrew, your $2,500 entry fee cleared. One step left to activate your <strong style="color:#BF9B3B;">Chairman</strong> membership.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.22);border-radius:6px;padding:26px;margin:0 0 24px;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px;">Step 2 of 2 — Annual Dues</p>
+<p style="color:#BF9B3B;font-size:34px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">$30,000</p>
+<p style="color:rgba(245,240,225,0.4);font-size:12px;margin:6px 0 0;">Chairman Membership · Billed annually</p>
+</div>
+<p style="color:rgba(245,240,225,0.7);font-size:13px;line-height:1.75;margin:0;">
+Once dues clear, your member portal credentials arrive within the day and your concierge will reach out to walk you through the club personally.
+</p>`,
+          cta: { href: '#', label: 'Complete Membership' },
+        }),
+      },
+      {
+        id: 'welcome',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'The "you\'re fully in" email — sent after annual dues subscription activates. Includes Cognito temp password.',
+        opts: () => ({
+          kind: 'member',
+          subject: "You're in, Andrew",
+          preheader: 'Your CartPath login is inside.',
+          hero: { eyebrow: 'Chairman Membership Active', title: "You're in, Andrew.", subtitle: 'Welcome to CartPath.' },
+          bodyHtml: `<div style="display:inline-block;padding:5px 14px;border:1px solid rgba(191,155,59,0.4);border-radius:18px;background:rgba(191,155,59,0.08);margin:0 0 18px;">
+<span style="font-size:10px;font-weight:700;letter-spacing:2px;color:#BF9B3B;">CHAIRMAN MEMBER</span>
+</div>
+<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 18px;">
+Your Chairman membership is active, Andrew. Welcome to one of the most private golf communities in the country — a network of executives and athletes built around the best relationships the game can create.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.28);border-radius:6px;padding:22px;margin:0 0 22px;">
+<p style="color:rgba(245,240,225,0.4);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">Login Credentials</p>
+<table cellpadding="0" cellspacing="0" width="100%">
+<tr><td style="padding:6px 0;"><span style="color:rgba(245,240,225,0.5);font-size:11px;">Email</span><br><span style="color:#F5F0E1;font-size:15px;font-weight:600;">andrew@example.com</span></td></tr>
+<tr><td style="padding:6px 0;"><span style="color:rgba(245,240,225,0.5);font-size:11px;">Temporary Password</span><br><span style="color:#BF9B3B;font-size:15px;font-weight:600;font-family:'Courier New',monospace;letter-spacing:1px;">k3M9p-FwQ7</span></td></tr>
+</table>
+<p style="color:rgba(245,240,225,0.45);font-size:11px;line-height:1.6;margin:14px 0 0;">You'll set a permanent password on first login.</p>
+</div>
+<div style="margin:22px 0 0;">
+<p style="color:#BF9B3B;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 12px;">Your next steps</p>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+<tr><td style="padding:12px 0;border-bottom:1px solid rgba(191,155,59,0.12);"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td style="width:28px;vertical-align:top;"><div style="width:22px;height:22px;border-radius:50%;background:rgba(191,155,59,0.14);color:#BF9B3B;font-size:11px;font-weight:700;text-align:center;line-height:22px;">1</div></td><td style="padding-left:12px;"><p style="color:#F5F0E1;font-size:14px;font-weight:600;margin:0 0 2px;">Log into the app</p><p style="color:rgba(245,240,225,0.55);font-size:13px;line-height:1.55;margin:0;">Use the credentials above. You'll find the roster, live tour scores, and your booking history inside.</p></td></tr></table></td></tr>
+<tr><td style="padding:12px 0;border-bottom:1px solid rgba(191,155,59,0.12);"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td style="width:28px;vertical-align:top;"><div style="width:22px;height:22px;border-radius:50%;background:rgba(191,155,59,0.14);color:#BF9B3B;font-size:11px;font-weight:700;text-align:center;line-height:22px;">2</div></td><td style="padding-left:12px;"><p style="color:#F5F0E1;font-size:14px;font-weight:600;margin:0 0 2px;">A note from your concierge</p><p style="color:rgba(245,240,225,0.55);font-size:13px;line-height:1.55;margin:0;">Mayo and Dylan will reach out within 24 hours to walk you through the club and tee up a first round.</p></td></tr></table></td></tr>
+<tr><td style="padding:12px 0;"><table cellpadding="0" cellspacing="0" role="presentation"><tr><td style="width:28px;vertical-align:top;"><div style="width:22px;height:22px;border-radius:50%;background:rgba(191,155,59,0.14);color:#BF9B3B;font-size:11px;font-weight:700;text-align:center;line-height:22px;">3</div></td><td style="padding-left:12px;"><p style="color:#F5F0E1;font-size:14px;font-weight:600;margin:0 0 2px;">Book your first experience</p><p style="color:rgba(245,240,225,0.55);font-size:13px;line-height:1.55;margin:0;">Browse the roster, pick an athlete, send a request. We handle the rest.</p></td></tr></table></td></tr>
+</table>
+</div>`,
+          cta: { href: '#', label: 'Log In Now' },
+        }),
+      },
+
+      // === Booking flow ===
+      {
+        id: 'booking-admin',
+        kind: 'admin',
+        from: 'CartPath <hello@cartpathclub.com> → Mayo + Dylan',
+        context: 'Sent when a member submits a booking request. CTA links into /admin#bookings.',
+        opts: () => ({
+          kind: 'admin',
+          subject: 'New booking request from Andrew Mitchell',
+          preheader: 'Marcus Sterling on Friday, May 16, 2026 at East Lake',
+          hero: { eyebrow: 'Admin Alert', title: 'New booking request', subtitle: 'Andrew Mitchell → Marcus Sterling' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0 0 18px;">A new booking request just came in. Open the dashboard to set a quote.</p>` + detailTable([
+            ['Member', 'Andrew Mitchell'],
+            ['Athlete', 'Marcus Sterling'],
+            ['Date', 'Friday, May 16, 2026'],
+            ['Course', 'East Lake Golf Club'],
+            ['Estimate', '$2,500–$4,500'],
+          ]),
+          cta: { href: '#', label: 'Review in Dashboard' },
+        }),
+      },
+      {
+        id: 'quote',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Step 1 of booking flow — Mayo set a quote, member needs to approve.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Your quote for Marcus Sterling — $3,200',
+          preheader: 'Friday, May 16, 2026 at East Lake. Approve to lock in.',
+          hero: { eyebrow: 'Quote Ready', title: 'A round, priced', subtitle: 'Marcus Sterling · Friday, May 16, 2026' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 22px;">
+Andrew, we've finalized the price for your round with <strong style="color:#BF9B3B;">Marcus Sterling</strong> on Friday, May 16, 2026 at East Lake Golf Club.
+</p>
+<div style="background:rgba(191,155,59,0.06);border:1px solid rgba(191,155,59,0.18);border-radius:6px;padding:24px;margin:0 0 24px;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Quoted Price</p>
+<p style="color:#BF9B3B;font-size:34px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">$3,200</p>
+</div>
+<div style="background:rgba(245,240,225,0.04);border-left:3px solid rgba(191,155,59,0.35);padding:14px 18px;margin:0 0 22px;"><p style="color:rgba(245,240,225,0.7);font-size:13px;line-height:1.7;margin:0;font-style:italic;">Marcus is offering an early Friday tee time. Caddie included. Lunch at the clubhouse after.</p></div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.75;margin:0;">
+Approve the price below and we'll send a secure payment link. The quote holds for 72 hours. If the price doesn't work, decline from the approval page and we'll revise.
+</p>`,
+          cta: { href: '#', label: 'Review & Approve' },
+        }),
+      },
+      {
+        id: 'payment',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Step 2 of booking flow — member approved, here\'s the Stripe Checkout link.',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Complete your round — Marcus Sterling ($3,200)',
+          preheader: 'Pay to lock in Friday, May 16 at East Lake.',
+          hero: { eyebrow: 'Final Step', title: 'Confirm your round', subtitle: 'Marcus Sterling · Friday, May 16, 2026' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 22px;">
+Andrew, thanks for approving the quote. One last step to confirm your round with <strong style="color:#BF9B3B;">Marcus Sterling</strong> on Friday, May 16, 2026 at East Lake Golf Club.
+</p>
+<div style="background:rgba(191,155,59,0.06);border:1px solid rgba(191,155,59,0.18);border-radius:6px;padding:24px;margin:0 0 24px;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">Total</p>
+<p style="color:#BF9B3B;font-size:34px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">$3,200</p>
+</div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.75;margin:0;">
+Pay through the Stripe link below. Once it clears, we'll coordinate the tee time directly with Marcus Sterling and send you final logistics. The link is good for 72 hours.
+</p>`,
+          cta: { href: '#', label: 'Pay & Confirm' },
+        }),
+      },
+      {
+        id: 'approved-admin',
+        kind: 'admin',
+        from: 'CartPath <hello@cartpathclub.com> → Mayo + Dylan',
+        context: 'Internal alert — member approved the quote, payment link sent.',
+        opts: () => ({
+          kind: 'admin',
+          subject: 'Quote approved — Andrew Mitchell → Marcus Sterling ($3,200)',
+          preheader: 'Stripe link sent. Watch for payment.',
+          hero: { eyebrow: 'Admin Alert', title: 'Quote approved', subtitle: 'Andrew Mitchell → $3,200' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0 0 18px;"><strong style="color:#BF9B3B;">Andrew Mitchell</strong> approved the quote for their round with <strong style="color:#BF9B3B;">Marcus Sterling</strong>. Stripe payment link has been sent to them.</p>` + detailTable([
+            ['Member', 'Andrew Mitchell'],
+            ['Athlete', 'Marcus Sterling'],
+            ['Approved', '$3,200'],
+            ['Status', '<span style="color:#6DC86D;">Awaiting Payment</span>'],
+          ]),
+          cta: { href: '#', label: 'Open Dashboard' },
+        }),
+      },
+      {
+        id: 'declined-admin',
+        kind: 'admin',
+        from: 'CartPath <hello@cartpathclub.com> → Mayo + Dylan',
+        context: 'Internal alert — member declined the quote, with their reason.',
+        opts: () => ({
+          kind: 'admin',
+          subject: 'Quote declined — Andrew Mitchell → Marcus Sterling',
+          preheader: 'Reason: Need a friendlier number for the group.',
+          hero: { eyebrow: 'Admin Alert', title: 'Quote declined', subtitle: 'Andrew Mitchell needs a new price' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0 0 18px;"><strong style="color:#BF9B3B;">Andrew Mitchell</strong> declined the $3,200 quote for their round with <strong style="color:#BF9B3B;">Marcus Sterling</strong>. Send a revised quote from the dashboard.</p>` + detailTable([
+            ['Member', 'Andrew Mitchell'],
+            ['Athlete', 'Marcus Sterling'],
+            ['Declined', '$3,200'],
+            ['Reason', 'Need a friendlier number for the group.'],
+          ]),
+          cta: { href: '#', label: 'Re-quote' },
+        }),
+      },
+      {
+        id: 'reminder',
+        kind: 'member',
+        from: 'CartPath <hello@cartpathclub.com> → Andrew Mitchell',
+        context: 'Sent 2 days before a confirmed round (daily 10am ET cron).',
+        opts: () => ({
+          kind: 'member',
+          subject: 'Round in 2 days — Marcus Sterling at East Lake',
+          preheader: 'Friday, May 16. Final logistics coming soon.',
+          hero: { eyebrow: 'Round Reminder', title: 'Round in 2 days', subtitle: 'Marcus Sterling · Friday, May 16' },
+          bodyHtml: `<p style="margin:0 0 18px;color:rgba(245,240,225,0.78);font-size:15px;line-height:1.7;">Andrew, your round with Marcus Sterling at East Lake Golf Club on Friday, May 16, 2026 is coming up. Marcus will be in touch with final logistics.</p>`,
+          cta: { href: '#', label: 'Open Booking' },
+        }),
+      },
+
+      // === Athletes ===
+      {
+        id: 'athlete-approval',
+        kind: 'athlete',
+        from: 'CartPath <hello@cartpathclub.com> → Marcus Sterling',
+        context: 'Sent when Mayo approves an athlete application.',
+        opts: () => ({
+          kind: 'athlete',
+          subject: 'Welcome to the CartPath roster, Marcus',
+          preheader: 'One step to activate — $5,000 listing fee.',
+          hero: { eyebrow: 'Athlete Network', title: 'Welcome, Marcus.', subtitle: "You've been approved." },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 18px;">
+Marcus, your application has been approved. Welcome to the CartPath roster.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0 0 8px;">
+Complete the listing fee below to activate your profile. After that, you'll get access to the app, athlete chat, and your availability portal.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.22);border-radius:6px;padding:26px;margin:24px 0;text-align:center;">
+<p style="color:rgba(245,240,225,0.4);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 8px;">Listing Fee</p>
+<div style="font-size:32px;font-weight:700;color:#F5F0E1;margin:6px 0 14px;font-family:'Playfair Display',Georgia,serif;">$5,000</div>
+<p style="color:rgba(245,240,225,0.6);font-size:13px;line-height:1.65;margin:0;">One-time fee to activate your profile. Once it clears, you'll get login credentials and full portal access.</p>
+</div>`,
+          cta: { href: '#', label: 'Complete Listing Fee' },
+        }),
+      },
+      {
+        id: 'athlete-creds',
+        kind: 'athlete',
+        from: 'CartPath <hello@cartpathclub.com> → Marcus Sterling',
+        context: 'Sent after listing fee clears. Contains Cognito login + portal link.',
+        opts: () => ({
+          kind: 'athlete',
+          subject: "You're on the roster, Marcus",
+          preheader: 'Your athlete profile is live. Login below.',
+          hero: { eyebrow: 'Athlete Network', title: "You're on the roster, Marcus.", subtitle: 'Profile live. Welcome aboard.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 16px;">
+Your payment cleared and your profile is live, Marcus.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0;">
+Use the login below to access the app. Members can now discover your profile, but every booking request comes through us first — you'll never hear from a member directly unless we've confirmed the match.
+</p>
+<div style="background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.22);border-radius:6px;padding:22px;margin:22px 0;">
+<p style="color:rgba(245,240,225,0.4);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">Login Credentials</p>
+<table cellpadding="0" cellspacing="0" width="100%">
+<tr><td style="padding:6px 0;"><span style="color:rgba(245,240,225,0.5);font-size:11px;">Email</span><br><span style="color:#F5F0E1;font-size:15px;font-weight:600;">marcus@example.com</span></td></tr>
+<tr><td style="padding:6px 0;"><span style="color:rgba(245,240,225,0.5);font-size:11px;">Temporary Password</span><br><span style="color:#BF9B3B;font-size:15px;font-weight:600;font-family:'Courier New',monospace;letter-spacing:1px;">7QRm3-bxK9</span></td></tr>
+</table>
+<p style="color:rgba(245,240,225,0.45);font-size:11px;line-height:1.6;margin:14px 0 0;">You'll be asked to set a permanent password on first login.</p>
+</div>
+<div style="text-align:center;margin:18px 0 0;">
+<a href="#" style="display:inline-block;border:1px solid rgba(191,155,59,0.4);color:#BF9B3B;padding:11px 30px;border-radius:4px;font-weight:600;font-size:12px;text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;">Open Availability Portal</a>
+</div>
+<p style="color:rgba(245,240,225,0.45);font-size:12px;text-align:center;line-height:1.6;margin:8px 0 0;">Use the portal to set the dates you're open. We coordinate every round around your schedule — you never field cold requests directly.</p>`,
+          cta: { href: '#', label: 'Download the App' },
+        }),
+      },
+      {
+        id: 'athlete-welcome',
+        kind: 'athlete',
+        from: 'CartPath <hello@cartpathclub.com> → Marcus Sterling',
+        context: 'Lighter welcome for athletes added directly to the roster (not through the application flow).',
+        opts: () => ({
+          kind: 'athlete',
+          subject: 'Welcome to the CartPath roster, Marcus',
+          preheader: 'Your profile is live. We handle the rest.',
+          hero: { eyebrow: 'Athlete Network', title: 'Welcome to the roster.', subtitle: 'Your profile is live.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 16px;">
+Marcus Sterling, you're officially on the roster.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0 0 14px;">
+Members can now discover your profile, read your story, and request rounds with you. Every request comes through us first — you'll never hear from a member directly unless we've confirmed the match. We handle the scheduling and logistics so you can focus on the golf.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0;">
+Need to update anything — story, availability, photos, travel preferences? Just reply to this email.
+</p>`,
+        }),
+      },
+      {
+        id: 'athlete-fail',
+        kind: 'admin',
+        from: 'CartPath <hello@cartpathclub.com> → Mayo + Dylan',
+        context: 'Internal alert when an athlete subscription payment fails. They get past_due status.',
+        opts: () => ({
+          kind: 'admin',
+          subject: 'Payment failed: Marcus Sterling',
+          preheader: 'Stripe will retry. Past_due status — auto-hide in 7 days if unresolved.',
+          hero: { eyebrow: 'Admin Alert', title: 'Athlete payment failed', subtitle: 'Marcus Sterling → past_due' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.78);font-size:14px;line-height:1.7;margin:0 0 14px;">
+Payment failed for <strong style="color:#BF9B3B;">Marcus Sterling</strong>. Stripe will retry automatically. If this is a Tier 4-5 legend, consider personal outreach before the 7-day grace period expires and they auto-hide from the roster.
+</p>
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;margin:8px 0;">
+<tr><td style="padding:10px 0;border-bottom:1px solid rgba(191,155,59,0.15);color:rgba(245,240,225,0.45);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;width:38%;">Amount Due</td><td style="padding:10px 0;border-bottom:1px solid rgba(191,155,59,0.15);color:#F5F0E1;font-size:14px;">$5,000.00</td></tr>
+<tr><td style="padding:10px 0;border-bottom:1px solid rgba(191,155,59,0.15);color:rgba(245,240,225,0.45);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;">Attempts</td><td style="padding:10px 0;border-bottom:1px solid rgba(191,155,59,0.15);color:#F5F0E1;font-size:14px;">2</td></tr>
+<tr><td style="padding:10px 0;color:rgba(245,240,225,0.45);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;">Stripe Invoice</td><td style="padding:10px 0;color:#F5F0E1;font-size:13px;font-family:monospace;">in_1QvK7zXYZabc</td></tr>
+</table>`,
+        }),
+      },
+      {
+        id: 'assistant',
+        kind: 'athlete',
+        from: 'CartPath <hello@cartpathclub.com> → Sample Assistant',
+        context: 'Sent when an athlete invites someone to manage their portal as an assistant.',
+        opts: () => ({
+          kind: 'athlete',
+          subject: 'Marcus Sterling invited you to CartPath',
+          preheader: 'Help manage their availability and rounds.',
+          hero: { eyebrow: 'Assistant Invitation', title: 'Marcus Sterling invited you.', subtitle: 'Manage their CartPath availability.' },
+          bodyHtml: `<p style="color:rgba(245,240,225,0.85);font-size:15px;line-height:1.75;margin:0 0 16px;">
+<strong style="color:#BF9B3B;">Marcus Sterling</strong> has invited you to manage their CartPath availability and track booked rounds as an assistant.
+</p>
+<p style="color:rgba(245,240,225,0.7);font-size:14px;line-height:1.75;margin:0 0 8px;">
+You'll be able to view their schedule and confirmed rounds, and update available dates on their behalf. You won't be able to chat or submit scores as them.
+</p>
+<p style="color:rgba(245,240,225,0.5);font-size:12px;line-height:1.6;margin:14px 0 0;">
+This invite link is good for 7 days.
+</p>`,
+          cta: { href: '#', label: 'Accept Invite' },
+        }),
+      },
+    ];
+
+    // ── Render to DOM ──
+    function render() {
+      const container = document.getElementById('emails');
+      EMAILS.forEach((email) => {
+        const opts = email.opts();
+        const html = renderEmail(opts);
+
+        const card = document.createElement('section');
+        card.className = 'email-card';
+        card.id = email.id;
+
+        const subjectHtml = escapeHtml(opts.subject);
+        const preheaderHtml = opts.preheader ? `<div class="email-preheader">${escapeHtml(opts.preheader)}</div>` : '';
+        const contextHtml = email.context ? `<div class="email-context">${escapeHtml(email.context)}</div>` : '';
+
+        card.innerHTML = `
+<div class="email-meta">
+<span class="email-tag ${email.kind}">${email.kind}</span>
+<span class="email-from">${escapeHtml(email.from)}</span>
+</div>
+<div class="email-subject">${subjectHtml}</div>
+${preheaderHtml}
+${contextHtml}
+<div class="email-iframe-wrap"><iframe class="email-frame" loading="lazy" srcdoc="${html.replace(/"/g, '&quot;')}"></iframe></div>`;
+
+        container.appendChild(card);
+
+        // Auto-resize iframe to its content
+        const frame = card.querySelector('iframe');
+        frame.addEventListener('load', () => {
+          try {
+            const h = frame.contentDocument.documentElement.scrollHeight;
+            frame.style.height = (h + 20) + 'px';
+          } catch {}
+        });
+      });
+
+      // Sidebar active state on scroll
+      const sectionIds = EMAILS.map(e => e.id);
+      window.addEventListener('scroll', () => {
+        let current = sectionIds[0];
+        for (const id of sectionIds) {
+          const el = document.getElementById(id);
+          if (!el) continue;
+          if (el.getBoundingClientRect().top < 200) current = id;
+        }
+        document.querySelectorAll('.sidebar a').forEach(a => {
+          a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+        });
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
