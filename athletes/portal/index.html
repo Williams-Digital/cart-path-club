@@ -264,88 +264,15 @@
       letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
     }
 
-    /* ── Chat (Locker Room) ── */
-    .chat-grid {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 0;
+    /* ── Chat (Locker Room) — single channel ── */
+    .chat-single {
+      display: flex;
+      flex-direction: column;
       background: var(--green-dark);
       border: 1px solid rgba(191, 155, 59, 0.1);
       border-radius: 8px;
       overflow: hidden;
       height: 600px;
-    }
-    .chat-channels {
-      background: rgba(0, 0, 0, 0.18);
-      border-right: 1px solid rgba(191, 155, 59, 0.08);
-      overflow-y: auto;
-    }
-    .chat-channels-header {
-      padding: 14px 16px 10px;
-      font-family: var(--font-ui);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--gold);
-      border-bottom: 1px solid rgba(191, 155, 59, 0.06);
-    }
-    .chat-channel {
-      padding: 11px 16px;
-      cursor: pointer;
-      border-left: 3px solid transparent;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    .chat-channel:hover { background: rgba(245, 240, 225, 0.04); }
-    .chat-channel.active {
-      background: rgba(191, 155, 59, 0.06);
-      border-left-color: var(--gold);
-    }
-    .chat-channel-name {
-      font-family: var(--font-ui);
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--cream);
-    }
-    .chat-channel.active .chat-channel-name { color: var(--gold); }
-    .chat-channel-desc {
-      font-size: 11px;
-      color: rgba(245, 240, 225, 0.4);
-      margin-top: 2px;
-    }
-    .chat-channel-mobile {
-      display: none;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(191, 155, 59, 0.15);
-      border-radius: 6px;
-      padding: 10px 12px;
-      color: var(--cream);
-      font-family: var(--font-ui);
-      font-size: 14px;
-      margin-bottom: 12px;
-      outline: none;
-    }
-    .chat-main {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .chat-header {
-      padding: 14px 18px;
-      border-bottom: 1px solid rgba(191, 155, 59, 0.08);
-      background: rgba(9, 29, 20, 0.55);
-    }
-    .chat-title {
-      font-family: var(--font-display);
-      font-size: 16px;
-      color: var(--cream);
-      font-weight: 500;
-    }
-    .chat-desc {
-      font-size: 11px;
-      color: rgba(245, 240, 225, 0.4);
-      margin-top: 2px;
     }
     .chat-messages {
       flex: 1;
@@ -434,9 +361,7 @@
       .form-row { grid-template-columns: 1fr; }
       .tab { padding: 12px 12px; font-size: 11px; }
       .calendar-month { font-size: 17px; min-width: 130px; }
-      .chat-grid { grid-template-columns: 1fr; height: 70vh; min-height: 500px; }
-      .chat-channels { display: none; }
-      .chat-channel-mobile { display: block; }
+      .chat-single { height: 70vh; min-height: 500px; }
     }
   </style>
 </head>
@@ -583,35 +508,17 @@
         <div class="section-row">
           <div>
             <h1 class="section-title">Locker Room</h1>
-            <div class="section-hint" style="margin-top:6px;">Athletes-only chat. Members can't see this — and we can't see what they post either.</div>
+            <div class="section-hint" style="margin-top:6px;">Athletes only. Members never see this.</div>
           </div>
         </div>
 
-        <div class="chat-grid">
-          <!-- Channel sidebar -->
-          <aside class="chat-channels" id="chatChannels">
-            <div class="chat-channels-header">Channels</div>
-            <div id="chatChannelList"><div style="padding:14px 16px;font-size:12px;color:rgba(245,240,225,0.4);">Loading...</div></div>
-          </aside>
-
-          <!-- Mobile channel selector (hidden on desktop) -->
-          <select id="chatChannelMobile" class="chat-channel-mobile" onchange="selectChannel(this.value)"></select>
-
-          <!-- Messages -->
-          <div class="chat-main">
-            <div class="chat-header">
-              <div>
-                <div class="chat-title" id="chatChannelName">Select a channel</div>
-                <div class="chat-desc" id="chatChannelDesc"></div>
-              </div>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-              <div style="text-align:center;padding:60px 20px;color:rgba(245,240,225,0.3);font-size:13px;">Pick a channel to start.</div>
-            </div>
-            <div class="chat-input-row">
-              <textarea id="chatInputAth" class="chat-input" rows="1" placeholder="Message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-              <button id="chatSendBtnAth" onclick="sendChatMessage()" class="chat-send">Send</button>
-            </div>
+        <div class="chat-single">
+          <div class="chat-messages" id="chatMessages">
+            <div style="text-align:center;padding:60px 20px;color:rgba(245,240,225,0.3);font-size:13px;">Loading...</div>
+          </div>
+          <div class="chat-input-row">
+            <textarea id="chatInputAth" class="chat-input" rows="1" placeholder="Message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+            <button id="chatSendBtnAth" onclick="sendChatMessage()" class="chat-send">Send</button>
           </div>
         </div>
       </section>
@@ -1258,62 +1165,21 @@
       }
     }
 
-    // ── Locker Room (chat) ──
+    // ── Locker Room (single channel) ──
     var CHAT_API = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat';
-    var chatChannels = [];
-    var chatCurrentChannel = null;
+    var LOCKER_ROOM = 'athlete-locker-room';
     var chatLastTimestamp = 0;
     var chatPollTimer = null;
 
     async function loadChatChannels() {
-      try {
-        var res = await fetch(CHAT_API + '/channels?role=athlete');
-        if (!res.ok) throw new Error('failed');
-        chatChannels = await res.json();
-        renderChatChannels();
-        if (!chatCurrentChannel && chatChannels.length > 0) {
-          selectChannel(chatChannels[0].id);
-        }
-      } catch (err) {
-        document.getElementById('chatChannelList').innerHTML = '<div style="padding:14px 16px;font-size:12px;color:rgba(229,115,115,0.5);">Unable to load channels.</div>';
-      }
-    }
-
-    function renderChatChannels() {
-      var list = document.getElementById('chatChannelList');
-      var mobile = document.getElementById('chatChannelMobile');
-
-      var html = '';
-      var mobileHtml = '';
-      chatChannels.forEach(function(c) {
-        var active = chatCurrentChannel === c.id;
-        html += '<div class="chat-channel' + (active ? ' active' : '') + '" onclick="selectChannel(\'' + c.id + '\')">';
-        html += '<div class="chat-channel-name">' + escapeHtml(c.name || c.id) + '</div>';
-        html += '<div class="chat-channel-desc">' + escapeHtml(c.desc || '') + '</div>';
-        html += '</div>';
-        mobileHtml += '<option value="' + c.id + '"' + (active ? ' selected' : '') + '>' + escapeHtml(c.name || c.id) + '</option>';
-      });
-      list.innerHTML = html;
-      mobile.innerHTML = mobileHtml;
-    }
-
-    function selectChannel(channelId) {
-      chatCurrentChannel = channelId;
-      var c = chatChannels.find(function(x) { return x.id === channelId; });
-      if (c) {
-        document.getElementById('chatChannelName').textContent = c.name || c.id;
-        document.getElementById('chatChannelDesc').textContent = c.desc || '';
-      }
+      // Single channel — just kick off the message load
       chatLastTimestamp = 0;
-      document.getElementById('chatMessages').innerHTML = '<div style="text-align:center;padding:30px 20px;color:rgba(245,240,225,0.3);font-size:13px;">Loading...</div>';
-      renderChatChannels();
-      loadChatMessages();
+      await loadChatMessages();
     }
 
     async function loadChatMessages(append) {
-      if (!chatCurrentChannel) return;
       try {
-        var url = CHAT_API + '/' + chatCurrentChannel + '/messages?role=athlete&limit=100';
+        var url = CHAT_API + '/' + LOCKER_ROOM + '/messages?role=athlete&limit=100';
         if (append && chatLastTimestamp) url += '&since=' + chatLastTimestamp;
         var res = await fetch(url);
         if (!res.ok) return;
@@ -1356,13 +1222,13 @@
     async function sendChatMessage() {
       var input = document.getElementById('chatInputAth');
       var text = input.value.trim();
-      if (!text || !chatCurrentChannel || !athlete) return;
+      if (!text || !athlete) return;
       var btn = document.getElementById('chatSendBtnAth');
       btn.disabled = true;
       input.value = '';
       var initials = (athlete.name || '').split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
       try {
-        var res = await fetch(CHAT_API + '/' + chatCurrentChannel + '/messages', {
+        var res = await fetch(CHAT_API + '/' + LOCKER_ROOM + '/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1386,7 +1252,7 @@
     function startChatPolling() {
       if (chatPollTimer) return;
       chatPollTimer = setInterval(function() {
-        if (chatCurrentChannel) loadChatMessages(true);
+        loadChatMessages(true);
       }, 4000);
     }
 
