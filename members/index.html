@@ -1457,67 +1457,8 @@
       </div>
 
       <h3 class="section-title">Recent Activity</h3>
-      <div class="feed-grid">
-        <div class="feed-card">
-          <div class="feed-icon">18</div>
-          <div class="feed-body">
-            <h4>Round Highlight: TPC Sugarloaf</h4>
-            <p>Charles Woodson posted 78 on the front nine during a private round with members. Premium experience rated 5/5 by attendees.</p>
-            <div class="feed-date">Apr 6, 2026</div>
-          </div>
-        </div>
-        <div class="feed-card">
-          <div class="feed-icon">NEW</div>
-          <div class="feed-body">
-            <h4>Athlete Update: Patrick Peterson Now Available</h4>
-            <p>9x Pro Bowler Patrick Peterson has opened his summer calendar for member rounds at East Lake and TPC Sugarloaf.</p>
-            <div class="feed-date">Apr 3, 2026</div>
-          </div>
-        </div>
-        <div class="feed-card">
-          <div class="feed-icon">EVT</div>
-          <div class="feed-body">
-            <h4>Founder's Dinner -- Save the Date</h4>
-            <p>Join the inaugural Founder's Dinner on June 28th at the Capital City Club. Limited to Chairman and Founder tier members. RSVP required.</p>
-            <div class="feed-date">Mar 28, 2026</div>
-          </div>
-        </div>
-        <div class="feed-card">
-          <div class="feed-icon">SCR</div>
-          <div class="feed-body">
-            <h4>Hines Ward: 74 at East Lake</h4>
-            <p>Super Bowl MVP Hines Ward shot a 74 during last Saturday's member event. Full scorecard available on the Scores tab.</p>
-            <div class="feed-date">Mar 22, 2026</div>
-          </div>
-        </div>
-      </div>
-
-      <h3 class="section-title">Upcoming Availability</h3>
-      <div class="availability-grid">
-        <div class="avail-card">
-          <div class="avail-info">
-            <h4>Charles Woodson</h4>
-            <p>June 15-22 at TPC Sugarloaf</p>
-            <div class="avail-status by-request">By Request</div>
-          </div>
-          <a href="mailto:hello@cartpathclub.com?subject=Round%20Request%3A%20Charles%20Woodson%20%E2%80%94%20June%2015-22" class="request-btn">Request Round</a>
-        </div>
-        <div class="avail-card">
-          <div class="avail-info">
-            <h4>Jason Campbell</h4>
-            <p>East Lake, TPC Sugarloaf</p>
-            <div class="avail-status available">Available</div>
-          </div>
-          <a href="mailto:hello@cartpathclub.com?subject=Round%20Request%3A%20Jason%20Campbell" class="request-btn">Request Round</a>
-        </div>
-        <div class="avail-card">
-          <div class="avail-info">
-            <h4>Patrick Peterson</h4>
-            <p>East Lake, TPC Sugarloaf -- Summer Calendar Open</p>
-            <div class="avail-status available">Available</div>
-          </div>
-          <a href="mailto:hello@cartpathclub.com?subject=Round%20Request%3A%20Patrick%20Peterson" class="request-btn">Request Round</a>
-        </div>
+      <div id="activityFeed" class="feed-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(245,240,225,0.3);font-family:var(--font-ui);font-size:13px;">Loading activity...</div>
       </div>
 
     </div>
@@ -2258,6 +2199,11 @@
       setTimeout(loadMemberRoster, 200);
     }
 
+    // Load activity feed for the dashboard
+    if (typeof loadActivityFeed === 'function') {
+      setTimeout(loadActivityFeed, 300);
+    }
+
     // First-login onboarding tour (silently no-ops if already onboarded)
     if (typeof startOnboardingIfFirstLogin === 'function') {
       setTimeout(startOnboardingIfFirstLogin, 1500);
@@ -2334,6 +2280,96 @@
   // baseball-card-style card: photo on top, name + sport, stats chips, bio,
   // price, request CTA. Members tap "Request a Round" to open the booking
   // modal (defined elsewhere as openMatchRequestModal).
+
+  // ═════════════════════════════════════════════════════════════
+  // ACTIVITY FEED — Recent Activity card on the dashboard
+  // Pulls from /members/me/activity. Renders 4 most-recent events.
+  // ═════════════════════════════════════════════════════════════
+
+  async function loadActivityFeed() {
+    var container = document.getElementById('activityFeed');
+    if (!container) return;
+    var token = (typeof getCognitoIdToken === 'function') ? getCognitoIdToken() : '';
+    if (!token) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(245,240,225,0.25);font-family:var(--font-ui);font-size:13px;">Log in to see recent activity.</div>';
+      return;
+    }
+    try {
+      var res = await fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/members/me/activity', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) throw new Error();
+      var data = await res.json();
+      var events = (data.events || []).slice(0, 4);
+
+      if (events.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(245,240,225,0.25);font-family:var(--font-ui);font-size:13px;">No activity yet — when members and athletes join or post rounds, it\'ll appear here.</div>';
+        return;
+      }
+
+      var html = '';
+      events.forEach(function(ev) {
+        html += renderActivityCard(ev);
+      });
+      container.innerHTML = html;
+    } catch (err) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(229,115,115,0.5);font-family:var(--font-ui);font-size:13px;">Unable to load activity.</div>';
+    }
+  }
+
+  function renderActivityCard(ev) {
+    var p = ev.payload || {};
+    var name = (ev.actor_name || '').replace(/[<>"']/g, '');
+    var date = formatActivityDate(ev.created_at);
+
+    var icon, title, body;
+    if (ev.event_type === 'member_joined') {
+      icon = 'NEW';
+      title = name + ' joined CartPath';
+      var tierLabel = p.tier === 'chairman' ? 'Chairman' : 'Executive';
+      body = 'Welcome ' + name + ' to the community as a ' + tierLabel + ' member.';
+    } else if (ev.event_type === 'athlete_joined') {
+      icon = '★';
+      title = name + ' is on the roster';
+      body = (p.sport ? p.sport : 'Athlete') + (p.school ? ' · ' + p.school : '') + ' is now available for private rounds.';
+    } else if (ev.event_type === 'member_score' || ev.event_type === 'athlete_score') {
+      icon = String(p.score || '--');
+      var par = p.course_par || 72;
+      var diff = p.score - par;
+      var diffStr = diff === 0 ? 'E' : (diff > 0 ? '+' + diff : String(diff));
+      var courseStr = p.course_name ? ' at ' + p.course_name : '';
+      title = name + ' shot ' + (p.score || '--') + courseStr;
+      body = 'Posted ' + diffStr + ' to par' + (p.course_name ? '' : ' on a recent round') + '.';
+    } else {
+      icon = '·';
+      title = name;
+      body = '';
+    }
+
+    return ''
+      + '<div class="feed-card">'
+      +   '<div class="feed-icon">' + icon + '</div>'
+      +   '<div class="feed-body">'
+      +     '<h4>' + title.replace(/[<>]/g, '') + '</h4>'
+      +     '<p>' + body.replace(/[<>]/g, '') + '</p>'
+      +     '<div class="feed-date">' + date + '</div>'
+      +   '</div>'
+      + '</div>';
+  }
+
+  function formatActivityDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var now = new Date();
+    var diffMs = now - d;
+    var diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 60) return diffMin <= 0 ? 'Just now' : diffMin + 'm ago';
+    var diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return diffHr + 'h ago';
+    var diffDay = Math.floor(diffHr / 24);
+    if (diffDay < 7) return diffDay + 'd ago';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
 
   let allRosterAthletes_member = [];
   let currentRosterFilter = 'all';
@@ -3778,6 +3814,25 @@
     };
 
     saveRound(round);
+
+    // Fire-and-forget: log to the activity feed so other members see it.
+    // localStorage stays the source of truth for the member's own history.
+    try {
+      var token = (typeof getCognitoIdToken === 'function') ? getCognitoIdToken() : '';
+      if (token) {
+        fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/members/me/scores', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            score: total,
+            course: selectedCourse.name,
+            course_par: selectedCourse.par,
+            played_at: round.date,
+          }),
+        }).catch(function() { /* silent — local save already succeeded */ });
+      }
+    } catch {}
+
     closeScoreForm();
     renderRoundHistory();
 
