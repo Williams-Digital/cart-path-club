@@ -302,6 +302,7 @@
       <div class="tabs" role="tablist">
         <button class="tab active" data-tab="availability" onclick="setTab('availability')">Availability</button>
         <button class="tab" data-tab="rounds" onclick="setTab('rounds')">Rounds <span id="roundsCount" style="opacity:0.5;font-weight:400;"></span></button>
+        <button class="tab" data-tab="scores" onclick="setTab('scores')">My Scores</button>
         <button class="tab" data-tab="assistants" onclick="setTab('assistants')">Assistants</button>
       </div>
 
@@ -341,6 +342,39 @@
         <div id="bookedRoundsContainer"><div class="empty-state">Loading...</div></div>
       </section>
 
+      <!-- ── Scores ── -->
+      <section class="tab-panel" id="panel-scores">
+        <div class="section-row">
+          <div>
+            <h1 class="section-title">My Scores</h1>
+            <div class="section-hint" style="margin-top:6px;">Log your rounds. Stats update automatically and posts appear in the member activity feed.</div>
+          </div>
+          <button class="btn-invite" onclick="openLogScore()">+ Log Round</button>
+        </div>
+
+        <!-- Stats strip -->
+        <div id="scoreStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px;">
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Rounds</div>
+            <div id="statRounds" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Avg Score</div>
+            <div id="statAvg" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Best</div>
+            <div id="statBest" style="font-family:var(--font-display);font-size:24px;color:var(--gold);">—</div>
+          </div>
+          <div class="info-card" style="text-align:center;padding:16px 12px;">
+            <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(245,240,225,0.4);margin-bottom:6px;">Handicap</div>
+            <div id="statHandicap" style="font-family:var(--font-display);font-size:24px;color:var(--cream);">—</div>
+          </div>
+        </div>
+
+        <div id="scoresContainer"><div class="empty-state">Loading...</div></div>
+      </section>
+
       <!-- ── Assistants ── -->
       <section class="tab-panel" id="panel-assistants">
         <div class="section-row">
@@ -376,6 +410,41 @@
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="document.getElementById('inviteAssistantModal').style.display='none'" class="btn-cancel">Cancel</button>
         <button onclick="submitInviteAssistant()" class="btn-save">Send Invite</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Score Modal -->
+  <div id="logScoreModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:440px;width:100%;padding:26px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <div style="font-family:var(--font-display);font-size:1.25rem;color:var(--cream);">Log a Round</div>
+        <button onclick="document.getElementById('logScoreModal').style.display='none'" style="background:none;border:none;color:rgba(245,240,225,0.4);font-size:20px;cursor:pointer;">&times;</button>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label class="form-label">Score</label>
+          <input type="number" id="scoreVal" class="form-input" placeholder="e.g. 72" min="40" max="200">
+        </div>
+        <div>
+          <label class="form-label">Course Par</label>
+          <input type="number" id="scorePar" class="form-input" placeholder="72" min="60" max="80" value="72">
+        </div>
+      </div>
+
+      <label class="form-label">Course</label>
+      <input type="text" id="scoreCourse" class="form-input" placeholder="e.g. East Lake, Augusta National">
+
+      <label class="form-label">Date Played</label>
+      <input type="date" id="scoreDate" class="form-input">
+
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-textarea" id="scoreNotes" placeholder="Conditions, highlights, anything to remember..."></textarea>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+        <button onclick="document.getElementById('logScoreModal').style.display='none'" class="btn-cancel">Cancel</button>
+        <button id="logScoreSave" onclick="submitScore()" class="btn-save">Save Round</button>
       </div>
     </div>
   </div>
@@ -453,6 +522,7 @@
       document.querySelectorAll('.tab-panel').forEach(function(p) {
         p.classList.toggle('active', p.id === 'panel-' + name);
       });
+      if (name === 'scores') loadScores();
     }
 
     // ── Init ──
@@ -928,6 +998,114 @@
         loadAssistants();
       } catch (err) {
         showToast(err.message, 'error');
+      }
+    }
+
+    // ── My Scores ──
+    var scoresLoaded = false;
+
+    async function loadScores() {
+      var container = document.getElementById('scoresContainer');
+      try {
+        var [scoresRes, statsRes] = await Promise.all([
+          fetch(API_BASE + '/athletes/portal/scores?token=' + token),
+          fetch(API_BASE + '/athletes/portal/stats?token=' + token),
+        ]);
+        if (!scoresRes.ok) throw new Error('Failed');
+
+        var scoresData = await scoresRes.json();
+        var stats = statsRes.ok ? await statsRes.json() : {};
+
+        document.getElementById('statRounds').textContent = stats.rounds != null ? stats.rounds : '0';
+        document.getElementById('statAvg').textContent = stats.avg_score != null ? stats.avg_score : '—';
+        document.getElementById('statBest').textContent = stats.best_score != null ? stats.best_score : '—';
+        document.getElementById('statHandicap').textContent = stats.handicap != null ? (stats.handicap > 0 ? '+' + stats.handicap : stats.handicap) : '—';
+
+        var scores = scoresData.scores || [];
+        if (scores.length === 0) {
+          container.innerHTML = '<div class="empty-state">No rounds logged yet.<br>Click "+ Log Round" to add your first.</div>';
+          return;
+        }
+
+        var html = '';
+        scores.forEach(function(s) {
+          var date = s.played_at ? new Date(s.played_at + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          var diff = s.score - (s.course_par || 72);
+          var diffStr = diff === 0 ? 'E' : (diff > 0 ? '+' + diff : '' + diff);
+          var diffColor = diff < 0 ? '#6DC86D' : diff === 0 ? 'var(--gold)' : 'rgba(245,240,225,0.5)';
+
+          html += '<div class="info-card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">';
+          html += '<div style="flex:1;min-width:200px;">';
+          html += '<div style="display:flex;align-items:baseline;gap:10px;">';
+          html += '<div style="font-family:var(--font-display);font-size:22px;color:var(--cream);font-weight:600;">' + s.score + '</div>';
+          html += '<div style="font-family:var(--font-ui);font-size:13px;color:' + diffColor + ';font-weight:600;">' + diffStr + '</div>';
+          html += '</div>';
+          html += '<div style="font-size:13px;color:rgba(245,240,225,0.7);margin-top:2px;">' + escapeHtml(s.course_name || 'Unnamed Course') + ' &middot; <span style="opacity:0.6;">Par ' + (s.course_par || 72) + '</span></div>';
+          html += '<div style="font-size:11px;color:rgba(245,240,225,0.4);margin-top:2px;">' + escapeHtml(date) + '</div>';
+          if (s.notes) {
+            html += '<div style="margin-top:8px;padding:8px 10px;background:rgba(245,240,225,0.03);border-left:2px solid rgba(191,155,59,0.3);font-size:12px;color:rgba(245,240,225,0.55);font-style:italic;">' + escapeHtml(s.notes) + '</div>';
+          }
+          html += '</div>';
+          html += '</div>';
+        });
+        container.innerHTML = html;
+        scoresLoaded = true;
+      } catch {
+        container.innerHTML = '<div class="empty-state" style="color:rgba(229,115,115,0.6);">Unable to load scores.</div>';
+      }
+    }
+
+    function openLogScore() {
+      document.getElementById('scoreVal').value = '';
+      document.getElementById('scorePar').value = '72';
+      document.getElementById('scoreCourse').value = '';
+      document.getElementById('scoreNotes').value = '';
+      var today = new Date();
+      var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      document.getElementById('scoreDate').value = todayStr;
+      document.getElementById('logScoreModal').style.display = 'flex';
+    }
+
+    async function submitScore() {
+      var scoreNum = parseInt(document.getElementById('scoreVal').value, 10);
+      var par = parseInt(document.getElementById('scorePar').value, 10) || 72;
+      var course = document.getElementById('scoreCourse').value.trim();
+      var date = document.getElementById('scoreDate').value;
+      var notes = document.getElementById('scoreNotes').value.trim();
+
+      if (!scoreNum || scoreNum < 40 || scoreNum > 200) {
+        showToast('Score must be between 40 and 200', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('logScoreSave');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/scores?token=' + token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            score: scoreNum,
+            course_name: course || null,
+            course_par: par,
+            played_at: date || null,
+            notes: notes || null,
+          }),
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Failed to save');
+        }
+        document.getElementById('logScoreModal').style.display = 'none';
+        showToast('Round logged');
+        loadScores();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Round';
       }
     }
   </script>
