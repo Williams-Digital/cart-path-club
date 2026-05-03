@@ -1305,6 +1305,7 @@
         <button id="toggleAthletes" onclick="setAppType('athletes')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Athletes</button>
         <button id="toggleBookings" onclick="setAppType('bookings')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Bookings</button>
         <button id="toggleRoster" onclick="setAppType('roster')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Roster</button>
+        <button id="toggleAvailability" onclick="setAppType('availability')" style="padding: 10px 28px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.2s; background: var(--bg-card); color: var(--cream-muted); border-left: 1px solid var(--border-light);">Availability</button>
       </div>
 
       <!-- Stats -->
@@ -1433,6 +1434,7 @@
         athletes: document.getElementById('toggleAthletes'),
         bookings: document.getElementById('toggleBookings'),
         roster: document.getElementById('toggleRoster'),
+        availability: document.getElementById('toggleAvailability'),
       };
       Object.keys(btns).forEach(function(k) {
         if (btns[k]) {
@@ -1450,7 +1452,7 @@
       var chartSection = document.getElementById('chartSection');
       var filterTabs = document.getElementById('filterTabs');
       var searchDate = document.querySelector('.search-date-row');
-      var hideExtraUI = (type === 'bookings' || type === 'roster');
+      var hideExtraUI = (type === 'bookings' || type === 'roster' || type === 'availability');
       if (statsRow) statsRow.style.display = hideExtraUI ? 'none' : '';
       if (chartSection) chartSection.style.display = hideExtraUI ? 'none' : '';
       if (filterTabs) filterTabs.style.display = hideExtraUI ? 'none' : '';
@@ -1460,10 +1462,144 @@
         renderBookings();
       } else if (type === 'roster') {
         renderRoster();
+      } else if (type === 'availability') {
+        renderAvailability();
       } else {
         applyClientFilters();
         updateStats();
       }
+    }
+
+    // ═════════════════════════════════════════════════════════════
+    // AVAILABILITY — combined calendar of all athletes' open/blocked
+    // dates for the next 30 days. Mayo uses this when reviewing booking
+    // requests so they can see at a glance who's open on a given day.
+    // ═════════════════════════════════════════════════════════════
+
+    let availabilityRangeDays = 30;
+
+    async function renderAvailability() {
+      var area = document.getElementById('contentArea');
+      area.innerHTML = '<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">Loading availability...</div></div>';
+
+      var now = new Date();
+      var from = now.toISOString().slice(0, 10);
+      var to = new Date(now.getTime() + availabilityRangeDays * 86400000).toISOString().slice(0, 10);
+
+      try {
+        var res = await fetch(API + '/admin/availability?from=' + from + '&to=' + to, {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        if (!res.ok) throw new Error('Failed to load availability');
+        var data = await res.json();
+        var entries = data.availability || [];
+        renderAvailabilityGrid(entries, from, to);
+      } catch (err) {
+        area.innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-title">Unable to load</div><div class="empty-state-text">' + (err.message || 'Try again') + '</div></div>';
+      }
+    }
+
+    function renderAvailabilityGrid(entries, fromIso, toIso) {
+      var area = document.getElementById('contentArea');
+
+      // Build a list of dates in range
+      var fromDate = new Date(fromIso + 'T12:00:00');
+      var toDate = new Date(toIso + 'T12:00:00');
+      var days = [];
+      var d = new Date(fromDate);
+      while (d <= toDate) {
+        days.push(d.toISOString().slice(0, 10));
+        d = new Date(d.getTime() + 86400000);
+      }
+
+      // Group entries by athlete
+      var byAthlete = {};
+      entries.forEach(function(e) {
+        var key = e.athlete_id;
+        if (!byAthlete[key]) {
+          byAthlete[key] = { name: e.athlete_name, sport: e.sport, entries: [] };
+        }
+        byAthlete[key].entries.push(e);
+      });
+
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px;">';
+      html += '<div><h2 style="font-family:Inter,sans-serif;font-size:1.5rem;font-weight:600;color:var(--cream);margin:0 0 4px;">Athlete Availability</h2>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--cream-muted);margin:0;">Next ' + availabilityRangeDays + ' days &middot; only visible to admins</p></div>';
+      html += '<div style="display:flex;gap:6px;">';
+      html += '<button onclick="setAvailRange(14)" class="avail-range-btn" data-r="14" style="padding:7px 14px;background:' + (availabilityRangeDays===14?'rgba(191,155,59,0.15)':'transparent') + ';border:1px solid ' + (availabilityRangeDays===14?'var(--gold)':'var(--border-light)') + ';color:' + (availabilityRangeDays===14?'var(--gold)':'var(--cream-muted)') + ';font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;border-radius:4px;cursor:pointer;">2 Weeks</button>';
+      html += '<button onclick="setAvailRange(30)" class="avail-range-btn" data-r="30" style="padding:7px 14px;background:' + (availabilityRangeDays===30?'rgba(191,155,59,0.15)':'transparent') + ';border:1px solid ' + (availabilityRangeDays===30?'var(--gold)':'var(--border-light)') + ';color:' + (availabilityRangeDays===30?'var(--gold)':'var(--cream-muted)') + ';font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;border-radius:4px;cursor:pointer;">30 Days</button>';
+      html += '<button onclick="setAvailRange(60)" class="avail-range-btn" data-r="60" style="padding:7px 14px;background:' + (availabilityRangeDays===60?'rgba(191,155,59,0.15)':'transparent') + ';border:1px solid ' + (availabilityRangeDays===60?'var(--gold)':'var(--border-light)') + ';color:' + (availabilityRangeDays===60?'var(--gold)':'var(--cream-muted)') + ';font-family:Inter,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;border-radius:4px;cursor:pointer;">60 Days</button>';
+      html += '</div></div>';
+
+      // Legend
+      html += '<div style="display:flex;gap:16px;margin-bottom:18px;font-family:Inter,sans-serif;font-size:12px;color:var(--cream-muted);">';
+      html += '<span><span style="display:inline-block;width:10px;height:10px;background:#2D8A56;border-radius:2px;margin-right:6px;vertical-align:middle;"></span>Open</span>';
+      html += '<span><span style="display:inline-block;width:10px;height:10px;background:#C0392B;border-radius:2px;margin-right:6px;vertical-align:middle;"></span>Blocked</span>';
+      html += '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(191,155,59,0.15);border:1px solid rgba(191,155,59,0.4);border-radius:2px;margin-right:6px;vertical-align:middle;"></span>Today</span>';
+      html += '</div>';
+
+      var athleteIds = Object.keys(byAthlete);
+      if (athleteIds.length === 0) {
+        html += '<div class="empty-state"><div class="empty-state-icon">&#128197;</div><div class="empty-state-title">No availability set</div><div class="empty-state-text">No athletes have set availability in this date range. Athletes manage their own calendars in the athlete portal.</div></div>';
+        area.innerHTML = html;
+        return;
+      }
+
+      // Day headers (compact)
+      var todayStr = new Date().toISOString().slice(0, 10);
+      var dayCol = '40px';
+      html += '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);">';
+      html += '<div style="display:grid;grid-template-columns:200px repeat(' + days.length + ',' + dayCol + ');min-width:max-content;">';
+
+      // Header row
+      html += '<div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg-elevated);font-family:Inter,sans-serif;font-size:11px;color:var(--cream-dim);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;position:sticky;left:0;z-index:2;">Athlete</div>';
+      days.forEach(function(dStr) {
+        var dt = new Date(dStr + 'T12:00:00');
+        var isToday = dStr === todayStr;
+        var isWeekend = dt.getDay() === 0 || dt.getDay() === 6;
+        html += '<div style="padding:8px 4px;text-align:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);background:' + (isToday ? 'rgba(191,155,59,0.08)' : 'var(--bg-elevated)') + ';font-family:Inter,sans-serif;font-size:9px;color:' + (isToday ? 'var(--gold)' : (isWeekend ? 'var(--cream-muted)' : 'var(--cream-dim)')) + ';">';
+        html += '<div style="font-weight:600;">' + ['SUN','MON','TUE','WED','THU','FRI','SAT'][dt.getDay()] + '</div>';
+        html += '<div style="font-size:13px;font-weight:700;color:' + (isToday ? 'var(--gold)' : 'var(--cream)') + ';margin-top:2px;">' + dt.getDate() + '</div>';
+        html += '</div>';
+      });
+
+      // Per-athlete rows
+      athleteIds.forEach(function(aid) {
+        var ath = byAthlete[aid];
+        html += '<div style="padding:14px;border-bottom:1px solid var(--border);background:var(--bg-card);position:sticky;left:0;z-index:1;">';
+        html += '<div style="font-family:Inter,sans-serif;font-size:13px;color:var(--cream);font-weight:600;">' + escapeHtml(ath.name) + '</div>';
+        if (ath.sport) {
+          html += '<div style="font-family:Inter,sans-serif;font-size:11px;color:var(--cream-muted);margin-top:2px;">' + escapeHtml(ath.sport) + '</div>';
+        }
+        html += '</div>';
+        days.forEach(function(dStr) {
+          var hasOpen = false, hasBlocked = false, notes = [];
+          ath.entries.forEach(function(e) {
+            var s = e.start_date.substring(0, 10);
+            var en = e.end_date.substring(0, 10);
+            if (dStr >= s && dStr <= en) {
+              if (e.type === 'open') hasOpen = true;
+              if (e.type === 'blocked') hasBlocked = true;
+              if (e.notes) notes.push(e.notes);
+            }
+          });
+          var bg = '';
+          if (hasOpen && hasBlocked) bg = 'background:linear-gradient(135deg,#2D8A56 50%,#C0392B 50%);';
+          else if (hasOpen) bg = 'background:#2D8A56;';
+          else if (hasBlocked) bg = 'background:#C0392B;';
+
+          var title = notes.length > 0 ? ' title="' + escapeAttr(notes.join(' / ')) + '"' : '';
+          html += '<div' + title + ' style="border-bottom:1px solid var(--border);border-left:1px solid var(--border);min-height:42px;' + bg + '"></div>';
+        });
+      });
+
+      html += '</div></div>';
+      area.innerHTML = html;
+    }
+
+    function setAvailRange(days) {
+      availabilityRangeDays = days;
+      renderAvailability();
     }
 
     // ═════════════════════════════════════════════════════════════
