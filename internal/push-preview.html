@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CartPath — Push Notification Preview</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #10352A;
+      --gold: #BF9B3B;
+      --gold-light: #CCAB52;
+      --cream: #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    h1 { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 8px; font-weight: 500; }
+    .lead { color: rgba(245,240,225,0.55); font-size: 1rem; max-width: 720px; margin-bottom: 36px; line-height: 1.65; }
+    .lead strong { color: var(--gold); font-weight: 600; }
+
+    .section-title {
+      font-family: var(--font-display); font-size: 1.4rem; color: var(--cream);
+      margin: 30px 0 18px; padding-bottom: 10px;
+      border-bottom: 1px solid rgba(191,155,59,0.15);
+    }
+    .section-sub {
+      color: rgba(245,240,225,0.55); font-size: 13px;
+      margin-bottom: 22px; line-height: 1.6;
+    }
+
+    .phones {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+      align-items: start; margin-bottom: 50px;
+    }
+    @media (max-width: 800px) {
+      .phones { grid-template-columns: 1fr; }
+    }
+
+    .phone-label {
+      text-align: center; font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 18px;
+    }
+
+    /* ===================== iPHONE LOCK SCREEN ===================== */
+    .iphone {
+      width: 380px; max-width: 100%; aspect-ratio: 380 / 760;
+      margin: 0 auto;
+      background: #000;
+      border-radius: 48px;
+      padding: 14px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,240,225,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .iphone-screen {
+      width: 100%; height: 100%; border-radius: 36px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.7) 100%),
+        linear-gradient(135deg, #2a4d3a 0%, #1a3528 50%, #0d1f15 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    /* Dynamic Island */
+    .iphone-island {
+      position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+      width: 110px; height: 32px; background: #000; border-radius: 20px;
+      z-index: 5;
+    }
+    /* Status bar */
+    .iphone-status {
+      padding: 18px 30px 0; display: flex; justify-content: space-between;
+      align-items: center; color: #fff;
+      font-family: 'SF Pro Display', -apple-system, sans-serif;
+      font-size: 16px; font-weight: 600;
+      position: relative; z-index: 6;
+    }
+    .iphone-status .icons { display: flex; gap: 5px; align-items: center; font-size: 14px; }
+
+    /* Lock screen time */
+    .iphone-time {
+      text-align: center; padding: 60px 0 0; color: #fff;
+      font-family: 'SF Pro Display', -apple-system, sans-serif;
+    }
+    .iphone-date { font-size: 16px; font-weight: 500; opacity: 0.95; margin-bottom: 4px; }
+    .iphone-time-big { font-size: 86px; font-weight: 200; letter-spacing: -2px; line-height: 1; }
+
+    /* Notification stack */
+    .iphone-notifs { padding: 50px 14px 0; display: flex; flex-direction: column; gap: 8px; }
+    .ios-notif {
+      background: rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(28px) saturate(1.6);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      border-radius: 18px;
+      padding: 11px 14px 12px;
+      display: flex; gap: 10px;
+      color: #fff;
+      font-family: 'SF Pro Display', -apple-system, sans-serif;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset;
+    }
+    .ios-notif-icon {
+      width: 38px; height: 38px; border-radius: 9px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-dark) 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .ios-notif-icon img { width: 28px; height: 28px; }
+    .ios-notif-body { flex: 1; min-width: 0; }
+    .ios-notif-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 2px;
+    }
+    .ios-notif-app {
+      font-size: 13px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.02em;
+      opacity: 0.95;
+    }
+    .ios-notif-time {
+      font-size: 13px; font-weight: 400; opacity: 0.7;
+    }
+    .ios-notif-title {
+      font-size: 15px; font-weight: 600; line-height: 1.25;
+      margin-bottom: 1px;
+    }
+    .ios-notif-body-text {
+      font-size: 15px; font-weight: 400; line-height: 1.3;
+      opacity: 0.92;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ===================== ANDROID LOCK SCREEN ===================== */
+    .android {
+      width: 380px; max-width: 100%; aspect-ratio: 380 / 760;
+      margin: 0 auto;
+      background: #000;
+      border-radius: 36px;
+      padding: 10px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,240,225,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .android-screen {
+      width: 100%; height: 100%; border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.8) 100%),
+        linear-gradient(160deg, #1f3a2c 0%, #11251a 60%, #060f0a 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .android-status {
+      padding: 14px 22px 0; display: flex; justify-content: space-between;
+      color: rgba(255,255,255,0.92);
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px; font-weight: 500;
+    }
+    .android-time-big {
+      text-align: center; padding: 30px 0 6px; color: #fff;
+      font-family: 'Roboto', sans-serif;
+      font-size: 80px; font-weight: 300; letter-spacing: -1px; line-height: 1;
+    }
+    .android-date {
+      text-align: center; color: rgba(255,255,255,0.85);
+      font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 400;
+      margin-bottom: 24px;
+    }
+    .android-notifs {
+      padding: 0 12px; display: flex; flex-direction: column; gap: 6px;
+    }
+    .android-notif {
+      background: rgba(28, 36, 32, 0.88);
+      backdrop-filter: blur(20px);
+      border-radius: 22px;
+      padding: 14px 16px;
+      display: flex; gap: 12px;
+      color: #fff;
+      font-family: 'Roboto', sans-serif;
+    }
+    .android-notif-icon {
+      width: 32px; height: 32px; border-radius: 50%;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-dark) 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .android-notif-icon img { width: 22px; height: 22px; }
+    .android-notif-body { flex: 1; min-width: 0; }
+    .android-notif-meta {
+      font-size: 12px; font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 2px;
+      display: flex; gap: 6px; align-items: center;
+    }
+    .android-notif-meta::before {
+      content: ''; display: inline-block;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+    }
+    .android-notif-title {
+      font-size: 14px; font-weight: 500; line-height: 1.3;
+      margin-bottom: 2px;
+    }
+    .android-notif-body-text {
+      font-size: 14px; font-weight: 400; line-height: 1.3;
+      color: rgba(255,255,255,0.78);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* ===================== INDIVIDUAL EXAMPLES ===================== */
+    .example-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 18px; margin-bottom: 40px;
+    }
+    .example {
+      background: rgba(16, 53, 42, 0.4);
+      border: 1px solid rgba(191, 155, 59, 0.15);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .example-label {
+      font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 12px;
+    }
+    .example-context {
+      color: rgba(245,240,225,0.55); font-size: 12px;
+      margin-top: 12px; line-height: 1.5;
+    }
+
+    .footnote {
+      font-size: 12px; color: rgba(245,240,225,0.4);
+      max-width: 640px; line-height: 1.65; margin-top: 20px;
+    }
+    .footnote code {
+      background: rgba(245,240,225,0.06); border: 1px solid rgba(245,240,225,0.08);
+      padding: 1px 6px; border-radius: 3px; font-size: 11px;
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Push notification preview</h1>
+    <p class="lead">
+      Here's how the messages CartPath sends will look on a <strong>locked phone</strong> when the app isn't open.
+      The visual chrome (rounded card, blur, font) is iOS / Android — we don't control that. What we <em>do</em>
+      control is the gold app icon, the title, and the body text.
+    </p>
+
+    <div class="section-title">Lock screen — iPhone vs Android</div>
+    <p class="section-sub">A typical evening: a few chat messages and a booking confirmation. Both phones receive the same payload, rendered in their native style.</p>
+
+    <div class="phones">
+      <!-- ===== iPhone ===== -->
+      <div>
+        <div class="phone-label">iPhone — Lock Screen</div>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="iphone-island"></div>
+            <div class="iphone-status">
+              <span>9:41</span>
+              <span class="icons">5G ●●●●●</span>
+            </div>
+            <div class="iphone-time">
+              <div class="iphone-date">Saturday, May 9</div>
+              <div class="iphone-time-big">9:41</div>
+            </div>
+            <div class="iphone-notifs">
+              <!-- Mention -->
+              <div class="ios-notif">
+                <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="ios-notif-body">
+                  <div class="ios-notif-header">
+                    <div class="ios-notif-app">CartPath</div>
+                    <div class="ios-notif-time">now</div>
+                  </div>
+                  <div class="ios-notif-title">Hines Ward mentioned you in clubhouse-lounge</div>
+                  <div class="ios-notif-body-text">Dylan, we still on for East Lake Friday? @Dylan Williams</div>
+                </div>
+              </div>
+
+              <!-- Booking confirmation -->
+              <div class="ios-notif">
+                <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="ios-notif-body">
+                  <div class="ios-notif-header">
+                    <div class="ios-notif-app">CartPath</div>
+                    <div class="ios-notif-time">12m ago</div>
+                  </div>
+                  <div class="ios-notif-title">Round confirmed</div>
+                  <div class="ios-notif-body-text">Marcus Sterling · East Lake · Friday at 8:00 AM</div>
+                </div>
+              </div>
+
+              <!-- Channel message -->
+              <div class="ios-notif">
+                <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="ios-notif-body">
+                  <div class="ios-notif-header">
+                    <div class="ios-notif-app">CartPath</div>
+                    <div class="ios-notif-time">38m ago</div>
+                  </div>
+                  <div class="ios-notif-title">Andrew Mitchell in round-recaps</div>
+                  <div class="ios-notif-body-text">Just shot 79 at Sea Island. Greens were running fast today...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Android ===== -->
+      <div>
+        <div class="phone-label">Android — Lock Screen</div>
+        <div class="android">
+          <div class="android-screen">
+            <div class="android-status">
+              <span>9:41</span>
+              <span>5G &nbsp; ▮▮▮▮ &nbsp; 87%</span>
+            </div>
+            <div class="android-time-big">9:41</div>
+            <div class="android-date">Sat, May 9</div>
+            <div class="android-notifs">
+              <!-- Mention -->
+              <div class="android-notif">
+                <div class="android-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="android-notif-body">
+                  <div class="android-notif-meta">CartPath · now</div>
+                  <div class="android-notif-title">Hines Ward mentioned you in clubhouse-lounge</div>
+                  <div class="android-notif-body-text">Dylan, we still on for East Lake Friday? @Dylan Williams</div>
+                </div>
+              </div>
+
+              <!-- Booking -->
+              <div class="android-notif">
+                <div class="android-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="android-notif-body">
+                  <div class="android-notif-meta">CartPath · 12m</div>
+                  <div class="android-notif-title">Round confirmed</div>
+                  <div class="android-notif-body-text">Marcus Sterling · East Lake · Friday at 8:00 AM</div>
+                </div>
+              </div>
+
+              <!-- Channel message -->
+              <div class="android-notif">
+                <div class="android-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+                <div class="android-notif-body">
+                  <div class="android-notif-meta">CartPath · 38m</div>
+                  <div class="android-notif-title">Andrew Mitchell in round-recaps</div>
+                  <div class="android-notif-body-text">Just shot 79 at Sea Island. Greens were running fast today...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Every notification type — single examples</div>
+    <p class="section-sub">All the push copy CartPath actually sends, with iOS-style rendering. The shield icon and "CartPath" branding stay constant; the title + body change per event.</p>
+
+    <div class="example-grid">
+
+      <!-- Channel message -->
+      <div class="example">
+        <div class="example-label">Member — channel message</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Mayo Sowell in announcements</div>
+            <div class="ios-notif-body-text">New athlete on the roster: Cam Newton. Browse the Roster tab.</div>
+          </div>
+        </div>
+        <div class="example-context">Sent to all members when anyone posts in a non-DM channel they have access to.</div>
+      </div>
+
+      <!-- Mention -->
+      <div class="example">
+        <div class="example-label">Member — @mention (high priority)</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Hines Ward mentioned you in clubhouse-lounge</div>
+            <div class="ios-notif-body-text">@Dylan Williams want to grab 18 at East Lake Saturday?</div>
+          </div>
+        </div>
+        <div class="example-context">Targeted at the mentioned user only. Higher priority — bypasses Do Not Disturb on iOS if Time Sensitive is enabled.</div>
+      </div>
+
+      <!-- DM -->
+      <div class="example">
+        <div class="example-label">Member — direct message</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Andrew Mitchell sent you a message</div>
+            <div class="ios-notif-body-text">Got those Augusta tickets I mentioned — call me when you have a minute.</div>
+          </div>
+        </div>
+        <div class="example-context">One-to-one DM. Body is the message text, capped at 120 characters.</div>
+      </div>
+
+      <!-- Photo -->
+      <div class="example">
+        <div class="example-label">Member — photo shared</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Marcus Sterling in round-recaps</div>
+            <div class="ios-notif-body-text">Shared 2 photos</div>
+          </div>
+        </div>
+        <div class="example-context">When someone posts photos. Body is a count, not the photo itself (saved for in-app view).</div>
+      </div>
+
+      <!-- Reaction -->
+      <div class="example">
+        <div class="example-label">Member — reaction on your message</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Hines Ward reacted 🔥</div>
+            <div class="ios-notif-body-text">to a message in the Clubhouse</div>
+          </div>
+        </div>
+        <div class="example-context">Lower priority — doesn't make a sound, just appears.</div>
+      </div>
+
+      <!-- Booking confirmation -->
+      <div class="example">
+        <div class="example-label">Member — booking confirmed</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Round confirmed</div>
+            <div class="ios-notif-body-text">Marcus Sterling · East Lake · Friday at 8:00 AM</div>
+          </div>
+        </div>
+        <div class="example-context">After Mayo confirms a paid booking. Tap → opens the Bookings tab.</div>
+      </div>
+
+      <!-- T-2 reminder -->
+      <div class="example">
+        <div class="example-label">Member — round reminder (T-2)</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Round in 2 days</div>
+            <div class="ios-notif-body-text">Marcus Sterling at East Lake on Friday — final logistics coming soon.</div>
+          </div>
+        </div>
+        <div class="example-context">Daily 10am ET cron sends this to members 2 days before a confirmed round.</div>
+      </div>
+
+      <!-- Athlete: new booking request -->
+      <div class="example">
+        <div class="example-label">Athlete — new booking request</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">New booking request</div>
+            <div class="ios-notif-body-text">Andrew Mitchell wants to play East Lake on Saturday, May 16.</div>
+          </div>
+        </div>
+        <div class="example-context">Sent to athlete when a member submits a request. Tap → opens the Rounds tab.</div>
+      </div>
+
+      <!-- Athlete: payment received -->
+      <div class="example">
+        <div class="example-label">Athlete — payout received</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Payout sent</div>
+            <div class="ios-notif-body-text">$1,600 for your round at East Lake on May 8 — see Earnings.</div>
+          </div>
+        </div>
+        <div class="example-context">After Mayo records a payout in the admin dashboard.</div>
+      </div>
+
+      <!-- Athlete: clubhouse message -->
+      <div class="example">
+        <div class="example-label">Athlete — Clubhouse message</div>
+        <div class="ios-notif">
+          <div class="ios-notif-icon"><img src="/assets/cartpath-shield.png" alt="" onerror="this.style.display='none'"></div>
+          <div class="ios-notif-body">
+            <div class="ios-notif-header"><div class="ios-notif-app">CartPath</div><div class="ios-notif-time">now</div></div>
+            <div class="ios-notif-title">Cam Newton in Clubhouse</div>
+            <div class="ios-notif-body-text">Anyone playing Augusta this weekend? Looking to swing through.</div>
+          </div>
+        </div>
+        <div class="example-context">Athletes-only chat. Members never see this.</div>
+      </div>
+
+    </div>
+
+    <p class="footnote">
+      Notes — pushes are sent via Expo's <code>exp.host/--/api/v2/push/send</code> service, which routes through Apple's APNs (iOS) and Google's FCM (Android). The app icon, "CartPath" name, and notification sound come from the app's signed entitlements; the title + body come from our chat / booking Lambdas. Reaction pushes use lower priority and a default sound. @mention and booking pushes use high priority. Time Sensitive eligibility on iOS depends on the user's Focus settings.
+    </p>
+  </div>
+</body>
+</html>
