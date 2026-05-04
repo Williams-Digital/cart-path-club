@@ -166,7 +166,8 @@
 
     <section class="panel" id="panel-emails">
       <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
-      <iframe class="preview-frame" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;"></iframe>
+      <!-- Email preview has its own sticky sidebar — give it a fixed scrollable height so the sidebar stays put as you scroll the email list -->
+      <iframe class="preview-frame fixed-height" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;height:calc(100vh - 240px);min-height:600px;"></iframe>
     </section>
 
   </main>
@@ -206,13 +207,16 @@
       }
     }
 
-    // Wire up each iframe to swap loading state for the iframe + auto-resize
+    // Wire up each iframe to swap loading state for the iframe + auto-resize.
+    // Skip auto-resize for iframes flagged .fixed-height (e.g. email preview,
+    // which has its own sticky sidebar that needs an internal scroll context).
     document.querySelectorAll('iframe.preview-frame').forEach(function(frame) {
+      var fixedHeight = frame.classList.contains('fixed-height');
       frame.addEventListener('load', function() {
         var loading = frame.parentElement.querySelector('.panel-loading');
         if (loading) loading.style.display = 'none';
         frame.style.display = 'block';
-        // Initial size
+        if (fixedHeight) return;
         resizeFrame(frame);
         // The email preview spawns nested iframes that load progressively;
         // re-measure a few times so the outer iframe grows as content fills in
