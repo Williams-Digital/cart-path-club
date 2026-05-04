@@ -96,42 +96,30 @@
     .panel { display: none; }
     .panel.active { display: block; }
 
-    /* iframe holder for preview pages */
-    .frame-wrap {
-      background: var(--green-deep);
-      border: 1px solid rgba(191, 155, 59, 0.15);
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-    }
-    .frame-toolbar {
-      background: rgba(9, 29, 20, 0.92);
-      border-bottom: 1px solid rgba(191, 155, 59, 0.1);
-      padding: 10px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap;
-    }
-    .frame-url {
-      font-family: 'SF Mono', Menlo, monospace; font-size: 11px;
-      color: rgba(245, 240, 225, 0.5);
-      background: rgba(245, 240, 225, 0.04);
-      padding: 5px 10px; border-radius: 4px;
-      border: 1px solid rgba(245, 240, 225, 0.08);
-    }
-    .frame-open {
-      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--gold); text-decoration: none;
-      padding: 6px 12px; border: 1px solid rgba(191, 155, 59, 0.3);
-      border-radius: 4px;
-      transition: all 0.15s;
-    }
-    .frame-open:hover { background: rgba(191, 155, 59, 0.08); border-color: var(--gold); }
-
+    /* Inline preview — no chrome, auto-sizes to content */
     iframe.preview-frame {
-      width: 100%; height: 78vh; min-height: 600px;
-      border: none; display: block;
+      width: 100%;
+      border: none;
+      display: block;
+      background: var(--green-deep);
+      min-height: 400px;
     }
+
+    /* Loading state shown while the iframe boots */
+    .panel-loading {
+      text-align: center; padding: 80px 20px;
+      color: rgba(245, 240, 225, 0.4);
+      font-size: 13px; letter-spacing: 0.06em;
+    }
+    .panel-loading-spinner {
+      width: 24px; height: 24px;
+      border: 2px solid rgba(191, 155, 59, 0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      margin: 0 auto 14px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 640px) {
       .topbar { padding: 12px 16px; }
@@ -141,7 +129,6 @@
       .tabs { padding: 0 14px; flex-wrap: wrap; }
       .tab { padding: 12px 14px; font-size: 11px; }
       .panels { padding: 18px 14px 60px; }
-      iframe.preview-frame { height: 70vh; }
     }
   </style>
 </head>
@@ -168,33 +155,18 @@
   <main class="panels">
 
     <section class="panel active" id="panel-toasts">
-      <div class="frame-wrap">
-        <div class="frame-toolbar">
-          <div class="frame-url">cartpathclub.com/internal/toast-preview</div>
-          <a class="frame-open" href="/internal/toast-preview" target="_blank">Open in new tab ↗</a>
-        </div>
-        <iframe class="preview-frame" data-src="/internal/toast-preview" title="Toast preview"></iframe>
-      </div>
+      <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
+      <iframe class="preview-frame" data-src="/internal/toast-preview?embed=1" title="Toast preview" style="display:none;"></iframe>
     </section>
 
     <section class="panel" id="panel-push">
-      <div class="frame-wrap">
-        <div class="frame-toolbar">
-          <div class="frame-url">cartpathclub.com/internal/push-preview</div>
-          <a class="frame-open" href="/internal/push-preview" target="_blank">Open in new tab ↗</a>
-        </div>
-        <iframe class="preview-frame" data-src="/internal/push-preview" title="Push preview"></iframe>
-      </div>
+      <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
+      <iframe class="preview-frame" data-src="/internal/push-preview?embed=1" title="Push preview" style="display:none;"></iframe>
     </section>
 
     <section class="panel" id="panel-emails">
-      <div class="frame-wrap">
-        <div class="frame-toolbar">
-          <div class="frame-url">cartpathclub.com/internal/email-preview</div>
-          <a class="frame-open" href="/internal/email-preview" target="_blank">Open in new tab ↗</a>
-        </div>
-        <iframe class="preview-frame" data-src="/internal/email-preview" title="Email preview"></iframe>
-      </div>
+      <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
+      <iframe class="preview-frame" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;"></iframe>
     </section>
 
   </main>
@@ -215,6 +187,40 @@
       // Update URL hash for shareable deep-links
       history.replaceState(null, '', '#' + name);
     }
+
+    // Auto-resize iframe to its content height so the page scrolls as one
+    function resizeFrame(frame) {
+      try {
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        if (!doc || !doc.body) return;
+        var h = Math.max(
+          doc.body.scrollHeight,
+          doc.documentElement.scrollHeight,
+          doc.body.offsetHeight,
+          doc.documentElement.offsetHeight
+        );
+        if (h > 0) frame.style.height = (h + 40) + 'px';
+      } catch (e) {
+        // Cross-origin failure shouldn't happen since we're same-origin, but be safe
+        frame.style.height = '90vh';
+      }
+    }
+
+    // Wire up each iframe to swap loading state for the iframe + auto-resize
+    document.querySelectorAll('iframe.preview-frame').forEach(function(frame) {
+      frame.addEventListener('load', function() {
+        var loading = frame.parentElement.querySelector('.panel-loading');
+        if (loading) loading.style.display = 'none';
+        frame.style.display = 'block';
+        // Initial size
+        resizeFrame(frame);
+        // The email preview spawns nested iframes that load progressively;
+        // re-measure a few times so the outer iframe grows as content fills in
+        [400, 1200, 2500, 5000].forEach(function(delay) {
+          setTimeout(function() { resizeFrame(frame); }, delay);
+        });
+      });
+    });
 
     // Initial activation: load the first tab's iframe (and honor #hash)
     (function init() {
