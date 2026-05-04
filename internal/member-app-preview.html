@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CartPath — Member App Preview</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #10352A;
+      --green-mid: #1A3F30;
+      --gold: #BF9B3B;
+      --gold-light: #CCAB52;
+      --gold-dark: #A88630;
+      --cream: #F5F0E1;
+      --tier-chairman: #C9A84C;
+      --tier-executive: #A8B8C8;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap { max-width: 1280px; margin: 0 auto; }
+    h1 { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 8px; font-weight: 500; }
+    .lead {
+      color: rgba(245,240,225,0.55); font-size: 1rem;
+      max-width: 720px; margin-bottom: 36px; line-height: 1.65;
+    }
+
+    .section-title {
+      font-family: var(--font-display); font-size: 1.4rem; color: var(--cream);
+      margin: 36px 0 6px; font-weight: 500;
+    }
+    .section-sub {
+      color: rgba(245,240,225,0.5); font-size: 13px;
+      margin-bottom: 22px; line-height: 1.55;
+    }
+
+    .phone-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 32px; align-items: start;
+      margin-bottom: 50px;
+    }
+
+    /* iPhone frame */
+    .phone {
+      width: 100%; max-width: 320px; aspect-ratio: 320 / 660;
+      margin: 0 auto;
+      background: #000; border-radius: 42px; padding: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(245,240,225,0.06);
+      position: relative;
+    }
+    .phone-screen {
+      width: 100%; height: 100%; border-radius: 32px;
+      background: var(--green-deep);
+      overflow: hidden;
+      position: relative;
+      display: flex; flex-direction: column;
+    }
+    .phone-island {
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      width: 88px; height: 24px; background: #000; border-radius: 14px;
+      z-index: 5;
+    }
+    .phone-status {
+      padding: 14px 22px 4px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--cream);
+      font-family: 'SF Pro Display', -apple-system, sans-serif;
+      font-size: 11px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .phone-status .icons { font-size: 9px; opacity: 0.85; }
+
+    .phone-body {
+      flex: 1; min-height: 0;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* App top bar inside the phone */
+    .app-topbar {
+      padding: 8px 14px 10px;
+      background: rgba(9, 29, 20, 0.92);
+      border-bottom: 1px solid rgba(191,155,59,0.1);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .app-topbar img { width: 18px; height: 18px; }
+    .app-topbar-text {
+      font-family: var(--font-display);
+      font-size: 11px; letter-spacing: 0.16em;
+      color: var(--gold); font-weight: 500;
+    }
+
+    /* App content scroll area */
+    .app-scroll {
+      flex: 1; overflow: hidden; padding: 12px;
+      font-size: 10px;
+    }
+
+    /* Bottom tab bar */
+    .app-tabbar {
+      padding: 8px 6px 14px;
+      background: rgba(9, 29, 20, 0.96);
+      border-top: 1px solid rgba(191,155,59,0.1);
+      display: flex; justify-content: space-around;
+      flex-shrink: 0;
+    }
+    .app-tab {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; flex: 1;
+      color: rgba(245,240,225,0.4);
+    }
+    .app-tab.active { color: var(--gold); }
+    .app-tab svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .app-tab span {
+      font-size: 8px; font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Phone label below */
+    .phone-meta {
+      margin-top: 14px; text-align: center;
+    }
+    .phone-meta-tag {
+      display: inline-block;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold);
+      padding: 3px 8px; background: rgba(191,155,59,0.08);
+      border: 1px solid rgba(191,155,59,0.25);
+      border-radius: 3px;
+      margin-bottom: 8px;
+    }
+    .phone-meta-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem; color: var(--cream);
+      margin-bottom: 4px;
+    }
+    .phone-meta-desc {
+      font-size: 11px; color: rgba(245,240,225,0.45);
+      line-height: 1.5; max-width: 280px; margin: 0 auto;
+    }
+
+    /* ======================================================
+       SCREEN-SPECIFIC CONTENT — keep this minimal but real
+       (matches actual /members portal look at small scale)
+       ====================================================== */
+
+    /* — Sign-in screen — */
+    .signin-hero {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 40px 20px;
+    }
+    .signin-shield {
+      width: 50px; height: 50px;
+      background-image: url('/assets/cartpath-shield.png');
+      background-size: contain; background-repeat: no-repeat;
+      background-position: center;
+      margin-bottom: 16px;
+    }
+    .signin-wordmark {
+      font-family: var(--font-display);
+      font-size: 16px; letter-spacing: 0.4em;
+      color: var(--gold); font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .signin-tag {
+      font-size: 8px; letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.4);
+      margin-bottom: 28px;
+    }
+    .signin-input {
+      width: 100%; padding: 9px 12px;
+      background: rgba(245,240,225,0.04);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 5px;
+      font-size: 9px;
+      color: rgba(245,240,225,0.5);
+      margin-bottom: 7px;
+    }
+    .signin-btn {
+      width: 100%; padding: 10px 12px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep); border-radius: 5px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .signin-link {
+      font-size: 8px; color: rgba(245,240,225,0.4);
+      margin-top: 12px;
+    }
+
+    /* — Dashboard / activity — */
+    .dash-greeting {
+      font-family: var(--font-display);
+      font-size: 14px; color: var(--cream);
+      margin-bottom: 2px;
+    }
+    .dash-subgreet {
+      font-size: 9px; color: rgba(245,240,225,0.5);
+      margin-bottom: 12px;
+    }
+    .dash-stat-row {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; margin-bottom: 12px;
+    }
+    .dash-stat {
+      background: rgba(16,53,42,0.6);
+      border: 1px solid rgba(191,155,59,0.1);
+      border-radius: 5px;
+      padding: 7px 9px;
+    }
+    .dash-stat-label {
+      font-size: 7px; letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.4);
+      margin-bottom: 2px;
+    }
+    .dash-stat-value {
+      font-family: var(--font-display);
+      font-size: 14px; color: var(--gold);
+      font-weight: 600;
+    }
+    .dash-act-title {
+      font-size: 7px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 7px;
+    }
+    .dash-act {
+      display: flex; gap: 7px; align-items: flex-start;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(245,240,225,0.05);
+    }
+    .dash-act-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--gold); margin-top: 5px; flex-shrink: 0;
+    }
+    .dash-act-text { font-size: 9px; line-height: 1.35; color: rgba(245,240,225,0.65); }
+    .dash-act-text strong { color: var(--cream); font-weight: 600; }
+
+    /* — Roster — */
+    .roster-card {
+      background: rgba(16,53,42,0.5);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      position: relative;
+    }
+    .roster-photo {
+      width: 100%; aspect-ratio: 16/10;
+      background-size: cover; background-position: center;
+      background-color: var(--green-mid);
+    }
+    .roster-photo.p1 {
+      background-image:
+        linear-gradient(135deg, rgba(9,29,20,0.5), rgba(9,29,20,0.85)),
+        linear-gradient(135deg, #5a4a2e, #2a3528);
+    }
+    .roster-photo.p2 {
+      background-image:
+        linear-gradient(135deg, rgba(9,29,20,0.5), rgba(9,29,20,0.85)),
+        linear-gradient(135deg, #4a5a4e, #1f3528);
+    }
+    .roster-avail {
+      position: absolute; top: 6px; right: 6px;
+      font-size: 6px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--green-deep);
+      background: #2D8A56;
+      padding: 2px 5px; border-radius: 2px;
+    }
+    .roster-body { padding: 7px 9px; }
+    .roster-name {
+      font-family: var(--font-display);
+      font-size: 11px; color: var(--cream);
+      margin-bottom: 1px;
+    }
+    .roster-sport {
+      font-size: 7px; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .roster-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 5px;
+    }
+    .roster-price {
+      font-size: 9px; color: var(--cream);
+      font-weight: 600;
+    }
+    .roster-price-label {
+      font-size: 6px; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(245,240,225,0.4);
+    }
+    .roster-cta {
+      font-size: 7px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--green-deep);
+      background: var(--gold);
+      padding: 4px 7px; border-radius: 3px;
+    }
+
+    /* — Live scores — */
+    .ls-tournament {
+      background: rgba(16,53,42,0.5);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .ls-tour-name {
+      font-family: var(--font-display);
+      font-size: 11px; color: var(--cream);
+      margin-bottom: 1px;
+    }
+    .ls-tour-meta {
+      font-size: 7px; color: rgba(245,240,225,0.4);
+      letter-spacing: 0.06em;
+    }
+    .ls-row {
+      display: grid;
+      grid-template-columns: 18px 1fr 30px 22px;
+      gap: 5px; align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(245,240,225,0.04);
+      font-size: 9px;
+    }
+    .ls-pos { color: var(--gold); font-weight: 700; font-size: 8px; }
+    .ls-name { color: var(--cream); }
+    .ls-tot { color: var(--cream); font-weight: 600; text-align: right; }
+    .ls-thru { color: rgba(245,240,225,0.5); text-align: right; font-size: 8px; }
+
+    /* — Booking flow — */
+    .book-step {
+      font-size: 7px; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 6px;
+    }
+    .book-h {
+      font-family: var(--font-display);
+      font-size: 13px; color: var(--cream);
+      margin-bottom: 10px; line-height: 1.2;
+    }
+    .book-sel {
+      background: rgba(16,53,42,0.55);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .book-sel.active { border-color: var(--gold); background: rgba(191,155,59,0.08); }
+    .book-sel-label {
+      font-size: 7px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(245,240,225,0.5);
+      margin-bottom: 2px;
+    }
+    .book-sel-value { font-size: 10px; color: var(--cream); font-weight: 500; }
+    .book-sel-edit {
+      font-size: 7px; color: var(--gold);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .book-cta {
+      width: 100%; padding: 9px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep); border-radius: 5px;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* — Chat — */
+    .chat-channel {
+      font-size: 9px; color: rgba(245,240,225,0.6);
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(245,240,225,0.04);
+    }
+    .chat-channel.active { color: var(--gold); }
+    .chat-channel-name { font-weight: 500; }
+    .chat-msg {
+      display: flex; gap: 6px;
+      margin-bottom: 7px;
+    }
+    .chat-msg-avatar {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep); font-size: 7px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .chat-msg-body { flex: 1; min-width: 0; }
+    .chat-msg-meta {
+      font-size: 7px; color: rgba(245,240,225,0.5);
+      margin-bottom: 1px;
+    }
+    .chat-msg-meta strong { color: var(--cream); font-weight: 600; }
+    .chat-msg-text {
+      font-size: 9px; color: rgba(245,240,225,0.78);
+      line-height: 1.35;
+    }
+
+    /* — Profile / Account — */
+    .profile-hero {
+      text-align: center; padding: 18px 10px 14px;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--green-mid);
+      border: 2px solid var(--gold);
+      margin: 0 auto 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-family: var(--font-display);
+      font-size: 16px; font-weight: 600;
+    }
+    .profile-name {
+      font-family: var(--font-display);
+      font-size: 14px; color: var(--cream);
+      margin-bottom: 2px;
+    }
+    .profile-tier {
+      display: inline-block;
+      font-size: 7px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--tier-chairman);
+      padding: 3px 8px;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 3px;
+    }
+    .profile-row {
+      display: flex; justify-content: space-between;
+      padding: 7px 0;
+      font-size: 9px;
+      border-bottom: 1px solid rgba(245,240,225,0.05);
+    }
+    .profile-row-label { color: rgba(245,240,225,0.5); }
+    .profile-row-value { color: var(--cream); font-weight: 500; }
+
+    /* ── Mobile + landscape ── */
+    @media (max-width: 800px) {
+      body { padding: 24px 16px 60px; }
+      .phone-grid { gap: 24px; }
+      .phone { max-width: 280px; }
+    }
+    @media (max-width: 480px) {
+      body { padding: 20px 12px 50px; }
+      .phone { max-width: 260px; }
+    }
+    @media (max-height: 540px) and (orientation: landscape) {
+      body { padding: 16px 18px 30px; }
+      .phone { max-width: 220px; }
+      .phone-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+      h1 { font-size: 1.5rem; }
+      .lead { font-size: 0.85rem; margin-bottom: 18px; }
+    }
+
+    /* When embedded in /internal/previews */
+    body.embed { padding: 18px 24px 40px; }
+    body.embed h1, body.embed > .wrap > .lead { display: none; }
+    @media (max-width: 800px) { body.embed { padding: 12px 12px 24px; } }
+  </style>
+</head>
+<body>
+  <script>
+    if (new URLSearchParams(location.search).get('embed') === '1') document.body.classList.add('embed');
+  </script>
+  <div class="wrap">
+    <h1>Member App</h1>
+    <p class="lead">A look at how the Member App appears on a member's iPhone — the six core screens they use day to day. Renders the actual production styles at small scale.</p>
+
+    <h2 class="section-title">The Six Core Screens</h2>
+    <p class="section-sub">Sign-in, dashboard, roster, booking flow, live scores, chat, and profile. Tap-through navigation lives in the bottom tab bar.</p>
+
+    <div class="phone-grid">
+
+      <!-- ═════ Sign-in ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="signin-hero">
+                <div class="signin-shield"></div>
+                <div class="signin-wordmark">CARTPATH</div>
+                <div class="signin-tag">A Private Golf Community</div>
+                <div class="signin-input">your@email.com</div>
+                <div class="signin-input">••••••••</div>
+                <div class="signin-btn">Sign In</div>
+                <div class="signin-link">Continue as Guest</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Sign-In</span>
+          <div class="phone-meta-name">Welcome screen</div>
+          <div class="phone-meta-desc">First impression. Members log in here; non-members can apply.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Dashboard ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text">DASHBOARD</span>
+              </div>
+              <div class="app-scroll">
+                <div class="dash-greeting">Welcome back, Andrew</div>
+                <div class="dash-subgreet">Chairman Member · Member since '26</div>
+                <div class="dash-stat-row">
+                  <div class="dash-stat">
+                    <div class="dash-stat-label">Rounds</div>
+                    <div class="dash-stat-value">7</div>
+                  </div>
+                  <div class="dash-stat">
+                    <div class="dash-stat-label">Handicap</div>
+                    <div class="dash-stat-value">9.2</div>
+                  </div>
+                </div>
+                <div class="dash-act-title">Recent Activity</div>
+                <div class="dash-act">
+                  <div class="dash-act-dot"></div>
+                  <div class="dash-act-text"><strong>Marcus Sterling</strong> shot 68 at East Lake</div>
+                </div>
+                <div class="dash-act">
+                  <div class="dash-act-dot"></div>
+                  <div class="dash-act-text"><strong>Hines Ward</strong> joined the roster</div>
+                </div>
+                <div class="dash-act">
+                  <div class="dash-act-dot"></div>
+                  <div class="dash-act-text">You shot <strong>78</strong> at Augusta</div>
+                </div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab active">
+                  <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+                  <span>Home</span>
+                </div>
+                <div class="app-tab">
+                  <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+                  <span>Roster</span>
+                </div>
+                <div class="app-tab">
+                  <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  <span>Scores</span>
+                </div>
+                <div class="app-tab">
+                  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span>Chat</span>
+                </div>
+                <div class="app-tab">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg>
+                  <span>Me</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Home</span>
+          <div class="phone-meta-name">Dashboard</div>
+          <div class="phone-meta-desc">Member's daily landing — stats, recent activity, quick links.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Roster ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text">THE ROSTER</span>
+              </div>
+              <div class="app-scroll">
+                <div class="roster-card">
+                  <div class="roster-photo p1">
+                    <div class="roster-avail">Open</div>
+                  </div>
+                  <div class="roster-body">
+                    <div class="roster-name">Marcus Sterling</div>
+                    <div class="roster-sport">NFL · HOF</div>
+                    <div class="roster-row">
+                      <div>
+                        <div class="roster-price-label">Per Round</div>
+                        <div class="roster-price">$3,200</div>
+                      </div>
+                      <div class="roster-cta">Book</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="roster-card">
+                  <div class="roster-photo p2">
+                  </div>
+                  <div class="roster-body">
+                    <div class="roster-name">Hines Ward</div>
+                    <div class="roster-sport">NFL · 2× Champion</div>
+                    <div class="roster-row">
+                      <div>
+                        <div class="roster-price-label">Per Round</div>
+                        <div class="roster-price">$2,800</div>
+                      </div>
+                      <div class="roster-cta">Book</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Home</span></div>
+                <div class="app-tab active"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span>Roster</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Scores</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg><span>Me</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Browse</span>
+          <div class="phone-meta-name">The Roster</div>
+          <div class="phone-meta-desc">Trading-card view of every athlete. Tap "Book" to start a request.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Booking flow ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text">BOOK A ROUND</span>
+              </div>
+              <div class="app-scroll">
+                <div class="book-step">Step 2 of 3</div>
+                <div class="book-h">When & where would you like to play?</div>
+                <div class="book-sel active">
+                  <div>
+                    <div class="book-sel-label">Athlete</div>
+                    <div class="book-sel-value">Marcus Sterling</div>
+                  </div>
+                  <div class="book-sel-edit">Change</div>
+                </div>
+                <div class="book-sel">
+                  <div>
+                    <div class="book-sel-label">Course</div>
+                    <div class="book-sel-value">East Lake Golf Club</div>
+                  </div>
+                  <div class="book-sel-edit">Edit</div>
+                </div>
+                <div class="book-sel">
+                  <div>
+                    <div class="book-sel-label">Date</div>
+                    <div class="book-sel-value">Friday, May 16</div>
+                  </div>
+                  <div class="book-sel-edit">Edit</div>
+                </div>
+                <div class="book-sel">
+                  <div>
+                    <div class="book-sel-label">Group</div>
+                    <div class="book-sel-value">2 players</div>
+                  </div>
+                  <div class="book-sel-edit">Edit</div>
+                </div>
+                <div class="book-cta">Submit Request</div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Home</span></div>
+                <div class="app-tab active"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span>Roster</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Scores</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg><span>Me</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Book</span>
+          <div class="phone-meta-name">Booking flow</div>
+          <div class="phone-meta-desc">Three-step request — athlete, course/date, then submit. We handle pricing.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Live Scores ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text">LIVE SCORES</span>
+              </div>
+              <div class="app-scroll">
+                <div class="ls-tournament">
+                  <div class="ls-tour-name">The Masters</div>
+                  <div class="ls-tour-meta">Round 3 · Augusta National</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">1</div>
+                  <div class="ls-name">Scheffler</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-12</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">T2</div>
+                  <div class="ls-name">McIlroy</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-10</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">T2</div>
+                  <div class="ls-name">Cantlay</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-10</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">4</div>
+                  <div class="ls-name">Schauffele</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-9</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">T5</div>
+                  <div class="ls-name">Spieth</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-7</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">T5</div>
+                  <div class="ls-name">Day</div>
+                  <div class="ls-tot" style="color:#6DC86D;">-7</div>
+                  <div class="ls-thru">F</div>
+                </div>
+                <div class="ls-row">
+                  <div class="ls-pos">T7</div>
+                  <div class="ls-name">Morikawa</div>
+                  <div class="ls-tot">E</div>
+                  <div class="ls-thru">F</div>
+                </div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Home</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span>Roster</span></div>
+                <div class="app-tab active"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Scores</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg><span>Me</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Watch</span>
+          <div class="phone-meta-name">Live PGA Scores</div>
+          <div class="phone-meta-desc">Real-time tournament leaderboards. Updates every two minutes.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Chat ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text"># CLUBHOUSE-LOUNGE</span>
+              </div>
+              <div class="app-scroll">
+                <div class="chat-msg">
+                  <div class="chat-msg-avatar">MS</div>
+                  <div class="chat-msg-body">
+                    <div class="chat-msg-meta"><strong>Mayo Sowell</strong> · 9:14 AM</div>
+                    <div class="chat-msg-text">Welcome to CartPath, everyone. This is just the beginning.</div>
+                  </div>
+                </div>
+                <div class="chat-msg">
+                  <div class="chat-msg-avatar" style="background:linear-gradient(135deg,#A8B8C8,#7DB3D8);">AM</div>
+                  <div class="chat-msg-body">
+                    <div class="chat-msg-meta"><strong>Andrew Mitchell</strong> · 9:32 AM</div>
+                    <div class="chat-msg-text">Played East Lake yesterday with Hines. Shot 81 — best round in years.</div>
+                  </div>
+                </div>
+                <div class="chat-msg">
+                  <div class="chat-msg-avatar">DW</div>
+                  <div class="chat-msg-body">
+                    <div class="chat-msg-meta"><strong>Dylan Williams</strong> · 9:38 AM</div>
+                    <div class="chat-msg-text">@Andrew Mitchell that's serious. Greens were running fast?</div>
+                  </div>
+                </div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Home</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span>Roster</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Scores</span></div>
+                <div class="app-tab active"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg><span>Me</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Connect</span>
+          <div class="phone-meta-name">The Clubhouse</div>
+          <div class="phone-meta-desc">Six private channels. Round recaps, athlete availability, member networking.</div>
+        </div>
+      </div>
+
+      <!-- ═════ Profile ═════ -->
+      <div>
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span class="icons">●●●●● 5G 87%</span></div>
+            <div class="phone-body">
+              <div class="app-topbar">
+                <img src="/assets/cartpath-shield.png" alt="">
+                <span class="app-topbar-text">ACCOUNT</span>
+              </div>
+              <div class="app-scroll">
+                <div class="profile-hero">
+                  <div class="profile-avatar">AM</div>
+                  <div class="profile-name">Andrew Mitchell</div>
+                  <div class="profile-tier">Chairman</div>
+                </div>
+                <div class="profile-row">
+                  <span class="profile-row-label">Member Since</span>
+                  <span class="profile-row-value">Apr 2026</span>
+                </div>
+                <div class="profile-row">
+                  <span class="profile-row-label">Rounds Played</span>
+                  <span class="profile-row-value">7</span>
+                </div>
+                <div class="profile-row">
+                  <span class="profile-row-label">Handicap</span>
+                  <span class="profile-row-value">9.2</span>
+                </div>
+                <div class="profile-row">
+                  <span class="profile-row-label">Renewal</span>
+                  <span class="profile-row-value">Apr 2027</span>
+                </div>
+                <div class="profile-row">
+                  <span class="profile-row-label">Concierge</span>
+                  <span class="profile-row-value" style="color:var(--gold);">Mayo</span>
+                </div>
+              </div>
+              <div class="app-tabbar">
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Home</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span>Roster</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><span>Scores</span></div>
+                <div class="app-tab"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Chat</span></div>
+                <div class="app-tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/></svg><span>Me</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-meta">
+          <span class="phone-meta-tag">Manage</span>
+          <div class="phone-meta-name">Account & Profile</div>
+          <div class="phone-meta-desc">Membership info, handicap tracking, billing, and your concierge contact.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
