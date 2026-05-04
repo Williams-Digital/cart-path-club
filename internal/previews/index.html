@@ -113,19 +113,63 @@
       height: calc(100dvh - 240px);
       min-height: 600px;
     }
+
+    /* App preview iframes — same fixed-height approach so the portal's
+       internal scroll/sticky behaviour works inside the iframe. */
+    iframe.app-iframe {
+      height: calc(100vh - 280px);
+      height: calc(100dvh - 280px);
+      min-height: 640px;
+      border-radius: 8px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    }
+
+    /* Hint banner above each app iframe */
+    .app-preview-hint {
+      background: rgba(16, 53, 42, 0.55);
+      border: 1px solid rgba(191, 155, 59, 0.18);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: rgba(245, 240, 225, 0.7);
+      line-height: 1.55;
+      display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+    }
+    .app-preview-hint strong { color: var(--cream); }
+    .app-preview-hint code {
+      background: rgba(245, 240, 225, 0.06);
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 11px; color: var(--gold);
+    }
+    .app-preview-hint-tag {
+      flex-shrink: 0;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--gold);
+      padding: 4px 10px;
+      background: rgba(191, 155, 59, 0.12);
+      border: 1px solid rgba(191, 155, 59, 0.3);
+      border-radius: 3px;
+      align-self: flex-start;
+    }
     @media (max-width: 768px) {
-      iframe.email-iframe {
-        height: calc(100vh - 180px);
-        height: calc(100dvh - 180px);
+      iframe.email-iframe,
+      iframe.app-iframe {
+        height: calc(100vh - 200px);
+        height: calc(100dvh - 200px);
         min-height: 480px;
       }
+      .app-preview-hint { padding: 11px 14px; font-size: 12px; }
+      .app-preview-hint-tag { font-size: 8px; padding: 3px 8px; letter-spacing: 0.15em; }
     }
     @media (max-height: 540px) and (orientation: landscape) {
-      iframe.email-iframe {
-        height: calc(100vh - 100px);
-        height: calc(100dvh - 100px);
+      iframe.email-iframe,
+      iframe.app-iframe {
+        height: calc(100vh - 110px);
+        height: calc(100dvh - 110px);
         min-height: 360px;
       }
+      .app-preview-hint { padding: 8px 12px; font-size: 11px; line-height: 1.45; margin-bottom: 8px; }
     }
 
     /* Loading state shown while the iframe boots */
@@ -200,13 +244,15 @@
 
   <section class="hero">
     <h1>Design Previews</h1>
-    <p>Every notification, push, and email the platform sends — rendered live so you can see exactly what members and athletes will receive. Switch tabs below.</p>
+    <p>Every notification, push, email, and app screen — rendered live so you can see exactly what members and athletes experience. Switch tabs below.</p>
   </section>
 
   <nav class="tabs" role="tablist">
     <button class="tab active" data-tab="toasts" onclick="setTab('toasts')">In-App Toasts <span class="tab-count">7</span></button>
     <button class="tab" data-tab="push" onclick="setTab('push')">Push Notifications <span class="tab-count">10</span></button>
     <button class="tab" data-tab="emails" onclick="setTab('emails')">Emails <span class="tab-count">18</span></button>
+    <button class="tab" data-tab="member-app" onclick="setTab('member-app')">Member App</button>
+    <button class="tab" data-tab="athlete-app" onclick="setTab('athlete-app')">Athlete App</button>
   </nav>
 
   <main class="panels">
@@ -225,6 +271,24 @@
       <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
       <!-- Email preview has its own sticky sidebar — give it a fixed scrollable height so the sidebar stays put as you scroll the email list. dvh gives more room as mobile browser chrome retracts. -->
       <iframe class="preview-frame fixed-height email-iframe" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;"></iframe>
+    </section>
+
+    <section class="panel" id="panel-member-app">
+      <div class="app-preview-hint">
+        <span class="app-preview-hint-tag">Member App</span>
+        Live preview of <strong>cartpathclub.com/app</strong> — what prospective members see. (The full member portal at <code>/members</code> requires login, so this shows the public marketing preview with all six app screens.)
+      </div>
+      <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
+      <iframe class="preview-frame fixed-height app-iframe" data-src="/app" title="Member app preview" style="display:none;"></iframe>
+    </section>
+
+    <section class="panel" id="panel-athlete-app">
+      <div class="app-preview-hint">
+        <span class="app-preview-hint-tag">Athlete App</span>
+        Live preview of the athlete portal — what athletes like Marcus Sterling see when they log in. Set availability, log scores, track earnings, manage assistants, and chat in the Clubhouse.
+      </div>
+      <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
+      <iframe class="preview-frame fixed-height app-iframe" data-src="/athletes/portal/?token=fx5LcW2qH3Bn7AFWrKhxtovQMLcWwiy4lr5qGErNutk8ogQB" title="Athlete portal preview" style="display:none;"></iframe>
     </section>
 
   </main>
@@ -286,7 +350,7 @@
     // Initial activation: load the first tab's iframe (and honor #hash)
     (function init() {
       var hash = window.location.hash.replace('#', '');
-      var initial = ['toasts', 'push', 'emails'].indexOf(hash) !== -1 ? hash : 'toasts';
+      var initial = ['toasts', 'push', 'emails', 'member-app', 'athlete-app'].indexOf(hash) !== -1 ? hash : 'toasts';
       setTab(initial);
     })();
   </script>
