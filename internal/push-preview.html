@@ -265,6 +265,49 @@
     }
     body.embed { padding: 18px 24px 40px; }
     body.embed h1, body.embed > .wrap > .lead, body.embed .footnote { display: none; }
+
+    /* Mobile + landscape phone refinements */
+    @media (max-width: 800px) {
+      body { padding: 24px 16px 60px; }
+      body.embed { padding: 12px 12px 24px; }
+      .phones { gap: 28px; margin-bottom: 36px; }
+      .iphone, .android { width: 100%; max-width: 360px; }
+      .example-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .example { padding: 16px; }
+      .section-title { font-size: 1.2rem; margin: 24px 0 14px; }
+    }
+    @media (max-width: 480px) {
+      body { padding: 20px 12px 50px; }
+      .iphone, .android { max-width: 320px; }
+      /* iPhone time number is huge — squeeze it on tiny phones */
+      .iphone-time-big { font-size: 64px; letter-spacing: -1.5px; }
+      .android-time-big { font-size: 60px; }
+      .iphone-time { padding: 40px 0 0; }
+      .iphone-notifs { padding: 30px 10px 0; }
+      .ios-notif-icon, .android-notif-icon img { width: 24px; height: 24px; }
+      .ios-notif { padding: 9px 12px 10px; }
+      .android-notif { padding: 12px 14px; }
+      .ios-notif-title, .android-notif-title { font-size: 13px; }
+      .ios-notif-body-text, .android-notif-body-text { font-size: 13px; }
+    }
+    /* Phone landscape (e.g. iPhone in landscape) — short height */
+    @media (max-height: 540px) and (orientation: landscape) {
+      body { padding: 16px 20px 30px; }
+      body.embed { padding: 10px 14px 20px; }
+      .phones { grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+      .iphone, .android { max-width: 240px; }
+      .iphone-time-big { font-size: 48px; }
+      .android-time-big { font-size: 46px; }
+      .iphone-time { padding: 30px 0 0; }
+      .iphone-notifs { padding: 16px 8px 0; }
+      .android-time-big { padding: 20px 0 4px; }
+      .ios-notif-title, .android-notif-title,
+      .ios-notif-body-text, .android-notif-body-text { font-size: 11px; }
+      .example-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    }
   </style>
 </head>
 <body>

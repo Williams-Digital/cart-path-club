@@ -153,6 +153,39 @@
     }
     body.embed { padding: 18px 24px 40px; }
     body.embed h1, body.embed > .wrap > .lead { display: none; }
+
+    /* Toasts always render top-right; on mobile they slide from bottom and span full width */
+    @media (max-width: 640px) {
+      .cp-toast-stack {
+        top: auto; bottom: 16px; right: 12px; left: 12px;
+        max-width: none; align-items: stretch;
+      }
+      .cp-toast { min-width: 0; max-width: none; }
+    }
+
+    /* Mobile body refinements */
+    @media (max-width: 640px) {
+      body { padding: 24px 16px 60px; }
+      body.embed { padding: 14px 12px 24px; }
+      h1 { font-size: 1.7rem; }
+      .lead { font-size: 0.92rem; margin-bottom: 26px; }
+      .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 30px; }
+      .demo-btn { padding: 14px 16px; }
+      .static-row { max-width: 100%; }
+    }
+
+    /* Phone landscape */
+    @media (max-height: 540px) and (orientation: landscape) {
+      body { padding: 16px 20px 30px; }
+      body.embed { padding: 10px 14px 20px; }
+      h1 { font-size: 1.4rem; }
+      .lead { font-size: 0.85rem; margin-bottom: 18px; }
+      .static-row { flex-direction: row; flex-wrap: wrap; max-width: 100%; gap: 10px; }
+      .static-row .cp-toast { flex: 1 1 280px; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+      .demo-btn { padding: 12px 14px; }
+      .demo-btn .copy { font-size: 12px; }
+    }
   </style>
 </head>
 <body>

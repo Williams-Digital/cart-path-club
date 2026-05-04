@@ -105,6 +105,29 @@
       min-height: 400px;
     }
 
+    /* Email iframe gets a fixed scrollable height so its sticky sidebar
+       has a scroll context. Use dvh on mobile so iOS browser chrome
+       collapsing gives us back the height. */
+    iframe.email-iframe {
+      height: calc(100vh - 240px);
+      height: calc(100dvh - 240px);
+      min-height: 600px;
+    }
+    @media (max-width: 768px) {
+      iframe.email-iframe {
+        height: calc(100vh - 180px);
+        height: calc(100dvh - 180px);
+        min-height: 480px;
+      }
+    }
+    @media (max-height: 540px) and (orientation: landscape) {
+      iframe.email-iframe {
+        height: calc(100vh - 100px);
+        height: calc(100dvh - 100px);
+        min-height: 360px;
+      }
+    }
+
     /* Loading state shown while the iframe boots */
     .panel-loading {
       text-align: center; padding: 80px 20px;
@@ -121,14 +144,48 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .topbar { padding: 12px 16px; }
       .crumb { display: none; }
-      .hero { padding: 32px 18px 18px; }
-      .hero h1 { font-size: 1.8rem; }
-      .tabs { padding: 0 14px; flex-wrap: wrap; }
-      .tab { padding: 12px 14px; font-size: 11px; }
-      .panels { padding: 18px 14px 60px; }
+      .hero { padding: 28px 18px 14px; }
+      .hero h1 { font-size: 1.6rem; line-height: 1.15; }
+      .hero p { font-size: 0.9rem; }
+
+      /* Tabs: horizontal scroll instead of wrapping */
+      .tabs {
+        padding: 0 16px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab {
+        padding: 13px 14px;
+        font-size: 11px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .tab-count { margin-left: 5px; padding: 1px 6px; font-size: 9px; }
+
+      .panels { padding: 14px 12px 50px; }
+    }
+
+    /* Phone landscape — short height, want as much iframe room as possible */
+    @media (max-height: 540px) and (orientation: landscape) {
+      .topbar { padding: 8px 14px; }
+      .topbar .brand img { width: 22px; }
+      .topbar .brand-text { font-size: 13px; }
+      .hero { display: none; }
+      .tabs { padding: 0 14px; }
+      .tab { padding: 10px 12px; font-size: 10px; }
+      .panels { padding: 10px 12px 30px; }
+    }
+
+    /* Tiny phones (320-360px) — squeeze tabs further */
+    @media (max-width: 380px) {
+      .tab { padding: 12px 10px; font-size: 10px; letter-spacing: 0.1em; }
     }
   </style>
 </head>
@@ -166,8 +223,8 @@
 
     <section class="panel" id="panel-emails">
       <div class="panel-loading"><div class="panel-loading-spinner"></div>Loading...</div>
-      <!-- Email preview has its own sticky sidebar — give it a fixed scrollable height so the sidebar stays put as you scroll the email list -->
-      <iframe class="preview-frame fixed-height" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;height:calc(100vh - 240px);min-height:600px;"></iframe>
+      <!-- Email preview has its own sticky sidebar — give it a fixed scrollable height so the sidebar stays put as you scroll the email list. dvh gives more room as mobile browser chrome retracts. -->
+      <iframe class="preview-frame fixed-height email-iframe" data-src="/internal/email-preview?embed=1" title="Email preview" style="display:none;"></iframe>
     </section>
 
   </main>
