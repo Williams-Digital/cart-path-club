@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CartPath — Design Previews</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #10352A;
+      --gold: #BF9B3B;
+      --gold-light: #CCAB52;
+      --gold-dark: #A88630;
+      --cream: #F5F0E1;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: rgba(9, 29, 20, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(191, 155, 59, 0.15);
+      padding: 16px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--cream); }
+    .brand img { width: 28px; }
+    .brand-text { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+    .crumb {
+      font-family: var(--font-ui); font-size: 11px; color: rgba(245, 240, 225, 0.4);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .crumb a { color: rgba(245, 240, 225, 0.6); text-decoration: none; }
+    .crumb a:hover { color: var(--gold); }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 880px; margin: 0 auto; padding: 56px 28px 32px;
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: 2.4rem; margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .hero p {
+      color: rgba(245, 240, 225, 0.6); font-size: 1rem;
+      max-width: 660px; line-height: 1.65;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      max-width: 880px; margin: 28px auto 0; padding: 0 28px;
+      border-bottom: 1px solid rgba(191, 155, 59, 0.12);
+      display: flex; gap: 6px;
+    }
+    .tab {
+      background: none; border: none; cursor: pointer;
+      font-family: var(--font-ui); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(245, 240, 225, 0.4);
+      padding: 14px 20px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: rgba(245, 240, 225, 0.7); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-count {
+      display: inline-block; margin-left: 6px; padding: 1px 7px;
+      background: rgba(191, 155, 59, 0.12); border-radius: 10px;
+      font-size: 10px; font-weight: 500;
+      color: rgba(245, 240, 225, 0.5);
+    }
+    .tab.active .tab-count { color: var(--gold); }
+
+    /* ── Panels ── */
+    .panels { max-width: 1280px; margin: 0 auto; padding: 24px 28px 80px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* iframe holder for preview pages */
+    .frame-wrap {
+      background: var(--green-deep);
+      border: 1px solid rgba(191, 155, 59, 0.15);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+    .frame-toolbar {
+      background: rgba(9, 29, 20, 0.92);
+      border-bottom: 1px solid rgba(191, 155, 59, 0.1);
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .frame-url {
+      font-family: 'SF Mono', Menlo, monospace; font-size: 11px;
+      color: rgba(245, 240, 225, 0.5);
+      background: rgba(245, 240, 225, 0.04);
+      padding: 5px 10px; border-radius: 4px;
+      border: 1px solid rgba(245, 240, 225, 0.08);
+    }
+    .frame-open {
+      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); text-decoration: none;
+      padding: 6px 12px; border: 1px solid rgba(191, 155, 59, 0.3);
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .frame-open:hover { background: rgba(191, 155, 59, 0.08); border-color: var(--gold); }
+
+    iframe.preview-frame {
+      width: 100%; height: 78vh; min-height: 600px;
+      border: none; display: block;
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 12px 16px; }
+      .crumb { display: none; }
+      .hero { padding: 32px 18px 18px; }
+      .hero h1 { font-size: 1.8rem; }
+      .tabs { padding: 0 14px; flex-wrap: wrap; }
+      .tab { padding: 12px 14px; font-size: 11px; }
+      .panels { padding: 18px 14px 60px; }
+      iframe.preview-frame { height: 70vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/internal">
+      <img src="/assets/cartpath-shield.png" alt="CartPath">
+      <span class="brand-text">CartPath</span>
+    </a>
+    <div class="crumb"><a href="/internal">Internal</a> &nbsp;/&nbsp; Design Previews</div>
+  </header>
+
+  <section class="hero">
+    <h1>Design Previews</h1>
+    <p>Every notification, push, and email the platform sends — rendered live so you can see exactly what members and athletes will receive. Switch tabs below.</p>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="toasts" onclick="setTab('toasts')">In-App Toasts <span class="tab-count">7</span></button>
+    <button class="tab" data-tab="push" onclick="setTab('push')">Push Notifications <span class="tab-count">10</span></button>
+    <button class="tab" data-tab="emails" onclick="setTab('emails')">Emails <span class="tab-count">18</span></button>
+  </nav>
+
+  <main class="panels">
+
+    <section class="panel active" id="panel-toasts">
+      <div class="frame-wrap">
+        <div class="frame-toolbar">
+          <div class="frame-url">cartpathclub.com/internal/toast-preview</div>
+          <a class="frame-open" href="/internal/toast-preview" target="_blank">Open in new tab ↗</a>
+        </div>
+        <iframe class="preview-frame" data-src="/internal/toast-preview" title="Toast preview"></iframe>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-push">
+      <div class="frame-wrap">
+        <div class="frame-toolbar">
+          <div class="frame-url">cartpathclub.com/internal/push-preview</div>
+          <a class="frame-open" href="/internal/push-preview" target="_blank">Open in new tab ↗</a>
+        </div>
+        <iframe class="preview-frame" data-src="/internal/push-preview" title="Push preview"></iframe>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-emails">
+      <div class="frame-wrap">
+        <div class="frame-toolbar">
+          <div class="frame-url">cartpathclub.com/internal/email-preview</div>
+          <a class="frame-open" href="/internal/email-preview" target="_blank">Open in new tab ↗</a>
+        </div>
+        <iframe class="preview-frame" data-src="/internal/email-preview" title="Email preview"></iframe>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function setTab(name) {
+      document.querySelectorAll('.tab').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-tab') === name);
+      });
+      document.querySelectorAll('.panel').forEach(function(p) {
+        p.classList.toggle('active', p.id === 'panel-' + name);
+      });
+      // Lazy-load iframe on first activation, then keep it loaded
+      var frame = document.querySelector('#panel-' + name + ' iframe');
+      if (frame && !frame.src && frame.dataset.src) {
+        frame.src = frame.dataset.src;
+      }
+      // Update URL hash for shareable deep-links
+      history.replaceState(null, '', '#' + name);
+    }
+
+    // Initial activation: load the first tab's iframe (and honor #hash)
+    (function init() {
+      var hash = window.location.hash.replace('#', '');
+      var initial = ['toasts', 'push', 'emails'].indexOf(hash) !== -1 ? hash : 'toasts';
+      setTab(initial);
+    })();
+  </script>
+</body>
+</html>
