@@ -4962,15 +4962,22 @@
       var html = '';
       bookings.forEach(function(b) {
         var state = b.workflow_state || 'requested';
+        // Member sees a neutral "Under Review" for every internal admin/athlete
+        // state. They never see "athlete declined" — Mayo handles that privately
+        // and either reroutes the request or declines it outright on their end.
         var stateLabel = ({
           requested: 'Under Review', pending_review: 'Under Review',
-          awaiting_member: 'Under Review', awaiting_member_approval: 'Quote Received — Approve Price',
+          awaiting_member: 'Under Review',
+          pending_athlete: 'Under Review',
+          accepted_by_athlete: 'Setting up the round',
+          athlete_declined: 'Under Review',
+          awaiting_member_approval: 'Quote Received — Approve Price',
           price_rejected: 'Rejected — Awaiting New Quote', quoted: 'Payment Pending',
           paid: 'Paid', confirmed: 'Confirmed', completed: 'Completed',
           declined: 'Declined', cancelled: 'Cancelled',
         })[state] || state;
 
-        var stateColor = (['paid','confirmed','completed'].includes(state)) ? '#6DC86D' :
+        var stateColor = (['paid','confirmed','completed','accepted_by_athlete'].includes(state)) ? '#6DC86D' :
                         (['declined','cancelled','price_rejected'].includes(state)) ? '#E57373' :
                         '#BF9B3B';
 

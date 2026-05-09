@@ -483,12 +483,34 @@
 
       <!-- ── Rounds ── -->
       <section class="tab-panel" id="panel-rounds">
+        <!-- Pending requests — shown only when there are any -->
+        <div id="pendingRequestsBlock" style="display:none;margin-bottom:28px;">
+          <div class="section-row" style="margin-bottom:14px;">
+            <h2 class="section-title" style="font-size:18px;">Pending Requests <span id="pendingRequestsCount" style="font-size:12px;color:var(--gold);font-weight:400;margin-left:6px;"></span></h2>
+            <div class="section-hint" style="font-size:12px;">Members hoping to play with you. Accept or decline below — declines stay private.</div>
+          </div>
+          <div id="pendingRequestsContainer"></div>
+        </div>
+
         <div class="section-row">
           <h1 class="section-title">Booked Rounds</h1>
           <div class="section-hint">Confirmed bookings from members. Special requests appear inline.</div>
         </div>
         <div id="bookedRoundsContainer"><div class="empty-state">Loading...</div></div>
       </section>
+
+      <!-- Decline reason modal -->
+      <div id="declineModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(6,15,10,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:18px;">
+        <div style="background:var(--green-dark);border:1px solid rgba(191,155,59,0.25);border-radius:12px;max-width:440px;width:100%;padding:28px;">
+          <div style="font-family:var(--font-display);font-size:1.25rem;color:var(--cream);margin-bottom:6px;">Decline this request</div>
+          <div style="font-size:13px;color:rgba(245,240,225,0.55);line-height:1.5;margin-bottom:18px;">Optional — let us know why so we can route differently next time. Your reason is only seen by Mayo and Dylan; the member never sees it.</div>
+          <textarea id="declineReason" rows="4" placeholder="e.g. Out of town that week, prefer East Lake over that course..." style="width:100%;background:rgba(245,240,225,0.04);border:1px solid rgba(191,155,59,0.18);border-radius:6px;padding:12px;color:var(--cream);font-family:inherit;font-size:14px;resize:vertical;outline:none;"></textarea>
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px;">
+            <button onclick="closeDeclineModal()" style="background:none;border:1px solid rgba(245,240,225,0.15);color:rgba(245,240,225,0.65);padding:10px 18px;border-radius:6px;font-family:inherit;font-size:13px;cursor:pointer;">Cancel</button>
+            <button id="declineSubmitBtn" onclick="confirmDecline()" style="background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;color:var(--green-deep);padding:10px 20px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Decline</button>
+          </div>
+        </div>
+      </div>
 
       <!-- ── Scores ── -->
       <section class="tab-panel" id="panel-scores">
@@ -808,6 +830,7 @@
         currentMonth = now.getMonth();
         renderCalendar();
         loadBookedRounds();
+        loadPendingRequests();
         loadAssistants();
 
         document.getElementById('loadingScreen').style.display = 'none';
@@ -1139,6 +1162,120 @@
       var div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    }
+
+    // ── Pending Requests (forwarded from admin, awaiting accept/decline) ──
+    var pendingDeclineId = null;
+
+    async function loadPendingRequests() {
+      var block = document.getElementById('pendingRequestsBlock');
+      var container = document.getElementById('pendingRequestsContainer');
+      var countSpan = document.getElementById('pendingRequestsCount');
+      if (!block || !container) return;
+
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/pending-requests?token=' + token);
+        if (!res.ok) throw new Error('Failed');
+        var data = await res.json();
+        var requests = data.requests || [];
+
+        if (requests.length === 0) {
+          block.style.display = 'none';
+          return;
+        }
+
+        block.style.display = 'block';
+        if (countSpan) countSpan.textContent = '(' + requests.length + ')';
+
+        var html = '';
+        requests.forEach(function(r) {
+          var date = r.preferred_date ? new Date(r.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+          var deadline = '';
+          if (r.athlete_response_deadline_at) {
+            var hoursLeft = Math.max(0, Math.round((new Date(r.athlete_response_deadline_at) - new Date()) / 36e5));
+            deadline = hoursLeft > 0 ? hoursLeft + 'h to respond' : 'Expires soon';
+          }
+
+          html += '<div class="info-card" style="border-left:3px solid var(--gold);">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:8px;margin-bottom:12px;">';
+          html += '<div>';
+          html += '<div style="font-family:var(--font-display);font-size:16px;color:var(--cream);font-weight:500;">' + escapeHtml(r.member_name || 'A CartPath member') + '</div>';
+          html += '<div style="font-size:11px;color:rgba(245,240,225,0.45);margin-top:2px;">' + escapeHtml(date) + '</div>';
+          html += '</div>';
+          if (deadline) {
+            html += '<div class="badge" style="color:var(--gold);border:1px solid rgba(191,155,59,0.4);background:rgba(191,155,59,0.08);font-size:10px;">' + deadline + '</div>';
+          }
+          html += '</div>';
+          html += '<div style="font-size:13px;color:rgba(245,240,225,0.7);margin-bottom:6px;">' + escapeHtml(r.course || 'Course TBD') + ' · Group of ' + (r.group_size || 1) + (r.round_type ? ' · ' + escapeHtml(r.round_type) : '') + '</div>';
+          if (r.special_requests) {
+            html += '<div style="margin:8px 0;padding:10px 12px;background:rgba(245,240,225,0.03);border-left:2px solid rgba(191,155,59,0.3);font-size:12px;color:rgba(245,240,225,0.6);font-style:italic;line-height:1.55;">' + escapeHtml(r.special_requests) + '</div>';
+          }
+          html += '<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">';
+          html += '<button onclick="acceptRequest(\'' + r.id + '\', this)" style="flex:1;min-width:120px;background:#2D8A56;border:none;color:#fff;padding:10px 18px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:0.04em;cursor:pointer;">Accept</button>';
+          html += '<button onclick="openDeclineModal(\'' + r.id + '\')" style="flex:1;min-width:120px;background:none;border:1px solid rgba(229,115,115,0.4);color:#E57373;padding:10px 18px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;letter-spacing:0.04em;cursor:pointer;">Decline</button>';
+          html += '</div>';
+          html += '</div>';
+        });
+        container.innerHTML = html;
+      } catch {
+        block.style.display = 'block';
+        container.innerHTML = '<div class="empty-state" style="color:rgba(229,115,115,0.6);">Unable to load pending requests.</div>';
+      }
+    }
+
+    async function acceptRequest(bookingId, btnEl) {
+      if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Accepting...'; }
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/bookings/' + bookingId + '/accept?token=' + token, { method: 'POST' });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Failed to accept');
+        }
+        showToast('Accepted — we\'ll handle the rest.');
+        await loadPendingRequests();
+        await loadBookedRounds();
+      } catch (err) {
+        showToast(err.message || 'Failed to accept', 'error');
+        if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Accept'; }
+      }
+    }
+
+    function openDeclineModal(bookingId) {
+      pendingDeclineId = bookingId;
+      var modal = document.getElementById('declineModal');
+      var reason = document.getElementById('declineReason');
+      if (reason) reason.value = '';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDeclineModal() {
+      pendingDeclineId = null;
+      var modal = document.getElementById('declineModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function confirmDecline() {
+      if (!pendingDeclineId) return;
+      var reason = (document.getElementById('declineReason').value || '').trim();
+      var btn = document.getElementById('declineSubmitBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+      try {
+        var res = await fetch(API_BASE + '/athletes/portal/bookings/' + pendingDeclineId + '/decline?token=' + token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: reason || null }),
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Failed to decline');
+        }
+        showToast('Declined — only Mayo and Dylan see this.');
+        closeDeclineModal();
+        await loadPendingRequests();
+      } catch (err) {
+        showToast(err.message || 'Failed to decline', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Submit Decline'; }
+      }
     }
 
     // ── Booked Rounds ──

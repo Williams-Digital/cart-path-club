@@ -2152,14 +2152,17 @@
         var preferred = b.preferred_date ? new Date(b.preferred_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '--';
         var state = b.workflow_state || 'requested';
         var stateLabel = ({
-          requested: 'Requested', pending_review: 'Review', awaiting_member: 'Awaiting Member',
-          awaiting_member_approval: 'Member Approval', price_rejected: 'Rejected',
-          quoted: 'Paid Pending', paid: 'Paid', confirmed: 'Confirmed',
+          requested: 'New Request', pending_review: 'Ready to Forward', awaiting_member: 'Awaiting Member',
+          pending_athlete: 'Athlete Reviewing',
+          accepted_by_athlete: 'Athlete Accepted — Quote',
+          athlete_declined: 'Athlete Declined',
+          awaiting_member_approval: 'Member Approval', price_rejected: 'Price Rejected',
+          quoted: 'Awaiting Payment', paid: 'Paid', confirmed: 'Confirmed',
           completed: 'Completed', declined: 'Declined', cancelled: 'Cancelled',
         })[state] || state;
 
-        var stateColor = (['paid','confirmed','completed'].includes(state)) ? 'approved' :
-                        (['declined','cancelled','price_rejected'].includes(state)) ? 'declined' :
+        var stateColor = (['paid','confirmed','completed','accepted_by_athlete'].includes(state)) ? 'approved' :
+                        (['declined','cancelled','price_rejected','athlete_declined'].includes(state)) ? 'declined' :
                         'pending';
 
         html += '<div class="app-row" style="grid-template-columns: 90px 1.2fr 1.1fr 130px 160px 120px 140px; cursor:default;">';
@@ -2170,8 +2173,15 @@
         html += '<div style="font-size:12px;color:var(--cream-muted);">' + escapeHtml(b.course || '--') + '</div>';
         html += '<div><span class="status-badge ' + stateColor + '" style="font-size:10px;">' + stateLabel + '</span></div>';
         html += '<div class="cell-actions">';
-        if (state === 'pending_review' || state === 'awaiting_member' || state === 'price_rejected') {
+        if (state === 'pending_review' || state === 'awaiting_member') {
+          html += '<button class="btn-approve" onclick="forwardToAthlete(\'' + escapeAttr(b.id) + '\')">Forward to Athlete</button>';
+        } else if (state === 'pending_athlete') {
+          html += '<span style="font-size:10px;color:var(--amber);opacity:0.8;">Athlete reviewing</span>';
+        } else if (state === 'accepted_by_athlete' || state === 'price_rejected') {
           html += '<button class="btn-approve" onclick="openQuoteModal(\'' + escapeAttr(b.id) + '\')">Send Quote</button>';
+        } else if (state === 'athlete_declined') {
+          html += '<button class="btn-approve" onclick="rerouteAfterDecline(\'' + escapeAttr(b.id) + '\')" style="background:#7DB3D8;">Reroute</button>';
+          html += '<button class="btn-decline" onclick="confirmBookingAction(\'' + escapeAttr(b.id) + '\', \'decline\')" style="margin-left:6px;">Decline</button>';
         } else if (state === 'awaiting_member_approval') {
           html += '<span style="font-size:10px;color:var(--amber);opacity:0.8;">Awaiting $ approval</span>';
         } else if (state === 'quoted') {
@@ -2182,6 +2192,11 @@
           html += '<button class="btn-approve" onclick="confirmBookingAction(\'' + escapeAttr(b.id) + '\', \'complete\')">Mark Complete</button>';
         }
         html += '</div></div>';
+
+        // If athlete declined, show their reason inline below the row
+        if (state === 'athlete_declined' && b.athlete_decline_reason) {
+          html += '<div style="grid-column:1/-1;padding:8px 12px 12px 90px;font-size:12px;color:var(--cream-muted);font-style:italic;border-bottom:1px solid var(--border-light);"><span style="color:#E57373;font-weight:600;font-style:normal;letter-spacing:0.05em;">Athlete reason:</span> ' + escapeHtml(b.athlete_decline_reason) + '</div>';
+        }
       });
 
       html += '</div>';
@@ -2233,6 +2248,23 @@
     }
 
     async function confirmBookingAction(bookingId, action) {
+      if (action === 'decline') {
+        var reason = prompt('Decline reason (optional, internal-only):');
+        if (reason === null) return; // cancelled
+        try {
+          var res = await fetch(API + '/admin/bookings/' + bookingId + '/decline', {
+            method: 'PATCH',
+            headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: reason || null }),
+          });
+          if (!res.ok) throw new Error('Decline failed');
+          showToast('Booking declined');
+          await renderBookings();
+        } catch (err) {
+          showToast('Error: ' + err.message, 'error');
+        }
+        return;
+      }
       if (!confirm('Confirm this action?')) return;
       try {
         var res = await fetch(API + '/admin/bookings/' + bookingId + '/' + action, {
@@ -2241,6 +2273,47 @@
         });
         if (!res.ok) throw new Error('Action failed');
         showToast('Booking updated');
+        await renderBookings();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function forwardToAthlete(bookingId) {
+      var booking = allBookings.find(function(b) { return b.id === bookingId; });
+      var athleteName = booking ? (booking.athlete_name || 'the athlete') : 'the athlete';
+      if (!confirm('Forward this request to ' + athleteName + ' for their approval?\n\nThey will receive an email + push notification with the request details.')) return;
+      try {
+        var res = await fetch(API + '/admin/bookings/' + bookingId + '/forward-to-athlete', {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ forwarded_by: getEmail() || 'admin' }),
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Forward failed');
+        }
+        showToast('Forwarded to ' + athleteName);
+        await renderBookings();
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    }
+
+    async function rerouteAfterDecline(bookingId) {
+      var newAthleteId = prompt('Reroute to a different athlete? Paste their athlete ID, or leave blank to retry the same athlete:');
+      if (newAthleteId === null) return; // cancelled
+      try {
+        var res = await fetch(API + '/admin/bookings/' + bookingId + '/reroute', {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ athlete_id: (newAthleteId || '').trim() || null }),
+        });
+        if (!res.ok) {
+          var err = await res.json().catch(function() { return {}; });
+          throw new Error(err.error || 'Reroute failed');
+        }
+        showToast('Booking rerouted — ready to forward again');
         await renderBookings();
       } catch (err) {
         showToast('Error: ' + err.message, 'error');
