@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <title>CartPath — Profit Share Model</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #10352A;
+      --green-mid: #1A3F30;
+      --gold: #BF9B3B;
+      --gold-light: #CCAB52;
+      --gold-dark: #A88630;
+      --cream: #F5F0E1;
+      --cream-muted: rgba(245,240,225,0.55);
+      --cream-faint: rgba(245,240,225,0.35);
+      --green-ok: #6DC86D;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 40px 24px 80px;
+      line-height: 1.55;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap { max-width: 1080px; margin: 0 auto; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 18px; border-bottom: 1px solid rgba(191,155,59,0.12);
+      margin-bottom: 28px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--cream); }
+    .brand img { width: 28px; }
+    .brand-text { font-family: var(--font-display); font-size: 16px; font-weight: 500; }
+    .crumb {
+      font-family: var(--font-ui); font-size: 11px; color: var(--cream-faint);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .crumb a { color: var(--cream-muted); text-decoration: none; }
+    .crumb a:hover { color: var(--gold); }
+
+    h1 { font-family: var(--font-display); font-size: 2.2rem; margin-bottom: 8px; font-weight: 500; }
+    .lead {
+      color: var(--cream-muted); font-size: 1rem;
+      max-width: 720px; margin-bottom: 36px; line-height: 1.65;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      margin: 40px 0 14px;
+      font-weight: 500;
+    }
+    .section-sub {
+      color: var(--cream-muted); font-size: 13px;
+      margin-bottom: 20px; line-height: 1.6;
+    }
+
+    /* Assumption cards */
+    .assumptions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .ass-card {
+      background: rgba(16,53,42,0.45);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 8px;
+      padding: 16px 18px;
+    }
+    .ass-label {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 8px; font-weight: 700;
+    }
+    .ass-input {
+      width: 100%;
+      background: rgba(245,240,225,0.04);
+      border: 1px solid rgba(191,155,59,0.15);
+      border-radius: 5px;
+      padding: 8px 12px;
+      color: var(--cream);
+      font-family: var(--font-ui);
+      font-size: 1.05rem; font-weight: 600;
+      outline: none;
+    }
+    .ass-input:focus { border-color: var(--gold); }
+    .ass-hint { font-size: 11px; color: var(--cream-faint); margin-top: 6px; }
+
+    /* Result big numbers */
+    .totals {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 0 0 30px;
+    }
+    .total-card {
+      background: rgba(9,29,20,0.6);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 10px;
+      padding: 22px;
+      text-align: center;
+    }
+    .total-card.featured {
+      border-color: rgba(191,155,59,0.5);
+      background: rgba(191,155,59,0.08);
+    }
+    .total-label {
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 10px; font-weight: 700;
+    }
+    .total-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      color: var(--cream);
+      font-weight: 600;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .total-value.gold { color: var(--gold); }
+    .total-sub { font-size: 12px; color: var(--cream-muted); }
+
+    /* Person split */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin: 0 0 30px;
+    }
+    @media (max-width: 640px) { .split { grid-template-columns: 1fr; } }
+    .person-card {
+      background: rgba(16,53,42,0.55);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .person-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+    .person-name { font-family: var(--font-display); font-size: 1.2rem; color: var(--cream); }
+    .person-share { font-size: 11px; color: var(--gold); letter-spacing: 0.12em; font-weight: 700; }
+    .person-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem; font-weight: 600;
+      color: var(--gold);
+      margin: 10px 0 6px;
+    }
+    .person-monthly { font-size: 12px; color: var(--cream-muted); }
+
+    /* Breakdown table */
+    .breakdown {
+      background: rgba(16,53,42,0.4);
+      border: 1px solid rgba(191,155,59,0.12);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    .breakdown table { width: 100%; border-collapse: collapse; }
+    .breakdown th, .breakdown td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(191,155,59,0.08);
+      font-size: 14px;
+    }
+    .breakdown th {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(9,29,20,0.5);
+      font-weight: 700;
+    }
+    .breakdown td.num { text-align: right; font-family: 'SF Mono', Menlo, monospace; }
+    .breakdown td.label { color: var(--cream-muted); }
+    .breakdown tr.total td {
+      background: rgba(191,155,59,0.06);
+      border-bottom: none;
+      font-weight: 600; color: var(--cream);
+    }
+    .breakdown tr.subtle td { color: var(--cream-faint); font-size: 13px; }
+
+    /* Scenarios grid */
+    .scenarios {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+    .scenario {
+      background: rgba(16,53,42,0.55);
+      border: 1px solid rgba(191,155,59,0.18);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .scenario h3 {
+      font-family: var(--font-display);
+      font-size: 1.1rem; color: var(--cream);
+      margin-bottom: 6px;
+    }
+    .scenario-sub { font-size: 12px; color: var(--cream-faint); margin-bottom: 16px; }
+    .scenario-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 9px 0;
+      border-bottom: 1px dotted rgba(245,240,225,0.06);
+      font-size: 13px;
+    }
+    .scenario-row:last-child { border-bottom: none; }
+    .scenario-row .lbl { color: var(--cream-muted); }
+    .scenario-row .val { color: var(--cream); font-weight: 600; font-family: 'SF Mono', Menlo, monospace; }
+    .scenario-row.mayo .val { color: var(--gold); }
+    .scenario-row.dylan .val { color: #7DB3D8; }
+    .scenario-row.total .lbl { color: var(--gold); font-weight: 600; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .scenario-row.total .val { color: var(--cream); font-size: 1.05rem; }
+
+    .note {
+      background: rgba(191,155,59,0.06);
+      border-left: 3px solid var(--gold);
+      padding: 14px 18px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--cream-muted);
+      line-height: 1.65;
+    }
+    .note strong { color: var(--cream); }
+    .note code {
+      background: rgba(245,240,225,0.06);
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 12px;
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="/internal">
+        <img src="/assets/cartpath-shield.png" alt="CartPath">
+        <span class="brand-text">CartPath</span>
+      </a>
+      <div class="crumb"><a href="/internal">Internal</a> &nbsp;/&nbsp; Profit Share</div>
+    </div>
+
+    <h1>Profit Share Model</h1>
+    <p class="lead">
+      Annual income projection by partner. Adjust the assumptions below — every number recalculates instantly.
+    </p>
+
+    <!-- ═════ How the split works ═════ -->
+    <div class="note">
+      <strong>How the split works:</strong> Gross revenue (entry fees + dues + booking fees) is net of any direct passthroughs (Stripe fees, athlete payouts). From that net,
+      <strong>50% goes to the CartPath operating account</strong> for expenses (AWS, software, marketing, future hires).
+      The remaining 50% is the partner pool: <strong>Mayo (CEO) takes 35% of gross net</strong>, <strong>Dylan (CTO) takes 15% of gross net</strong>.
+    </div>
+
+    <!-- ═════ Editable assumptions ═════ -->
+    <h2>Assumptions</h2>
+    <p class="section-sub">All inputs are editable. The model recalculates on every change.</p>
+
+    <div class="assumptions">
+      <div class="ass-card">
+        <div class="ass-label">Members</div>
+        <input type="number" id="memberCount" class="ass-input" value="40" min="0" step="1">
+        <div class="ass-hint">Total active paid members</div>
+      </div>
+      <div class="ass-card">
+        <div class="ass-label">% Chairman Tier</div>
+        <input type="number" id="chairmanPct" class="ass-input" value="40" min="0" max="100" step="5">
+        <div class="ass-hint">Remainder = Executive tier</div>
+      </div>
+      <div class="ass-card">
+        <div class="ass-label">Rounds / member / yr</div>
+        <input type="number" id="roundsPer" class="ass-input" value="4" min="0" step="0.5">
+        <div class="ass-hint">Average bookings via CartPath</div>
+      </div>
+      <div class="ass-card">
+        <div class="ass-label">Avg round price</div>
+        <input type="number" id="avgRound" class="ass-input" value="3500" min="0" step="100">
+        <div class="ass-hint">Total member pays per round</div>
+      </div>
+    </div>
+
+    <!-- ═════ Big totals ═════ -->
+    <div class="totals">
+      <div class="total-card">
+        <div class="total-label">Gross Revenue</div>
+        <div class="total-value gold" id="grossTotal">—</div>
+        <div class="total-sub" id="grossBreakdown">—</div>
+      </div>
+      <div class="total-card">
+        <div class="total-label">CartPath Operating</div>
+        <div class="total-value" id="opsTotal">—</div>
+        <div class="total-sub">50% — AWS, ops, runway</div>
+      </div>
+      <div class="total-card featured">
+        <div class="total-label">Partner Pool</div>
+        <div class="total-value gold" id="partnerPool">—</div>
+        <div class="total-sub">Mayo + Dylan combined (50%)</div>
+      </div>
+    </div>
+
+    <!-- ═════ Person-by-person ═════ -->
+    <h2>Annual Take-Home</h2>
+
+    <div class="split">
+      <div class="person-card">
+        <div class="person-row">
+          <div class="person-name">Mayo Sowell</div>
+          <div class="person-share">CEO · 35%</div>
+        </div>
+        <div class="person-value" id="mayoAnnual">—</div>
+        <div class="person-monthly" id="mayoMonthly">— / month</div>
+      </div>
+      <div class="person-card">
+        <div class="person-row">
+          <div class="person-name">Dylan Williams</div>
+          <div class="person-share">CTO · 15%</div>
+        </div>
+        <div class="person-value" id="dylanAnnual">—</div>
+        <div class="person-monthly" id="dylanMonthly">— / month</div>
+      </div>
+    </div>
+
+    <!-- ═════ Breakdown ═════ -->
+    <h2>Where the money comes from</h2>
+    <div class="breakdown">
+      <table>
+        <thead>
+          <tr><th>Line</th><th style="text-align:right;">Per Member</th><th style="text-align:right;">× Members</th><th style="text-align:right;">Annual Gross</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Entry fees (one-time, year 1 only)</td>
+            <td class="num">$2,500</td>
+            <td class="num" id="entryQty">—</td>
+            <td class="num" id="entryRev">—</td>
+          </tr>
+          <tr>
+            <td class="label">Chairman annual dues</td>
+            <td class="num">$30,000</td>
+            <td class="num" id="chairmanQty">—</td>
+            <td class="num" id="chairmanRev">—</td>
+          </tr>
+          <tr>
+            <td class="label">Executive annual dues</td>
+            <td class="num">$20,000</td>
+            <td class="num" id="executiveQty">—</td>
+            <td class="num" id="executiveRev">—</td>
+          </tr>
+          <tr>
+            <td class="label">Booking fees (20% platform take)</td>
+            <td class="num" id="bookFeePer">—</td>
+            <td class="num" id="bookQty">—</td>
+            <td class="num" id="bookRev">—</td>
+          </tr>
+          <tr class="total">
+            <td>Total Gross Revenue</td>
+            <td></td>
+            <td></td>
+            <td class="num" id="grossTotalTable">—</td>
+          </tr>
+          <tr class="subtle">
+            <td class="label">Less: athlete payouts (80% of booked rounds)</td>
+            <td></td>
+            <td></td>
+            <td class="num" id="athletePayouts">—</td>
+          </tr>
+          <tr class="subtle">
+            <td class="label">Less: Stripe processing (~2.9%)</td>
+            <td></td>
+            <td></td>
+            <td class="num" id="stripeFees">—</td>
+          </tr>
+          <tr class="total">
+            <td>Net Revenue (after passthroughs)</td>
+            <td></td>
+            <td></td>
+            <td class="num" id="netRev">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ═════ Scenario comparison ═════ -->
+    <h2>Side-by-side scenarios</h2>
+    <p class="section-sub">Three different mixes at the same member count. Compare them to see the impact of who you let in.</p>
+
+    <div class="scenarios" id="scenarios">
+      <!-- Filled by JS -->
+    </div>
+
+    <div class="note">
+      <strong>What's not in this model:</strong> assistants table seats, sponsorship revenue, future event ticketing (Founders Round / Match Play League), athlete listing fees from the roster Stripe subscriptions. Also doesn't factor entry-fee churn — in year 2, that $2,500 / member line drops to only new members joining that year.
+    </div>
+
+    <h2>Year 2 outlook</h2>
+    <p class="section-sub">If we hold 40 members but no new entry fees come in (everyone renews their annual), here's the steady-state.</p>
+    <div class="totals" id="year2">
+      <!-- Filled by JS -->
+    </div>
+
+  </div>
+
+  <script>
+    const ENTRY_FEE = 2500;
+    const CHAIRMAN_DUES = 30000;
+    const EXECUTIVE_DUES = 20000;
+    const PLATFORM_FEE_PCT = 0.20;
+    const STRIPE_PCT = 0.029;
+    const OPS_PCT = 0.50;
+    const MAYO_PCT = 0.35;
+    const DYLAN_PCT = 0.15;
+
+    function fmt(n) {
+      if (!isFinite(n)) n = 0;
+      return '$' + Math.round(n).toLocaleString('en-US');
+    }
+    function fmtM(n) {
+      if (n >= 1000000) return '$' + (n / 1000000).toFixed(2).replace(/\.0+$/, '') + 'M';
+      if (n >= 1000) return '$' + (Math.round(n / 100) / 10).toFixed(1).replace(/\.0$/, '') + 'K';
+      return '$' + Math.round(n);
+    }
+
+    function computeScenario({ memberCount, chairmanPct, roundsPer, avgRound, includeEntryFees = true }) {
+      const chairmen = Math.round(memberCount * chairmanPct / 100);
+      const execs = memberCount - chairmen;
+
+      const entryRev = includeEntryFees ? memberCount * ENTRY_FEE : 0;
+      const chairmanRev = chairmen * CHAIRMAN_DUES;
+      const executiveRev = execs * EXECUTIVE_DUES;
+
+      const totalRoundRevenue = memberCount * roundsPer * avgRound;
+      const platformFeeRev = totalRoundRevenue * PLATFORM_FEE_PCT;
+      const athletePayouts = totalRoundRevenue * (1 - PLATFORM_FEE_PCT); // 80%
+
+      const grossRev = entryRev + chairmanRev + executiveRev + platformFeeRev;
+      const stripeFees = grossRev * STRIPE_PCT;
+      const netRev = grossRev - stripeFees;
+
+      const ops = netRev * OPS_PCT;
+      const mayo = netRev * MAYO_PCT;
+      const dylan = netRev * DYLAN_PCT;
+      const partnerPool = mayo + dylan;
+
+      return {
+        chairmen, execs,
+        entryRev, chairmanRev, executiveRev,
+        totalRoundRevenue, platformFeeRev, athletePayouts,
+        grossRev, stripeFees, netRev,
+        ops, mayo, dylan, partnerPool,
+      };
+    }
+
+    function render() {
+      const memberCount = parseInt(document.getElementById('memberCount').value, 10) || 0;
+      const chairmanPct = parseInt(document.getElementById('chairmanPct').value, 10) || 0;
+      const roundsPer = parseFloat(document.getElementById('roundsPer').value) || 0;
+      const avgRound = parseFloat(document.getElementById('avgRound').value) || 0;
+
+      const r = computeScenario({ memberCount, chairmanPct, roundsPer, avgRound, includeEntryFees: true });
+
+      // Big totals
+      document.getElementById('grossTotal').textContent = fmtM(r.grossRev);
+      document.getElementById('grossBreakdown').textContent =
+        `${r.chairmen} Chairman · ${r.execs} Executive`;
+      document.getElementById('opsTotal').textContent = fmtM(r.ops);
+      document.getElementById('partnerPool').textContent = fmtM(r.partnerPool);
+
+      document.getElementById('mayoAnnual').textContent = fmt(r.mayo);
+      document.getElementById('mayoMonthly').textContent = fmt(r.mayo / 12) + ' / month';
+      document.getElementById('dylanAnnual').textContent = fmt(r.dylan);
+      document.getElementById('dylanMonthly').textContent = fmt(r.dylan / 12) + ' / month';
+
+      // Breakdown table
+      document.getElementById('entryQty').textContent = memberCount;
+      document.getElementById('entryRev').textContent = fmt(r.entryRev);
+      document.getElementById('chairmanQty').textContent = r.chairmen;
+      document.getElementById('chairmanRev').textContent = fmt(r.chairmanRev);
+      document.getElementById('executiveQty').textContent = r.execs;
+      document.getElementById('executiveRev').textContent = fmt(r.executiveRev);
+      document.getElementById('bookFeePer').textContent = fmt(roundsPer * avgRound * PLATFORM_FEE_PCT);
+      document.getElementById('bookQty').textContent = memberCount;
+      document.getElementById('bookRev').textContent = fmt(r.platformFeeRev);
+      document.getElementById('grossTotalTable').textContent = fmt(r.grossRev);
+      document.getElementById('athletePayouts').textContent = '— ' + fmt(r.athletePayouts) + ' (paid out, not ours)';
+      document.getElementById('stripeFees').textContent = '− ' + fmt(r.stripeFees);
+      document.getElementById('netRev').textContent = fmt(r.netRev);
+
+      // Scenarios — same member count, different mix
+      const scenarios = [
+        { name: 'All Chairman', sub: '100% Chairman tier', cp: 100 },
+        { name: 'Balanced', sub: `${chairmanPct}% Chairman / ${100 - chairmanPct}% Executive`, cp: chairmanPct },
+        { name: 'All Executive', sub: '100% Executive tier', cp: 0 },
+      ];
+      const scEl = document.getElementById('scenarios');
+      scEl.innerHTML = scenarios.map(s => {
+        const sr = computeScenario({ memberCount, chairmanPct: s.cp, roundsPer, avgRound, includeEntryFees: true });
+        return `<div class="scenario">
+<h3>${s.name}</h3>
+<div class="scenario-sub">${s.sub} · ${memberCount} members</div>
+<div class="scenario-row"><span class="lbl">Gross revenue</span><span class="val">${fmt(sr.grossRev)}</span></div>
+<div class="scenario-row"><span class="lbl">Net (after Stripe)</span><span class="val">${fmt(sr.netRev)}</span></div>
+<div class="scenario-row"><span class="lbl">Operating (50%)</span><span class="val">${fmt(sr.ops)}</span></div>
+<div class="scenario-row mayo"><span class="lbl">Mayo (35%)</span><span class="val">${fmt(sr.mayo)}</span></div>
+<div class="scenario-row dylan"><span class="lbl">Dylan (15%)</span><span class="val">${fmt(sr.dylan)}</span></div>
+<div class="scenario-row total"><span class="lbl">Partner Pool</span><span class="val">${fmt(sr.partnerPool)}</span></div>
+</div>`;
+      }).join('');
+
+      // Year-2 outlook (no new entry fees)
+      const y2 = computeScenario({ memberCount, chairmanPct, roundsPer, avgRound, includeEntryFees: false });
+      document.getElementById('year2').innerHTML = `
+<div class="total-card">
+  <div class="total-label">Y2 Gross Revenue</div>
+  <div class="total-value">${fmtM(y2.grossRev)}</div>
+  <div class="total-sub">No new entry fees this year</div>
+</div>
+<div class="total-card">
+  <div class="total-label">Y2 Mayo (35%)</div>
+  <div class="total-value gold">${fmt(y2.mayo)}</div>
+  <div class="total-sub">${fmt(y2.mayo / 12)} / month</div>
+</div>
+<div class="total-card">
+  <div class="total-label">Y2 Dylan (15%)</div>
+  <div class="total-value gold">${fmt(y2.dylan)}</div>
+  <div class="total-sub">${fmt(y2.dylan / 12)} / month</div>
+</div>`;
+    }
+
+    ['memberCount','chairmanPct','roundsPer','avgRound'].forEach(id => {
+      document.getElementById(id).addEventListener('input', render);
+    });
+    render();
+  </script>
+</body>
+</html>
