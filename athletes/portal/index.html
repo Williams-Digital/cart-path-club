@@ -732,7 +732,57 @@
 
     // ── Config ──
     var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+
+    // ── Unified-login handoff ──
+    // Two ways an athlete arrives:
+    //   1. Magic link with ?token=<portal token>  (legacy)
+    //   2. Signed in via /app/login — JWT in URL hash, persists to localStorage
+    (function bootstrapAuth() {
+      try {
+        if (window.location.hash && window.location.hash.length > 1) {
+          var p = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
+          if (p && p.id_token) {
+            localStorage.setItem('cp_id_token', p.id_token);
+            localStorage.setItem('cp_access_token', p.access_token || '');
+            if (p.refresh_token) localStorage.setItem('cp_refresh_token', p.refresh_token);
+            if (p.token_expiry) localStorage.setItem('cp_token_expiry', p.token_expiry);
+            if (p.email) localStorage.setItem('cp_email', p.email);
+            if (p.name) localStorage.setItem('cp_name', p.name);
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+      } catch {}
+    })();
+
+    // Either an athlete-access-token (in URL) or a Cognito ID token (in localStorage)
     var token = new URLSearchParams(window.location.search).get('token');
+    var idToken = localStorage.getItem('cp_id_token');
+
+    // If we have a Cognito ID token but no URL token, transparently inject the
+    // Bearer header into every API call to athletes/portal endpoints. The rest
+    // of the page can keep building URLs the way it always has.
+    if (!token && idToken) {
+      var __nativeFetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        if (url.indexOf('/athletes/portal') !== -1 || url.indexOf('/auth/whoami') !== -1) {
+          init = init || {};
+          init.headers = init.headers || {};
+          var hasAuth = false;
+          if (init.headers instanceof Headers) hasAuth = init.headers.has('Authorization');
+          else hasAuth = !!(init.headers['Authorization'] || init.headers['authorization']);
+          if (!hasAuth) {
+            if (init.headers instanceof Headers) init.headers.set('Authorization', 'Bearer ' + idToken);
+            else init.headers['Authorization'] = 'Bearer ' + idToken;
+          }
+        }
+        return __nativeFetch(input, init);
+      };
+      // Set a sentinel so existing `'?token=' + token` URL building doesn't break —
+      // the empty string still produces a valid URL; backend ignores it now that
+      // we send a Bearer header.
+      token = '';
+    }
 
     var athlete = null;
     var entries = [];

@@ -2181,6 +2181,36 @@
 </div>
 
 <script>
+  // ===================== UNIFIED-LOGIN HANDOFF =====================
+  // When the user arrives from /app/login, the JWT is in the URL hash.
+  // We move it into localStorage (so it survives across app launches)
+  // and mirror to sessionStorage so the rest of this page works unchanged.
+  (function bootstrapAuth() {
+    try {
+      // Step 1 — handoff from /app/login (#<json payload>)
+      if (window.location.hash && window.location.hash.length > 1) {
+        try {
+          const payload = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
+          if (payload && payload.id_token) {
+            localStorage.setItem('cp_id_token', payload.id_token);
+            localStorage.setItem('cp_access_token', payload.access_token || '');
+            if (payload.refresh_token) localStorage.setItem('cp_refresh_token', payload.refresh_token);
+            if (payload.token_expiry) localStorage.setItem('cp_token_expiry', payload.token_expiry);
+            if (payload.email) localStorage.setItem('cp_email', payload.email);
+            if (payload.name) localStorage.setItem('cp_name', payload.name);
+            // Wipe the hash so the JWT doesn't sit in browser history
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        } catch {}
+      }
+      // Step 2 — copy localStorage tokens into sessionStorage (rest of page reads from there)
+      ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry'].forEach(k => {
+        const v = localStorage.getItem(k);
+        if (v && !sessionStorage.getItem(k)) sessionStorage.setItem(k, v);
+      });
+    } catch {}
+  })();
+
   // ===================== COGNITO CONFIG =====================
   const COGNITO_REGION = 'us-east-1';
   const COGNITO_USER_POOL_ID = 'us-east-1_TSgDZMC6H';
@@ -2235,6 +2265,15 @@
       sessionStorage.setItem('cp_refresh_token', tokens.RefreshToken);
     }
     sessionStorage.setItem('cp_token_expiry', String(Date.now() + (tokens.ExpiresIn * 1000)));
+
+    // Mirror into localStorage so the session survives across app launches
+    // (the iOS app uses localStorage as its persistent store).
+    try {
+      localStorage.setItem('cp_id_token', tokens.IdToken);
+      localStorage.setItem('cp_access_token', tokens.AccessToken);
+      if (tokens.RefreshToken) localStorage.setItem('cp_refresh_token', tokens.RefreshToken);
+      localStorage.setItem('cp_token_expiry', String(Date.now() + (tokens.ExpiresIn * 1000)));
+    } catch {}
   }
 
   function getSession() {

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#091D14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CartPath">
+  <title>CartPath — Sign In</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/cartpath-shield.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cognito-idp.us-east-1.amazonaws.com">
+  <link rel="preconnect" href="https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #091D14;
+      --green-dark: #10352A;
+      --gold: #BF9B3B;
+      --gold-light: #CCAB52;
+      --gold-dark: #A88630;
+      --cream: #F5F0E1;
+      --cream-muted: rgba(245,240,225,0.55);
+      --error: #E57373;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html { height: 100%; }
+    body {
+      background: var(--green-deep);
+      color: var(--cream);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+      opacity: 0.04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    .wrap {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 24px;
+      max-width: 440px; width: 100%; margin: 0 auto;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 38px;
+    }
+    .shield {
+      width: 70px; height: 70px;
+      margin: 0 auto 20px;
+      filter: drop-shadow(0 4px 16px rgba(191,155,59,0.25));
+    }
+    .wordmark {
+      font-family: var(--font-display);
+      font-size: 22px; letter-spacing: 0.45em;
+      color: var(--gold); font-weight: 500;
+      margin-bottom: 6px;
+      padding-left: 0.45em;
+    }
+    .tagline {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--cream-muted);
+    }
+
+    /* form */
+    .card {
+      width: 100%;
+      background: rgba(16, 53, 42, 0.45);
+      border: 1px solid rgba(191, 155, 59, 0.18);
+      border-radius: 14px;
+      padding: 28px 24px;
+      backdrop-filter: blur(20px);
+    }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin-bottom: 8px;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(9, 29, 20, 0.55);
+      border: 1px solid rgba(191, 155, 59, 0.18);
+      border-radius: 8px;
+      padding: 13px 14px;
+      color: var(--cream);
+      font-family: var(--font-ui);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.18s;
+      -webkit-appearance: none;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .field input::placeholder { color: rgba(245,240,225,0.3); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px 16px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: var(--green-deep);
+      border: none; border-radius: 8px;
+      font-family: var(--font-ui); font-size: 13px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(191,155,59,0.18);
+    }
+    .btn-primary:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(191,155,59,0.15); }
+    .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .error {
+      display: none;
+      background: rgba(229, 115, 115, 0.08);
+      border: 1px solid rgba(229, 115, 115, 0.3);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--error);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .error.show { display: block; }
+
+    /* New-password block (Cognito FORCE_CHANGE_PASSWORD) */
+    .new-pw-block { display: none; }
+    .new-pw-block.show { display: block; }
+    .new-pw-block .hint {
+      font-size: 12px;
+      color: var(--cream-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      padding: 11px 13px;
+      background: rgba(191,155,59,0.05);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .footer-links {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 22px;
+      font-size: 12px;
+    }
+    .footer-links a {
+      color: var(--cream-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover, .footer-links a:active { color: var(--gold); }
+
+    .below-card {
+      margin-top: 26px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--cream-muted);
+    }
+    .below-card a { color: var(--gold); text-decoration: none; font-weight: 600; }
+
+    /* Loading state */
+    .spin {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(9, 29, 20, 0.3);
+      border-top-color: var(--green-deep);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Splash overlay while we verify a persisted session */
+    .splash {
+      position: fixed; inset: 0;
+      background: var(--green-deep);
+      z-index: 100;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .splash img { width: 64px; margin-bottom: 18px; }
+    .splash .wm {
+      font-family: var(--font-display);
+      font-size: 17px; letter-spacing: 0.45em; color: var(--gold);
+      padding-left: 0.45em;
+    }
+    .splash .sp {
+      width: 22px; height: 22px;
+      border: 2px solid rgba(191,155,59,0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-top: 18px;
+    }
+
+    /* Small phones */
+    @media (max-width: 380px) {
+      .wrap { padding: 24px 18px; }
+      .card { padding: 24px 18px; }
+      .shield { width: 60px; height: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Splash while checking persisted session -->
+  <div id="splash" class="splash">
+    <img src="/assets/cartpath-shield.png" alt="CartPath">
+    <div class="wm">CARTPATH</div>
+    <div class="sp"></div>
+  </div>
+
+  <div class="wrap" id="appWrap" style="display:none;">
+    <div class="hero">
+      <img class="shield" src="/assets/cartpath-shield.png" alt="CartPath">
+      <div class="wordmark">CARTPATH</div>
+      <div class="tagline">A Private Golf Community</div>
+    </div>
+
+    <form class="card" id="loginForm" autocomplete="on" onsubmit="return false;">
+      <div class="error" id="loginError"></div>
+
+      <!-- Login fields -->
+      <div id="loginFields">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn-primary" id="signInBtn" type="submit">Sign In</button>
+      </div>
+
+      <!-- New password (FORCE_CHANGE_PASSWORD) -->
+      <div class="new-pw-block" id="newPwBlock">
+        <div class="hint">First-time login — choose a new password. Minimum 8 characters, with a number and a symbol.</div>
+        <div class="field">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label for="newPasswordConfirm">Confirm</label>
+          <input type="password" id="newPasswordConfirm" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="newPwBtn" type="button">Set Password & Continue</button>
+      </div>
+
+      <div class="footer-links" id="footerLinks">
+        <a href="#" onclick="event.preventDefault();alert('Email hello@cartpathclub.com — Mayo will reset your password within 24 hours.');">Forgot password?</a>
+        <span style="color:rgba(245,240,225,0.2);font-size:11px;">v1.0</span>
+      </div>
+    </form>
+
+    <div class="below-card">
+      Not a member yet? <a href="/apply">Apply for membership</a>
+    </div>
+  </div>
+
+  <script>
+    // ── Config ──
+    const COGNITO_REGION = 'us-east-1';
+    const COGNITO_CLIENT_ID = '68p2tb53g79t5k0add887qsui9';
+    const COGNITO_ENDPOINT = 'https://cognito-idp.' + COGNITO_REGION + '.amazonaws.com/';
+    const API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+
+    // Storage keys — localStorage so the session persists across app launches
+    const SK = {
+      idToken: 'cp_id_token',
+      accessToken: 'cp_access_token',
+      refreshToken: 'cp_refresh_token',
+      tokenExpiry: 'cp_token_expiry',
+      email: 'cp_email',
+    };
+
+    // Force-change session (for first-time logins) lives only in-memory
+    let forceChangeSession = null;
+    let forceChangeUsername = null;
+
+    // ── Helpers ──
+    function showError(msg) {
+      const el = document.getElementById('loginError');
+      el.textContent = msg;
+      el.classList.add('show');
+    }
+    function clearError() {
+      const el = document.getElementById('loginError');
+      el.classList.remove('show');
+      el.textContent = '';
+    }
+    function setLoading(btn, label) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin"></span>' + label;
+    }
+    function clearLoading(btn, label) {
+      btn.disabled = false;
+      btn.textContent = label;
+    }
+
+    async function cognitoCall(target, body) {
+      const r = await fetch(COGNITO_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-amz-json-1.1',
+          'X-Amz-Target': 'AWSCognitoIdentityProviderService.' + target,
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        const err = new Error(data.message || data.__type || 'Auth failed');
+        err.code = data.__type || '';
+        throw err;
+      }
+      return data;
+    }
+
+    function persistTokens(authResult) {
+      try {
+        localStorage.setItem(SK.idToken, authResult.IdToken);
+        localStorage.setItem(SK.accessToken, authResult.AccessToken);
+        if (authResult.RefreshToken) localStorage.setItem(SK.refreshToken, authResult.RefreshToken);
+        localStorage.setItem(SK.tokenExpiry, String(Date.now() + (authResult.ExpiresIn * 1000)));
+      } catch {}
+    }
+
+    async function routeAfterLogin() {
+      const id = localStorage.getItem(SK.idToken);
+      if (!id) return;
+
+      try {
+        const r = await fetch(API_BASE + '/auth/whoami', {
+          headers: { Authorization: 'Bearer ' + id },
+        });
+        if (!r.ok) throw new Error('whoami failed');
+        const data = await r.json();
+        if (data.email) localStorage.setItem(SK.email, data.email);
+
+        // Pass the id token through to the destination via URL hash so the
+        // member/athlete/admin portal can pick it up. They'll move it into
+        // their own localStorage and we'll clean the URL after.
+        const dest = data.default_route || '/members';
+        const url = dest + '#' + encodeURIComponent(JSON.stringify({
+          id_token: localStorage.getItem(SK.idToken),
+          access_token: localStorage.getItem(SK.accessToken),
+          refresh_token: localStorage.getItem(SK.refreshToken),
+          token_expiry: localStorage.getItem(SK.tokenExpiry),
+          email: data.email || null,
+          name: data.name || null,
+          roles: data.roles,
+        }));
+        window.location.replace(url);
+      } catch (err) {
+        // whoami failed — token might be stale. Clear and show login.
+        clearSession();
+        showSignedOutUI();
+      }
+    }
+
+    function clearSession() {
+      Object.values(SK).forEach(k => localStorage.removeItem(k));
+    }
+
+    function showSignedOutUI() {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('appWrap').style.display = 'flex';
+    }
+
+    // ── Persisted-session check ──
+    async function checkPersistedSession() {
+      const id = localStorage.getItem(SK.idToken);
+      const expiry = parseInt(localStorage.getItem(SK.tokenExpiry) || '0', 10);
+      if (!id) { showSignedOutUI(); return; }
+
+      // If token is still valid, route now
+      if (expiry > Date.now() + 60000) {
+        await routeAfterLogin();
+        return;
+      }
+
+      // Try refresh
+      const refresh = localStorage.getItem(SK.refreshToken);
+      if (refresh) {
+        try {
+          const r = await cognitoCall('InitiateAuth', {
+            AuthFlow: 'REFRESH_TOKEN_AUTH',
+            ClientId: COGNITO_CLIENT_ID,
+            AuthParameters: { REFRESH_TOKEN: refresh },
+          });
+          persistTokens(r.AuthenticationResult);
+          await routeAfterLogin();
+          return;
+        } catch {
+          // refresh failed — clear and show login
+        }
+      }
+      clearSession();
+      showSignedOutUI();
+    }
+
+    // ── Sign in ──
+    async function signIn() {
+      clearError();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      if (!email || !password) { showError('Email and password are required.'); return; }
+
+      const btn = document.getElementById('signInBtn');
+      setLoading(btn, 'Signing In...');
+
+      try {
+        const data = await cognitoCall('InitiateAuth', {
+          AuthFlow: 'USER_PASSWORD_AUTH',
+          ClientId: COGNITO_CLIENT_ID,
+          AuthParameters: { USERNAME: email, PASSWORD: password },
+        });
+
+        // Force-change flow
+        if (data.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+          forceChangeSession = data.Session;
+          forceChangeUsername = email;
+          document.getElementById('loginFields').style.display = 'none';
+          document.getElementById('newPwBlock').classList.add('show');
+          document.getElementById('footerLinks').style.display = 'none';
+          clearLoading(btn, 'Sign In');
+          return;
+        }
+
+        persistTokens(data.AuthenticationResult);
+        await routeAfterLogin();
+      } catch (err) {
+        if (err.code && err.code.includes('NotAuthorizedException')) {
+          showError('Email or password is incorrect.');
+        } else if (err.code && err.code.includes('UserNotFoundException')) {
+          showError('No account with that email.');
+        } else if (err.code && err.code.includes('PasswordResetRequiredException')) {
+          showError('Password reset required. Email hello@cartpathclub.com — Mayo will help.');
+        } else if (err.code && err.code.includes('UserNotConfirmedException')) {
+          showError('Account not confirmed. Email hello@cartpathclub.com.');
+        } else {
+          showError(err.message || 'Sign in failed. Please try again.');
+        }
+        clearLoading(btn, 'Sign In');
+      }
+    }
+
+    // ── New password (FORCE_CHANGE) ──
+    async function setNewPassword() {
+      clearError();
+      const np = document.getElementById('newPassword').value;
+      const c = document.getElementById('newPasswordConfirm').value;
+      if (np.length < 8) { showError('Password must be at least 8 characters.'); return; }
+      if (np !== c) { showError('Passwords do not match.'); return; }
+
+      const btn = document.getElementById('newPwBtn');
+      setLoading(btn, 'Setting Password...');
+
+      try {
+        const data = await cognitoCall('RespondToAuthChallenge', {
+          ChallengeName: 'NEW_PASSWORD_REQUIRED',
+          ClientId: COGNITO_CLIENT_ID,
+          Session: forceChangeSession,
+          ChallengeResponses: {
+            USERNAME: forceChangeUsername,
+            NEW_PASSWORD: np,
+          },
+        });
+        persistTokens(data.AuthenticationResult);
+        await routeAfterLogin();
+      } catch (err) {
+        showError(err.message || 'Failed to set password.');
+        clearLoading(btn, 'Set Password & Continue');
+      }
+    }
+
+    // ── Wire up ──
+    document.getElementById('loginForm').addEventListener('submit', signIn);
+    document.getElementById('newPwBtn').addEventListener('click', setNewPassword);
+    document.getElementById('newPassword').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('newPasswordConfirm').focus();
+    });
+    document.getElementById('newPasswordConfirm').addEventListener('keydown', e => {
+      if (e.key === 'Enter') setNewPassword();
+    });
+
+    // Start
+    checkPersistedSession();
+  </script>
+</body>
+</html>

@@ -2320,34 +2320,146 @@
       }
     }
 
-    // AUTH
+    // ── AUTH — Cognito JWT (replaces the old hardcoded ADMINS password dict) ──
+    // Storage keys are shared with /app/login and the member portal so a single
+    // login persists across all portals on the same device.
+    const COGNITO_CLIENT_ID = '68p2tb53g79t5k0add887qsui9';
+    const COGNITO_ENDPOINT = 'https://cognito-idp.us-east-1.amazonaws.com/';
+
+    // Handoff from /app/login (#<payload>) — runs on every page load
+    (function bootstrapAdminAuth() {
+      try {
+        if (window.location.hash && window.location.hash.length > 1) {
+          var p = JSON.parse(decodeURIComponent(window.location.hash.substring(1)));
+          if (p && p.id_token) {
+            localStorage.setItem('cp_id_token', p.id_token);
+            localStorage.setItem('cp_access_token', p.access_token || '');
+            if (p.refresh_token) localStorage.setItem('cp_refresh_token', p.refresh_token);
+            if (p.token_expiry) localStorage.setItem('cp_token_expiry', p.token_expiry);
+            if (p.email) localStorage.setItem('cp_email', p.email);
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        }
+      } catch {}
+    })();
+
     function getToken() {
-      return sessionStorage.getItem('cartpath_admin_token');
+      // Cognito ID token if we have one, else fall back to the legacy admin password
+      return localStorage.getItem('cp_id_token') || sessionStorage.getItem('cartpath_admin_token') || '';
     }
 
     function getEmail() {
-      return sessionStorage.getItem('cartpath_admin_email') || '';
+      return localStorage.getItem('cp_email')
+          || sessionStorage.getItem('cartpath_admin_email')
+          || '';
     }
 
-    function handleLogin(e) {
+    async function cognitoCall(target, body) {
+      const r = await fetch(COGNITO_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-amz-json-1.1',
+          'X-Amz-Target': 'AWSCognitoIdentityProviderService.' + target,
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok) { const e = new Error(data.message || data.__type || 'Auth failed'); e.code = data.__type || ''; throw e; }
+      return data;
+    }
+
+    let __adminForceChangeSession = null;
+    let __adminForceChangeUsername = null;
+
+    async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('emailInput').value.trim().toLowerCase();
       const pw = document.getElementById('passwordInput').value;
-      if (ADMINS[email] && ADMINS[email] === pw) {
+      const errEl = document.getElementById('loginError');
+      errEl.style.display = 'none';
+
+      // Fallback path: if user typed the legacy shared password, keep working
+      // until everyone is on Cognito. Allow-list email check still applies.
+      const LEGACY_ADMINS = {
+        'dylan@williamsdigital.io': 'CartPath2026!',
+        'dylan@cartpathclub.com': 'CartPath2026!',
+        'msowell@cartpathclub.com': 'CartPath2026!',
+      };
+      if (LEGACY_ADMINS[email] && LEGACY_ADMINS[email] === pw) {
         sessionStorage.setItem('cartpath_admin_token', pw);
         sessionStorage.setItem('cartpath_admin_email', email);
         showDashboard();
-      } else {
-        document.getElementById('loginError').style.display = 'block';
+        return false;
+      }
+
+      // Cognito sign-in
+      try {
+        const data = await cognitoCall('InitiateAuth', {
+          AuthFlow: 'USER_PASSWORD_AUTH',
+          ClientId: COGNITO_CLIENT_ID,
+          AuthParameters: { USERNAME: email, PASSWORD: pw },
+        });
+        if (data.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+          __adminForceChangeSession = data.Session;
+          __adminForceChangeUsername = email;
+          errEl.style.color = '#BF9B3B';
+          errEl.style.display = 'block';
+          errEl.textContent = 'First-time login. Enter a NEW password (8+ chars, number, symbol) and submit again.';
+          document.getElementById('passwordInput').value = '';
+          document.getElementById('passwordInput').focus();
+          return false;
+        }
+        persistAdminTokens(data.AuthenticationResult);
+        localStorage.setItem('cp_email', email);
+        showDashboard();
+      } catch (err) {
+        // If we're mid-force-change, the second submit is the new password
+        if (__adminForceChangeSession) {
+          try {
+            const data2 = await cognitoCall('RespondToAuthChallenge', {
+              ChallengeName: 'NEW_PASSWORD_REQUIRED',
+              ClientId: COGNITO_CLIENT_ID,
+              Session: __adminForceChangeSession,
+              ChallengeResponses: { USERNAME: __adminForceChangeUsername, NEW_PASSWORD: pw },
+            });
+            persistAdminTokens(data2.AuthenticationResult);
+            localStorage.setItem('cp_email', __adminForceChangeUsername);
+            __adminForceChangeSession = null;
+            __adminForceChangeUsername = null;
+            showDashboard();
+            return false;
+          } catch (err2) {
+            errEl.style.color = '#E57373';
+            errEl.style.display = 'block';
+            errEl.textContent = err2.message || 'Failed to set new password.';
+            return false;
+          }
+        }
+        errEl.style.color = '#E57373';
+        errEl.style.display = 'block';
+        errEl.textContent = (err.code && err.code.includes('NotAuthorizedException'))
+          ? 'Email or password is incorrect.'
+          : (err.message || 'Sign in failed.');
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordInput').focus();
       }
       return false;
     }
 
+    function persistAdminTokens(authResult) {
+      try {
+        localStorage.setItem('cp_id_token', authResult.IdToken);
+        localStorage.setItem('cp_access_token', authResult.AccessToken);
+        if (authResult.RefreshToken) localStorage.setItem('cp_refresh_token', authResult.RefreshToken);
+        localStorage.setItem('cp_token_expiry', String(Date.now() + (authResult.ExpiresIn * 1000)));
+      } catch {}
+    }
+
     function handleLogout() {
+      // Clear both legacy + new auth storage
       sessionStorage.removeItem('cartpath_admin_token');
       sessionStorage.removeItem('cartpath_admin_email');
+      ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry','cp_email'].forEach(k => localStorage.removeItem(k));
       if (pollInterval) clearInterval(pollInterval);
       document.getElementById('dashboard').classList.remove('active');
       document.getElementById('loginGate').style.display = 'flex';
@@ -2363,9 +2475,20 @@
       startPolling();
     }
 
-    if (getToken() && Object.values(ADMINS).includes(getToken())) {
-      showDashboard();
-    }
+    // Auto-dashboard if we already have a valid JWT or legacy password in storage
+    (function autoEnterDashboard() {
+      var t = getToken();
+      if (!t) return;
+      // If it's a JWT (3 dot-separated parts), trust it for now — the API will
+      // reject calls if it's stale and the user will get bounced back to login.
+      if (t.split('.').length === 3 || Object.values({
+        'dylan@williamsdigital.io': 'CartPath2026!',
+        'dylan@cartpathclub.com': 'CartPath2026!',
+        'msowell@cartpathclub.com': 'CartPath2026!',
+      }).includes(t)) {
+        showDashboard();
+      }
+    })();
 
     // API HELPERS
     function apiHeaders() {
