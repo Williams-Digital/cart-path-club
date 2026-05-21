@@ -1143,6 +1143,33 @@
       }
     }
 
+    /* Live Scores mobile — fit everything inside one viewport, no horizontal scroll */
+    @media (max-width: 600px) {
+      /* Table: let it size to viewport instead of forcing 600px min */
+      #tab-livescores table { min-width: 0 !important; }
+      /* Hide THRU column to free width for POS/PLAYER/TODAY/TOTAL */
+      #tab-livescores thead th:nth-child(4),
+      #ls-leaderboard-body td:nth-child(4) { display: none; }
+      /* Compact header padding */
+      #tab-livescores thead th {
+        padding: 10px 8px !important;
+        font-size: 10px !important;
+      }
+      #ls-leaderboard-body td {
+        padding: 10px 6px !important;
+        font-size: 12px !important;
+      }
+      /* Hero — let leader avatar/score stack centered, smaller */
+      #ls-hero { padding: 20px !important; gap: 16px !important; }
+      #ls-tournament-name { font-size: 1.3rem !important; }
+      #ls-leader-avatar { width: 60px !important; height: 60px !important; font-size: 20px !important; margin-bottom: 8px !important; }
+      #ls-leader-score { font-size: 2.6rem !important; }
+      /* Round filter buttons: tighter */
+      #ls-round-filter .ls-round-btn { padding: 6px 12px !important; font-size: 10px !important; }
+      /* Schedule strip cards smaller so 2 fit at once */
+      #ls-schedule > div { min-width: 150px !important; font-size: 11px !important; padding: 10px 12px !important; }
+    }
+
     /* Phones in landscape — drop sticky header padding */
     @media (max-height: 500px) and (orientation: landscape) {
       #login-screen { padding: 24px 20px; }
@@ -1508,6 +1535,24 @@
 </head>
 <body>
 
+<script>
+  // Mark <html> as cp-native when running inside the iOS Capacitor shell,
+  // so we can hide pricing UI that Apple may flag under IAP review.
+  (function () {
+    try {
+      var isNative = !!(window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : window.Capacitor.platform !== 'web'));
+      if (isNative) document.documentElement.classList.add('cp-native');
+    } catch {}
+  })();
+</script>
+<style>
+  /* Apple guideline 3.1.3(e): real-world services can be billed outside IAP,
+     but reviewers are inconsistent. Safer to hide all pricing in the iOS shell. */
+  html.cp-native .tc-price,
+  html.cp-native .athlete-price,
+  html.cp-native [data-hide-on-native="price"] { display: none !important; }
+</style>
+
 <!-- ===================== LOGIN SCREEN ===================== -->
 <div id="login-screen">
   <div class="login-container">
@@ -1576,7 +1621,6 @@
       <div class="welcome-banner">
         <h1 id="welcome-heading">Welcome back</h1>
         <div class="member-meta">
-          <span id="member-tier-display">Chairman</span>
           <span class="tier-badge clubhouse" id="banner-badge">Chairman</span>
           <span id="member-since-text">Member since Apr 2026</span>
         </div>
@@ -3895,8 +3939,37 @@
     { id: 'sea-island', name: 'Sea Island Golf Club (Seaside)', location: 'St Simons Island, GA', par: 70, yards: 7005, googleRating: 4.7, private: true },
     // Alabama
     { id: 'shoal-creek', name: 'Shoal Creek', location: 'Shoal Creek, AL', par: 72, yards: 7145, googleRating: 4.6, private: true },
+    { id: 'old-overton', name: 'Old Overton Club', location: 'Vestavia Hills, AL', par: 72, yards: 7028, googleRating: 4.7, private: true },
+    { id: 'mountain-brook-club', name: 'Mountain Brook Club', location: 'Mountain Brook, AL', par: 71, yards: 6855, googleRating: 4.7, private: true },
+    { id: 'country-club-of-birmingham-west', name: 'Country Club of Birmingham (West)', location: 'Birmingham, AL', par: 70, yards: 6789, googleRating: 4.6, private: true },
+    { id: 'country-club-of-birmingham-east', name: 'Country Club of Birmingham (East)', location: 'Birmingham, AL', par: 72, yards: 7019, googleRating: 4.5, private: true },
+    { id: 'vestavia-cc', name: 'Vestavia Country Club', location: 'Vestavia Hills, AL', par: 72, yards: 6920, googleRating: 4.5, private: true },
+    { id: 'inverness-cc', name: 'Inverness Country Club', location: 'Birmingham, AL', par: 72, yards: 6802, googleRating: 4.4, private: true },
+    { id: 'greystone-founders', name: 'Greystone Golf & Country Club (Founders)', location: 'Hoover, AL', par: 72, yards: 7261, googleRating: 4.6, private: true },
+    { id: 'greystone-legacy', name: 'Greystone Golf & Country Club (Legacy)', location: 'Hoover, AL', par: 72, yards: 7167, googleRating: 4.5, private: true },
+    { id: 'farmlinks', name: 'FarmLinks at Pursell Farms', location: 'Sylacauga, AL', par: 72, yards: 7444, googleRating: 4.8, private: false },
     { id: 'rtj-ross-bridge', name: 'RTJ Ross Bridge', location: 'Hoover, AL', par: 72, yards: 8191, googleRating: 4.5, private: false },
-    { id: 'grand-national', name: 'RTJ Grand National (Lake)', location: 'Opelika, AL', par: 72, yards: 7149, googleRating: 4.4, private: false },
+    { id: 'rtj-oxmoor-valley-ridge', name: 'RTJ Oxmoor Valley (Ridge)', location: 'Birmingham, AL', par: 72, yards: 7055, googleRating: 4.4, private: false },
+    { id: 'rtj-oxmoor-valley-valley', name: 'RTJ Oxmoor Valley (Valley)', location: 'Birmingham, AL', par: 72, yards: 7235, googleRating: 4.3, private: false },
+    { id: 'grand-national-lake', name: 'RTJ Grand National (Lake)', location: 'Opelika, AL', par: 72, yards: 7149, googleRating: 4.4, private: false },
+    { id: 'grand-national-links', name: 'RTJ Grand National (Links)', location: 'Opelika, AL', par: 72, yards: 7311, googleRating: 4.5, private: false },
+    { id: 'capitol-hill-judge', name: 'RTJ Capitol Hill (Judge)', location: 'Prattville, AL', par: 72, yards: 7794, googleRating: 4.6, private: false },
+    { id: 'capitol-hill-senator', name: 'RTJ Capitol Hill (Senator)', location: 'Prattville, AL', par: 72, yards: 7697, googleRating: 4.5, private: false },
+    { id: 'capitol-hill-legislator', name: 'RTJ Capitol Hill (Legislator)', location: 'Prattville, AL', par: 72, yards: 7510, googleRating: 4.4, private: false },
+    { id: 'rtj-magnolia-grove-falls', name: 'RTJ Magnolia Grove (Falls)', location: 'Mobile, AL', par: 72, yards: 7240, googleRating: 4.4, private: false },
+    { id: 'rtj-magnolia-grove-crossings', name: 'RTJ Magnolia Grove (Crossings)', location: 'Mobile, AL', par: 72, yards: 7156, googleRating: 4.3, private: false },
+    { id: 'rtj-cambrian-ridge-canyon', name: 'RTJ Cambrian Ridge (Canyon)', location: 'Greenville, AL', par: 72, yards: 7232, googleRating: 4.5, private: false },
+    { id: 'rtj-silver-lakes-heartbreaker', name: 'RTJ Silver Lakes (Heartbreaker)', location: 'Glencoe, AL', par: 72, yards: 7674, googleRating: 4.4, private: false },
+    { id: 'rtj-highland-oaks', name: 'RTJ Highland Oaks', location: 'Dothan, AL', par: 72, yards: 7511, googleRating: 4.3, private: false },
+    { id: 'rtj-lakewood-azalea', name: 'RTJ Lakewood (Azalea)', location: 'Point Clear, AL', par: 71, yards: 6770, googleRating: 4.4, private: false },
+    { id: 'kiva-dunes', name: 'Kiva Dunes', location: 'Gulf Shores, AL', par: 72, yards: 7092, googleRating: 4.7, private: false },
+    { id: 'craft-farms-cotton', name: 'Craft Farms (Cotton Creek)', location: 'Gulf Shores, AL', par: 72, yards: 6921, googleRating: 4.4, private: false },
+    { id: 'peninsula-gulf-shores', name: 'Peninsula Golf & Racquet Club', location: 'Gulf Shores, AL', par: 72, yards: 7167, googleRating: 4.5, private: false },
+    { id: 'cotton-creek-mobile', name: 'TimberCreek Golf Club', location: 'Daphne, AL', par: 72, yards: 7062, googleRating: 4.5, private: false },
+    { id: 'limestone-springs', name: 'Limestone Springs Golf Club', location: 'Oneonta, AL', par: 72, yards: 7008, googleRating: 4.4, private: false },
+    { id: 'auburn-cc', name: 'Auburn Country Club', location: 'Auburn, AL', par: 72, yards: 6904, googleRating: 4.6, private: true },
+    { id: 'huntsville-cc', name: 'Huntsville Country Club', location: 'Huntsville, AL', par: 72, yards: 6890, googleRating: 4.4, private: true },
+    { id: 'gunters-landing', name: 'Gunter\'s Landing Golf Club', location: 'Guntersville, AL', par: 72, yards: 6850, googleRating: 4.5, private: false },
     // Florida
     { id: 'tpc-sawgrass', name: 'TPC Sawgrass (Stadium)', location: 'Ponte Vedra Beach, FL', par: 72, yards: 7245, googleRating: 4.5, private: false },
     { id: 'bay-hill', name: 'Bay Hill Club & Lodge', location: 'Orlando, FL', par: 72, yards: 7381, googleRating: 4.6, private: true },
@@ -4754,7 +4827,11 @@
   var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
 
   function getCognitoIdToken() {
-    return sessionStorage.getItem('cartpath_id_token') || sessionStorage.getItem('cartpath_access_token') || '';
+    return sessionStorage.getItem('cp_id_token')
+      || localStorage.getItem('cp_id_token')
+      || sessionStorage.getItem('cp_access_token')
+      || localStorage.getItem('cp_access_token')
+      || '';
   }
 
   // Luxury toast — deep green card, gold left bar, shield icon, slide-in stack.
