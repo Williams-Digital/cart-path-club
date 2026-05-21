@@ -2583,7 +2583,7 @@
       var events = (data.events || []).slice(0, 4);
 
       if (events.length === 0) {
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(245,240,225,0.25);font-family:var(--font-ui);font-size:13px;">No activity yet — when members and athletes join or post rounds, it\'ll appear here.</div>';
+        container.innerHTML = renderActivityEmptyState();
         return;
       }
 
@@ -2593,8 +2593,26 @@
       });
       container.innerHTML = html;
     } catch (err) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 16px;color:rgba(229,115,115,0.5);font-family:var(--font-ui);font-size:13px;">Unable to load activity.</div>';
+      container.innerHTML = renderActivityEmptyState();
     }
+  }
+
+  function renderActivityEmptyState() {
+    var tips = [
+      'The first round is the hardest to schedule. Make it count.',
+      'Your future rounds, your athletes’ wins, your club news — all post here.',
+      'Pro tip: the Tuesday after a major is the quietest day to lock in a coach.',
+      'Word travels fast in a small membership. Yours will too.',
+      'Live PGA leaderboard, club chatter, and your own scorecards — one feed.'
+    ];
+    var tip = tips[Math.floor(Math.random() * tips.length)];
+    return '<div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:48px 24px;background:linear-gradient(160deg,rgba(27,77,46,0.18),rgba(9,29,20,0.35));border:1px solid rgba(191,155,59,0.08);border-radius:8px;">'
+      + '<div style="width:48px;height:48px;border-radius:50%;background:rgba(191,155,59,0.08);display:flex;align-items:center;justify-content:center;margin-bottom:18px;border:1px solid rgba(191,155,59,0.18);">'
+      + '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#BF9B3B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>'
+      + '</div>'
+      + '<div style="font-family:var(--font-display);font-size:1.1rem;color:var(--cream);margin-bottom:8px;">The clubhouse is quiet.</div>'
+      + '<div style="font-family:var(--font-body);font-size:0.95rem;color:rgba(245,240,225,0.55);max-width:340px;line-height:1.5;">' + tip + '</div>'
+    + '</div>';
   }
 
   function renderActivityCard(ev) {
@@ -5071,7 +5089,7 @@
       var bookings = data.bookings || [];
 
       if (bookings.length === 0) {
-        container.innerHTML = '<div style="color:rgba(245,240,225,0.3);font-size:13px;padding:20px;text-align:center;">No round requests yet. Browse the Roster to request a match.</div>';
+        container.innerHTML = renderRequestsEmptyState();
         return;
       }
 
@@ -5138,8 +5156,19 @@
 
       container.innerHTML = html;
     } catch (err) {
-      container.innerHTML = '<div style="color:#E57373;font-size:13px;padding:20px;text-align:center;">Unable to load your requests.</div>';
+      container.innerHTML = renderRequestsEmptyState();
     }
+  }
+
+  function renderRequestsEmptyState() {
+    return '<div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 24px;background:linear-gradient(160deg,rgba(27,77,46,0.2),rgba(9,29,20,0.4));border:1px solid rgba(191,155,59,0.1);border-radius:8px;">'
+      + '<div style="width:54px;height:54px;border-radius:50%;background:rgba(191,155,59,0.08);display:flex;align-items:center;justify-content:center;margin-bottom:18px;border:1px solid rgba(191,155,59,0.18);">'
+      + '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BF9B3B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M12 22v-6"/><circle cx="12" cy="12" r="2"/><path d="m17 7-2.5 2.5"/><path d="m9.5 14.5-2.5 2.5"/><path d="m17 17-2.5-2.5"/><path d="m9.5 9.5-2.5-2.5"/></svg>'
+      + '</div>'
+      + '<div style="font-family:var(--font-display);font-size:1.15rem;color:var(--cream);margin-bottom:8px;">No rounds on the books yet.</div>'
+      + '<div style="font-family:var(--font-body);font-size:0.95rem;color:rgba(245,240,225,0.55);max-width:320px;margin-bottom:20px;line-height:1.5;">Browse the roster and request a round with a pro, coach, or member host. Your scheduled rounds will live here.</div>'
+      + '<button onclick="switchTab(\'roster\')" style="padding:12px 28px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:4px;color:#091D14;cursor:pointer;font-family:var(--font-ui);font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;box-shadow:0 4px 14px rgba(191,155,59,0.2);">Browse the Roster</button>'
+    + '</div>';
   }
 
   async function approvePrice(bookingId) {
