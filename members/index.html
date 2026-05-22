@@ -864,8 +864,12 @@
       border: 1px solid rgba(191,155,59,0.08);
       border-radius: 8px;
       padding: 24px;
+      min-width: 0;
+      overflow: hidden;
       transition: border-color 0.3s, transform 0.3s;
     }
+    .course-card > div { min-width: 0; }
+    .course-card [style*="font-display"] { overflow-wrap: anywhere; }
     .course-card:hover {
       border-color: rgba(191,155,59,0.2);
       transform: translateY(-2px);
@@ -1945,7 +1949,7 @@
       </div>
 
       <!-- Course Cards -->
-      <div id="courseDirectory" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;"></div>
+      <div id="courseDirectory" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;"></div>
     </div>
 
     <!-- ===================== CHAT (Back Nine Only) ===================== -->
