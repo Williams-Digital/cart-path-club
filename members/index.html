@@ -1968,15 +1968,16 @@
 
       <style>
         /* Chat mobile responsive: hide sidebar, use pill row for channels,
-           and pin the message input to the bottom of the viewport */
+           pin the composer to the viewport bottom while chat tab is active */
         @media (max-width: 768px) {
           /* Show the mobile pill row, hide the desktop sidebar */
           #chat-mobile-picker { display: block !important; }
           #chat-sidebar { display: none !important; }
           #chat-grid {
             grid-template-columns: 1fr !important;
-            height: calc(100dvh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 110px) !important;
-            min-height: 480px !important;
+            height: calc(100dvh - 64px - env(safe-area-inset-top) - 180px) !important;
+            min-height: 380px !important;
+            margin-bottom: 0 !important;
           }
           /* Chat message column: full height, input pinned bottom */
           #chat-grid > div:last-child {
@@ -1986,15 +1987,19 @@
           }
           /* Pinned bar + header don't grow */
           #chatHeader, #chatPinnedBar { flex: 0 0 auto; }
-          /* Messages list flexes */
-          #chatMessages { flex: 1 1 auto !important; padding: 14px !important; }
-          /* Message input row sticks to bottom of chat container */
-          #chatComposer {
-            flex: 0 0 auto;
+          /* Messages list flexes — leave room at the bottom for the fixed composer */
+          #chatMessages {
+            flex: 1 1 auto !important;
+            padding: 14px 14px calc(80px + env(safe-area-inset-bottom)) !important;
+          }
+          /* Composer floats above everything, pinned to the viewport bottom */
+          #tab-chat.active #chatComposer {
+            position: fixed !important;
+            left: 0; right: 0; bottom: 0;
             padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) !important;
             background: var(--green-deep);
-            position: relative;
-            z-index: 3;
+            border-top: 1px solid rgba(191,155,59,0.12);
+            z-index: 1001;
           }
         }
         /* Channel pill row (mobile-only) */
