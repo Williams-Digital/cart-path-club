@@ -182,26 +182,132 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Splash overlay while we verify a persisted session */
+    /* ── Splash overlay: animated golf flyover into login ────────────
+       The iOS native splash hands off to this. Total runtime ~1.7s before
+       it dissolves into the form. Times below are the start offsets. */
     .splash {
       position: fixed; inset: 0;
       background: var(--green-deep);
       z-index: 100;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 360ms ease-out;
     }
-    .splash img { width: 64px; margin-bottom: 18px; }
-    .splash .wm {
+    .splash.is-leaving { opacity: 0; pointer-events: none; }
+    .splash-stage {
+      position: relative;
+      width: min(280px, 78vw);
+      height: 180px;
+    }
+    .splash-stage svg {
+      width: 100%; height: 100%; overflow: visible;
+    }
+    .splash-wm {
       font-family: var(--font-display);
       font-size: 17px; letter-spacing: 0.45em; color: var(--gold);
       padding-left: 0.45em;
+      margin-top: 28px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: splash-wm-in 480ms cubic-bezier(0.2, 0.7, 0.2, 1) 1100ms forwards;
     }
-    .splash .sp {
-      width: 22px; height: 22px;
-      border: 2px solid rgba(191,155,59,0.15);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-top: 18px;
+    .splash-tag {
+      font-family: var(--font-ui);
+      font-size: 9px; letter-spacing: 0.32em;
+      text-transform: uppercase; color: rgba(245,240,225,0.5);
+      margin-top: 10px;
+      opacity: 0;
+      animation: splash-tag-in 480ms ease 1280ms forwards;
+    }
+
+    /* Fairway curve — draws from left to right */
+    .sp-fairway {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-dasharray: 320;
+      stroke-dashoffset: 320;
+      opacity: 0.85;
+      animation: sp-draw 700ms cubic-bezier(0.6, 0, 0.4, 1) 200ms forwards;
+    }
+    /* Faint contour line below the fairway */
+    .sp-fairway-ghost {
+      fill: none;
+      stroke: rgba(191,155,59,0.18);
+      stroke-width: 0.9;
+      stroke-dasharray: 320;
+      stroke-dashoffset: 320;
+      animation: sp-draw 800ms ease 80ms forwards;
+    }
+    /* Ball rolls in along the fairway */
+    .sp-ball {
+      fill: var(--cream);
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+      opacity: 0;
+      transform-origin: 0 0;
+      animation: sp-ball-in 520ms cubic-bezier(0.4, 0, 0.2, 1) 700ms forwards;
+    }
+    /* Flag pole + cup at the green */
+    .sp-pole {
+      stroke: var(--cream);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-dasharray: 40;
+      stroke-dashoffset: 40;
+      animation: sp-draw 360ms ease-out 950ms forwards;
+    }
+    .sp-flag {
+      fill: var(--gold);
+      transform-origin: 218px 38px;
+      transform: scale(0);
+      animation: sp-flag-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 1180ms forwards;
+    }
+    .sp-cup {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 1.2;
+      opacity: 0;
+      animation: sp-cup-in 320ms ease 1080ms forwards;
+    }
+
+    @keyframes sp-draw {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes sp-ball-in {
+      0%   { opacity: 0; transform: translate(20px, 122px); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: translate(214px, 64px); }
+    }
+    @keyframes sp-flag-in {
+      0%   { transform: scale(0) rotate(-12deg); }
+      70%  { transform: scale(1.08) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes sp-cup-in {
+      from { opacity: 0; transform: scale(0.7); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes splash-wm-in {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes splash-tag-in {
+      to { opacity: 1; }
+    }
+    /* When the splash dissolves, the form gently slides up */
+    @keyframes splash-form-in {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #appWrap.is-entering { animation: splash-form-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+    /* Respect user reduce-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .sp-fairway, .sp-fairway-ghost, .sp-pole { stroke-dashoffset: 0; animation: none; }
+      .sp-ball { opacity: 1; transform: translate(214px, 64px); animation: none; }
+      .sp-flag { transform: none; animation: none; }
+      .sp-cup { opacity: 1; animation: none; }
+      .splash-wm, .splash-tag { opacity: 1; transform: none; animation: none; }
+      #appWrap.is-entering { animation: none; }
     }
 
     /* Small phones */
@@ -213,11 +319,26 @@
   </style>
 </head>
 <body>
-  <!-- Splash while checking persisted session -->
-  <div id="splash" class="splash">
-    <img src="/assets/cartpath-shield.png" alt="CartPath">
-    <div class="wm">CARTPATH</div>
-    <div class="sp"></div>
+  <!-- Splash while checking persisted session: animated fairway → flag flyover -->
+  <div id="splash" class="splash" aria-hidden="true">
+    <div class="splash-stage">
+      <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CartPath loading">
+        <!-- Ghost contour beneath the fairway -->
+        <path class="sp-fairway-ghost" d="M 12 148 C 60 138, 110 116, 150 92 S 220 56, 252 44"/>
+        <!-- Main fairway line — ball follows this path conceptually -->
+        <path class="sp-fairway" d="M 14 142 C 64 130, 116 108, 150 86 S 220 50, 248 38"/>
+        <!-- Cup (ellipse on the green) -->
+        <ellipse class="sp-cup" cx="218" cy="42" rx="9" ry="2.4"/>
+        <!-- Flag pole -->
+        <line class="sp-pole" x1="218" y1="42" x2="218" y2="6"/>
+        <!-- Triangular pennant -->
+        <path class="sp-flag" d="M 218 6 L 240 14 L 218 22 Z"/>
+        <!-- Ball — animated along the fairway via translate keyframes -->
+        <circle class="sp-ball" cx="0" cy="0" r="3.6"/>
+      </svg>
+    </div>
+    <div class="splash-wm">CARTPATH</div>
+    <div class="splash-tag">A Private Golf Community</div>
   </div>
 
   <div class="wrap" id="appWrap" style="display:none;">
@@ -372,9 +493,22 @@
       Object.values(SK).forEach(k => localStorage.removeItem(k));
     }
 
+    // Minimum runtime so the user actually sees the flyover even if the
+    // persisted-session check returns instantly. We mark splash-start when
+    // the page loads and don't dissolve until 1500ms have elapsed.
+    const SPLASH_MIN_MS = 1500;
+    const splashStart = performance.now();
     function showSignedOutUI() {
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('appWrap').style.display = 'flex';
+      const elapsed = performance.now() - splashStart;
+      const wait = Math.max(0, SPLASH_MIN_MS - elapsed);
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        const wrap = document.getElementById('appWrap');
+        splash.classList.add('is-leaving');
+        wrap.style.display = 'flex';
+        wrap.classList.add('is-entering');
+        setTimeout(() => { splash.style.display = 'none'; }, 380);
+      }, wait);
     }
 
     // ── Persisted-session check ──
