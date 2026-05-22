@@ -1963,11 +1963,87 @@
       </div>
 
       <style>
-        /* Chat mobile responsive: stack sidebar above messages on narrow screens */
+        /* Chat mobile responsive: hide sidebar, use pill row for channels,
+           and pin the message input to the bottom of the viewport */
         @media (max-width: 768px) {
-          #chat-grid { grid-template-columns: 1fr !important; height: auto !important; }
-          #chat-sidebar { max-height: 200px; border-right: none !important; border-bottom: 1px solid rgba(191,155,59,0.08); }
-          #chat-sidebar .chat-channel { padding: 8px 14px !important; }
+          /* Show the mobile pill row, hide the desktop sidebar */
+          #chat-mobile-picker { display: block !important; }
+          #chat-sidebar { display: none !important; }
+          #chat-grid {
+            grid-template-columns: 1fr !important;
+            height: calc(100dvh - 64px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 110px) !important;
+            min-height: 480px !important;
+          }
+          /* Chat message column: full height, input pinned bottom */
+          #chat-grid > div:last-child {
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          /* Pinned bar + header don't grow */
+          #chatHeader, #chatPinnedBar { flex: 0 0 auto; }
+          /* Messages list flexes */
+          #chatMessages { flex: 1 1 auto !important; padding: 14px !important; }
+          /* Message input row sticks to bottom of chat container */
+          #chatComposer {
+            flex: 0 0 auto;
+            padding: 12px 14px calc(12px + env(safe-area-inset-bottom)) !important;
+            background: var(--green-deep);
+            position: relative;
+            z-index: 3;
+          }
+        }
+        /* Channel pill row (mobile-only) */
+        .chat-pill-row {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding: 4px 2px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .chat-pill-row::-webkit-scrollbar { display: none; }
+        .chat-pill {
+          flex-shrink: 0;
+          padding: 8px 14px;
+          background: rgba(16,53,42,0.5);
+          border: 1px solid rgba(191,155,59,0.12);
+          border-radius: 999px;
+          color: rgba(245,240,225,0.6);
+          font-family: var(--font-ui);
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.15s;
+        }
+        .chat-pill.active {
+          background: rgba(191,155,59,0.18);
+          border-color: var(--gold);
+          color: var(--gold);
+        }
+        .chat-pill .chat-pill-unread {
+          display: inline-block;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--gold);
+          margin-left: 6px;
+          vertical-align: middle;
+          visibility: hidden;
+        }
+        .chat-pill .chat-pill-unread.show { visibility: visible; }
+        /* Pending/failed message states (optimistic send UI) */
+        .chat-msg-wrap[data-pending="true"] { opacity: 0.55; }
+        .chat-msg-wrap[data-failed="true"] { opacity: 0.85; }
+        .chat-msg-wrap[data-failed="true"]::after {
+          content: 'Failed to send · tap to retry';
+          display: block;
+          margin-top: 4px;
+          font-family: var(--font-ui);
+          font-size: 10px;
+          color: #E57373;
+          cursor: pointer;
         }
         /* Pin button (only visible on hover) */
         .chat-msg-wrap { position: relative; }
@@ -1999,14 +2075,14 @@
 
       <!-- Mobile channel picker (visible only below 768px) -->
       <div id="chat-mobile-picker" style="display: none; margin-bottom: 12px;">
-        <select id="chat-channel-select" onchange="selectChannel(this.value)" style="width: 100%; background: var(--green-dark); color: var(--cream); font-family: var(--font-ui); font-size: 13px; padding: 10px 12px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.1); outline: none;">
-          <option value="lounge"># clubhouse-lounge</option>
-          <option value="announcements"># announcements</option>
-          <option value="recaps"># round-recaps</option>
-          <option value="availability"># athlete-availability</option>
-          <option value="chairman"># the-back-nine</option>
-          <option value="deals"># deal-room</option>
-        </select>
+        <div class="chat-pill-row" id="chatPillRow">
+          <button type="button" class="chat-pill active" data-channel="lounge" onclick="selectChannel('lounge')"># lounge<span class="chat-pill-unread" id="pillUnread-lounge"></span></button>
+          <button type="button" class="chat-pill" data-channel="announcements" onclick="selectChannel('announcements')"># announcements<span class="chat-pill-unread" id="pillUnread-announcements"></span></button>
+          <button type="button" class="chat-pill" data-channel="recaps" onclick="selectChannel('recaps')"># round-recaps<span class="chat-pill-unread" id="pillUnread-recaps"></span></button>
+          <button type="button" class="chat-pill" data-channel="availability" onclick="selectChannel('availability')"># availability<span class="chat-pill-unread" id="pillUnread-availability"></span></button>
+          <button type="button" class="chat-pill" data-channel="chairman" onclick="selectChannel('chairman')"># the-back-nine<span class="chat-pill-unread" id="pillUnread-chairman"></span></button>
+          <button type="button" class="chat-pill" data-channel="deals" onclick="selectChannel('deals')"># deal-room<span class="chat-pill-unread" id="pillUnread-deals"></span></button>
+        </div>
       </div>
 
       <div id="chat-grid" style="display: grid; grid-template-columns: 240px 1fr; gap: 0; border: 1px solid rgba(191,155,59,0.1); border-radius: 8px; overflow: hidden; height: 600px;">
@@ -2087,9 +2163,9 @@
           <div id="chatMentionPopover" style="display: none; position: absolute; bottom: 70px; left: 20px; max-height: 220px; overflow-y: auto; min-width: 240px; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.25); border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10;"></div>
 
           <!-- Message Input -->
-          <div style="padding: 16px 20px; border-top: 1px solid rgba(191,155,59,0.06); display: flex; gap: 12px; align-items: center;">
-            <input type="text" id="chatInput" placeholder="Message" autocomplete="off" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 14px; padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.08); outline: none;" onkeyup="onChatInputKeyup(event)" onkeydown="onChatInputKeydown(event)">
-            <button onclick="sendMessage()" style="background: var(--gold); color: var(--green-deep); border: none; width: 40px; height: 40px; border-radius: 4px; cursor: pointer; font-size: 16px;">&#8593;</button>
+          <div id="chatComposer" style="padding: 16px 20px; border-top: 1px solid rgba(191,155,59,0.06); display: flex; gap: 12px; align-items: center;">
+            <input type="text" id="chatInput" placeholder="Message" autocomplete="off" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 16px; padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.08); outline: none;" onkeyup="onChatInputKeyup(event)" onkeydown="onChatInputKeydown(event)">
+            <button onclick="sendMessage()" style="background: var(--gold); color: var(--green-deep); border: none; width: 40px; height: 40px; border-radius: 4px; cursor: pointer; font-size: 16px; flex-shrink: 0;">&#8593;</button>
           </div>
         </div>
       </div>
@@ -3428,6 +3504,11 @@
       activeEl.style.borderLeft = '3px solid var(--gold)';
     }
 
+    // Sync the mobile pill row's active state
+    document.querySelectorAll('.chat-pill').forEach(function(p) {
+      p.classList.toggle('active', p.getAttribute('data-channel') === channelId);
+    });
+
     // Mark this channel read (clears its unread dot)
     markChannelRead(channelId);
 
@@ -3459,6 +3540,16 @@
         var isAdmin = isChatAdmin();
         var myName = sessionStorage.getItem('cartpath_member_name') || '';
         var html = '';
+        // Skip any message we've already rendered (optimistic UI or prior poll)
+        var existingIds = {};
+        document.querySelectorAll('#chatMessages .chat-msg-wrap[data-msg-id]').forEach(function(el) {
+          var id = el.getAttribute('data-msg-id');
+          if (id && id.indexOf('pending-') !== 0) existingIds[id] = true;
+        });
+        messages = messages.filter(function(m) {
+          return !(m.messageId && existingIds[m.messageId]);
+        });
+        if (messages.length === 0) return;
         messages.forEach(function(m) {
           var timeStr = formatChatTimestamp(m.createdAt || m.timestamp);
 
@@ -3574,7 +3665,7 @@
       chairman: 'Back Nine members only. Talk shop, deals, or weekend tee times.',
       deals: 'No deals posted yet. Members close real business in this room — when it\'s your turn, you\'ll know.',
     })[channelId] || 'No messages yet. Be the first to post.';
-    return '<div style="text-align:center;padding:60px 30px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.4);max-width:420px;margin:0 auto;line-height:1.6;">' + copy + '</div>';
+    return '<div data-empty-state="true" style="text-align:center;padding:60px 30px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.4);max-width:420px;margin:0 auto;line-height:1.6;">' + copy + '</div>';
   }
 
   function isNearBottom(el) {
@@ -3657,6 +3748,8 @@
     }
     var dot = document.getElementById('unread-' + channelId);
     if (dot) dot.classList.remove('show');
+    var pillDot = document.getElementById('pillUnread-' + channelId);
+    if (pillDot) pillDot.classList.remove('show');
   }
   function markChannelRead(channelId) {
     var m = getSeenMap();
@@ -3664,6 +3757,8 @@
     setSeenMap(m);
     var dot = document.getElementById('unread-' + channelId);
     if (dot) dot.classList.remove('show');
+    var pillDot = document.getElementById('pillUnread-' + channelId);
+    if (pillDot) pillDot.classList.remove('show');
   }
   // Poll every 60s: ask each channel for its latest message and dot it if newer than last-seen
   function pollUnreadCounts() {
@@ -3678,7 +3773,11 @@
           if (!latest) return;
           var seenTs = seen[localId] || 0;
           var dot = document.getElementById('unread-' + localId);
-          if (dot && latest.timestamp > seenTs) dot.classList.add('show');
+          var pillDot = document.getElementById('pillUnread-' + localId);
+          if (latest.timestamp > seenTs) {
+            if (dot) dot.classList.add('show');
+            if (pillDot) pillDot.classList.add('show');
+          }
         })
         .catch(function() {});
     });
@@ -3765,6 +3864,21 @@
     var mm;
     while ((mm = mre.exec(msg)) !== null) mentions.push(mm[1]);
 
+    // Optimistic UI — render the message immediately so the user sees zero latency
+    var pendingId = 'pending-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+    var tempMsg = {
+      messageId: pendingId,
+      timestamp: Date.now(),
+      createdAt: new Date().toISOString(),
+      userName: userName,
+      userInitials: initials,
+      userTier: tier,
+      userAvatar: avatar,
+      content: msg,
+      pending: true,
+    };
+    appendPendingMessage(tempMsg);
+
     input.value = '';
     closeMentionPopover();
 
@@ -3784,13 +3898,67 @@
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success && data.message) {
+        // Server confirmed — mark our optimistic message as confirmed
+        // (next poll will reconcile if needed) and bump the watermark
+        confirmPendingMessage(pendingId, data.message);
         lastMessageTimestamp = data.message.timestamp;
-        loadMessages(true);
+      } else {
+        markPendingFailed(pendingId, msg);
       }
     })
     .catch(function(err) {
       console.error('Send error:', err);
+      markPendingFailed(pendingId, msg);
     });
+  }
+
+  // Insert a pending message wrap into the DOM immediately
+  function appendPendingMessage(m) {
+    var messagesDiv = document.getElementById('chatMessages');
+    if (!messagesDiv) return;
+    // Strip any empty-channel state when the first message goes out
+    if (messagesDiv.querySelector('[data-empty-state]')) messagesDiv.innerHTML = '';
+
+    var tierColor = m.userTier === 'chairman' ? 'var(--gold)' : 'rgba(245,240,225,0.4)';
+    var tierLabel = m.userTier === 'chairman' ? 'CHAIRMAN' : 'EXECUTIVE';
+    var borderColor = m.userTier === 'chairman' ? 'rgba(191,155,59,0.4)' : 'rgba(245,240,225,0.15)';
+    var avatarHtml = m.userAvatar
+      ? '<img src="' + escapeAttrMR(m.userAvatar) + '" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid ' + borderColor + ';flex-shrink:0;" alt="">'
+      : '<div style="width:36px;height:36px;border-radius:50%;background:var(--green-dark);border:1px solid ' + borderColor + ';display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:12px;font-weight:600;color:' + tierColor + ';flex-shrink:0;">' + (m.userInitials || '??') + '</div>';
+
+    var html = '<div class="chat-msg-wrap" data-pending="true" data-msg-id="' + escapeAttrMR(m.messageId) + '" style="display:flex;gap:12px;margin-bottom:20px;">'
+      + avatarHtml
+      + '<div style="flex:1;min-width:0;">'
+      +   '<div style="margin-bottom:4px;"><span style="font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--cream);">' + escapeHtmlMR(m.userName || 'You') + '</span> <span style="font-family:var(--font-ui);font-size:9px;font-weight:600;letter-spacing:0.1em;color:' + tierColor + ';">' + tierLabel + '</span> <span style="font-family:var(--font-ui);font-size:10px;color:rgba(245,240,225,0.2);margin-left:8px;">sending…</span></div>'
+      +   '<div style="font-family:var(--font-ui);font-size:14px;color:rgba(245,240,225,0.78);line-height:1.5;">' + escapeHtmlMR(m.content || '') + '</div>'
+      + '</div>'
+      + '</div>';
+
+    messagesDiv.insertAdjacentHTML('beforeend', html);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  function confirmPendingMessage(pendingId /*, serverMsg*/) {
+    var el = document.querySelector('[data-msg-id="' + pendingId + '"]');
+    if (el) {
+      el.removeAttribute('data-pending');
+      // Swap the "sending…" label for a confirmed timestamp
+      var ts = el.querySelector('span[style*="margin-left:8px"]');
+      if (ts) ts.textContent = 'just now';
+    }
+  }
+
+  function markPendingFailed(pendingId, originalMsg) {
+    var el = document.querySelector('[data-msg-id="' + pendingId + '"]');
+    if (!el) return;
+    el.removeAttribute('data-pending');
+    el.setAttribute('data-failed', 'true');
+    el.style.cursor = 'pointer';
+    el.onclick = function () {
+      var input = document.getElementById('chatInput');
+      if (input) input.value = originalMsg;
+      el.remove();
+    };
   }
 
   // ── @mention autocomplete ──
