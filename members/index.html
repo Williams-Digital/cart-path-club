@@ -2964,13 +2964,18 @@
     document.getElementById('msgModalCourse').textContent = (booking.course || '') + ' · ' + (booking.preferred_date ? new Date(booking.preferred_date.slice(0,10) + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '');
     document.getElementById('msgInput').value = '';
     document.getElementById('msgModalOverlay').style.display = 'flex';
+    lockBodyScroll();
     await refreshBookingMessages();
     if (messagePollTimer) clearInterval(messagePollTimer);
     messagePollTimer = setInterval(refreshBookingMessages, 8000);
   }
 
   function closeBookingMessages() {
-    document.getElementById('msgModalOverlay').style.display = 'none';
+    var overlay = document.getElementById('msgModalOverlay');
+    if (overlay && overlay.style.display !== 'none') {
+      overlay.style.display = 'none';
+      unlockBodyScroll();
+    }
     openMessageBookingId = null;
     if (messagePollTimer) { clearInterval(messagePollTimer); messagePollTimer = null; }
   }
@@ -3043,9 +3048,16 @@
     document.getElementById('reviewRating').value = '0';
     document.getElementById('reviewComment').value = '';
     document.getElementById('reviewModalOverlay').style.display = 'flex';
+    lockBodyScroll();
   }
 
-  function closeReviewModal() { document.getElementById('reviewModalOverlay').style.display = 'none'; }
+  function closeReviewModal() {
+    var ov = document.getElementById('reviewModalOverlay');
+    if (ov && ov.style.display !== 'none') {
+      ov.style.display = 'none';
+      unlockBodyScroll();
+    }
+  }
 
   function setReviewStar(n) {
     document.getElementById('reviewRating').value = String(n);
@@ -5021,6 +5033,37 @@
       || '';
   }
 
+  // ── Body-scroll lock for modals ─────────────────────────────────────
+  // iOS Safari ignores `overflow: hidden` on body alone — it'll still
+  // rubber-band-scroll the page underneath. The position-fixed trick
+  // freezes the body in place and restores scroll position on unlock.
+  // We refcount opens so nested modals don't unlock prematurely.
+  var __bodyLockDepth = 0;
+  var __bodyLockScrollY = 0;
+  function lockBodyScroll() {
+    if (__bodyLockDepth === 0) {
+      __bodyLockScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = (-__bodyLockScrollY) + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }
+    __bodyLockDepth++;
+  }
+  function unlockBodyScroll() {
+    if (__bodyLockDepth === 0) return;
+    __bodyLockDepth--;
+    if (__bodyLockDepth === 0) {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, __bodyLockScrollY);
+    }
+  }
+
   // Luxury toast — deep green card, gold left bar, shield icon, slide-in stack.
   // showToast(msg) | showToast(msg, 'error') | showToast(msg, 'info') | showToast({title, body, kind, duration})
   function showToast(msgOrOpts, kindArg) {
@@ -5095,11 +5138,12 @@
 
   function openMatchRequestModal(athleteName) {
     var existing = document.getElementById('matchRequestModal');
-    if (existing) existing.remove();
+    if (existing) { existing.remove(); unlockBodyScroll(); }
 
     var modal = document.createElement('div');
     modal.id = 'matchRequestModal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+    lockBodyScroll();
     modal.innerHTML =
       '<div style="background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:8px;max-width:480px;width:100%;padding:32px;max-height:90vh;overflow-y:auto;">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">' +
@@ -5168,7 +5212,7 @@
 
   function closeMatchRequestModal() {
     var m = document.getElementById('matchRequestModal');
-    if (m) m.remove();
+    if (m) { m.remove(); unlockBodyScroll(); }
   }
 
   async function submitMatchRequest(athleteName) {
@@ -5481,9 +5525,11 @@
       if (tab) tab.style.boxShadow = '0 0 0 2px var(--gold)';
     }
 
+    var hadExisting = !!existing;
     var overlay = document.createElement('div');
     overlay.id = 'onboardingOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+    if (!hadExisting) lockBodyScroll();
     overlay.innerHTML =
       '<div style="max-width:440px;width:100%;background:#091D14;border:1px solid rgba(191,155,59,0.2);border-radius:10px;padding:36px 32px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);">' +
         '<div style="font-family:var(--font-ui);font-size:10px;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">Step ' + (onboardingIndex + 1) + ' of ' + onboardingSteps.length + '</div>' +
@@ -5513,7 +5559,7 @@
 
   async function closeOnboarding(save) {
     var overlay = document.getElementById('onboardingOverlay');
-    if (overlay) overlay.remove();
+    if (overlay) { overlay.remove(); unlockBodyScroll(); }
     document.querySelectorAll('.nav-tab').forEach(function(t) { t.style.boxShadow = ''; });
 
     if (save) {
