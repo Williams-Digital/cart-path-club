@@ -46,13 +46,21 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; overflow-x: hidden; background: var(--green-deep); }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      background: var(--green-deep);
+      /* Prevent the WebView from rubber-banding the entire document up/down,
+         which made the fixed header appear to slide on pull-down. */
+      overscroll-behavior-y: none;
+    }
     body {
       font-family: var(--font-body);
       background: var(--green-deep);
       color: var(--cream);
       overflow-x: hidden;
       min-height: 100vh;
+      overscroll-behavior-y: none;
     }
 
     body::before {
@@ -227,7 +235,10 @@
       display: flex;
       align-items: center;
       gap: 16px;
+      transition: opacity 0.15s;
     }
+    .nav-left:hover { opacity: 0.78; }
+    .nav-left:active { opacity: 0.6; transform: scale(0.98); }
 
     .nav-logo {
       width: 36px;
@@ -1589,10 +1600,10 @@
 
   <!-- Top Nav -->
   <nav class="portal-nav">
-    <div class="nav-left">
+    <button type="button" class="nav-left" onclick="switchTab('dashboard')" aria-label="Go to dashboard" style="background:none;border:none;cursor:pointer;padding:0;">
       <img src="/assets/cartpath-shield.png" alt="CartPath" class="nav-logo">
       <span class="nav-brand">CartPath</span>
-    </div>
+    </button>
 
     <div class="nav-center">
       <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
@@ -5250,14 +5261,22 @@
     // Set defaults
     document.getElementById('mrDate').value = new Date(Date.now()+7*86400000).toISOString().slice(0,10);
 
-    // Button group handlers
+    // Button group handlers. Use a data-selected attribute so the
+    // selection is reliable to read back later (iOS Safari can normalize
+    // away the previous `style*="gold"` check, leaving the form unsubmittable).
     function wireButtons(selector) {
       document.querySelectorAll(selector).forEach(function(b) {
         b.onclick = function() {
           document.querySelectorAll(selector).forEach(function(x) {
-            x.style.background = '#060F0A'; x.style.borderColor = 'rgba(191,155,59,0.15)'; x.style.color = 'var(--cream)';
+            x.removeAttribute('data-selected');
+            x.style.background = '#060F0A';
+            x.style.borderColor = 'rgba(191,155,59,0.15)';
+            x.style.color = '#F5F0E1';
           });
-          b.style.background = 'rgba(191,155,59,0.15)'; b.style.borderColor = 'var(--gold)'; b.style.color = 'var(--gold)';
+          b.setAttribute('data-selected', 'true');
+          b.style.background = 'rgba(191,155,59,0.15)';
+          b.style.borderColor = '#BF9B3B';
+          b.style.color = '#BF9B3B';
         };
       });
     }
@@ -5276,8 +5295,8 @@
   async function submitMatchRequest(athleteName) {
     var date = document.getElementById('mrDate').value;
     var course = document.getElementById('mrCourse').value.trim();
-    var groupBtn = document.querySelector('.mr-group-btn[style*="gold"]');
-    var typeBtn = document.querySelector('.mr-type-btn[style*="gold"]');
+    var groupBtn = document.querySelector('.mr-group-btn[data-selected="true"]');
+    var typeBtn = document.querySelector('.mr-type-btn[data-selected="true"]');
     var notes = document.getElementById('mrNotes').value.trim();
 
     var groupSize = groupBtn ? parseInt(groupBtn.getAttribute('data-val')) : 1;
