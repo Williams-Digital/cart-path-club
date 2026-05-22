@@ -207,8 +207,10 @@
       left: 0;
       right: 0;
       z-index: 1000;
-      background: rgba(6,15,10,0.95);
-      backdrop-filter: blur(12px);
+      /* Solid background instead of blur — backdrop-filter causes iOS WebKit
+         to repaint/flicker the header during rubber-band scroll. Force a
+         dedicated compositor layer so the bar never gets recomposed. */
+      background: #060F0A;
       border-bottom: 1px solid rgba(191,155,59,0.15);
       padding: env(safe-area-inset-top) 24px 0;
       box-sizing: content-box;
@@ -216,6 +218,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
     }
 
     .nav-left {
@@ -1975,9 +1980,11 @@
           #chat-sidebar { display: none !important; }
           #chat-grid {
             grid-template-columns: 1fr !important;
-            height: calc(100dvh - 64px - env(safe-area-inset-top) - 180px) !important;
-            min-height: 380px !important;
+            height: 100% !important;
+            min-height: 0 !important;
             margin-bottom: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
           }
           /* Chat message column: full height, input pinned bottom */
           #chat-grid > div:last-child {
@@ -1990,9 +1997,13 @@
           /* Messages list flexes — leave room at the bottom for the fixed composer */
           #chatMessages {
             flex: 1 1 auto !important;
+            min-height: 0 !important;
             padding: 14px 14px calc(80px + env(safe-area-inset-bottom)) !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
           }
-          /* Composer floats above everything, pinned to the viewport bottom */
+          /* Composer floats above everything, pinned to the viewport bottom.
+             Use transform layer to keep it stable during keyboard show/hide. */
           #tab-chat.active #chatComposer {
             position: fixed !important;
             left: 0; right: 0; bottom: 0;
@@ -2000,7 +2011,41 @@
             background: var(--green-deep);
             border-top: 1px solid rgba(191,155,59,0.12);
             z-index: 1001;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            will-change: transform;
           }
+          /* When chat is the active tab, lock the BODY so only the messages
+             list scrolls. Otherwise the whole page rubber-bands and the
+             "fixed" composer appears to slide. */
+          body.chat-active {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100dvh;
+          }
+          body.chat-active .portal-content {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            padding-top: calc(64px + env(safe-area-inset-top) + 8px) !important;
+            padding-bottom: 0 !important;
+            max-width: 100% !important;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          }
+          body.chat-active #tab-chat.active {
+            flex: 1 1 auto;
+            display: flex !important;
+            flex-direction: column;
+            min-height: 0;
+          }
+          body.chat-active #tab-chat.active > div:first-child,
+          body.chat-active #tab-chat.active > #chat-mobile-picker {
+            flex: 0 0 auto;
+          }
+          body.chat-active #chat-grid { flex: 1 1 auto; }
         }
         /* Channel pill row (mobile-only) */
         .chat-pill-row {
@@ -2630,8 +2675,12 @@
     // Update hash
     window.location.hash = tabName;
 
-    // Scroll to top
-    window.scrollTo(0, 0);
+    // Chat tab gets its own viewport-locked layout so the composer stays
+    // pinned to the bottom and only the messages list scrolls.
+    document.body.classList.toggle('chat-active', tabName === 'chat');
+
+    // Scroll to top (skip when entering chat — its layout is fixed-viewport)
+    if (tabName !== 'chat') window.scrollTo(0, 0);
   }
 
   // Nav tab click handlers
