@@ -3233,7 +3233,21 @@
   var lsInterval = null;
 
   var lsCurrentRoundFilter = 'total';
-  var lsCachedData = null;
+  // Live Scores cache: persisted to localStorage so the next visit renders
+  // instantly from the last known data while the new network call resolves.
+  var lsCachedData = (function () {
+    try {
+      var raw = localStorage.getItem('cp_live_scores_cache');
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      // Discard anything older than 10 min — stale data is worse than nothing
+      if (parsed && parsed.ts && (Date.now() - parsed.ts) < 600000) return parsed.data;
+      return null;
+    } catch { return null; }
+  })();
+  function persistLiveScoresCache(d) {
+    try { localStorage.setItem('cp_live_scores_cache', JSON.stringify({ ts: Date.now(), data: d })); } catch {}
+  }
 
   function setLiveRoundFilter(round) {
     lsCurrentRoundFilter = round;
@@ -3324,7 +3338,7 @@
       var initials = nameParts.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
       var avatarHtml;
       if (p.HeadshotUrl) {
-        avatarHtml = '<span style="display:inline-block;width:34px;height:34px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:10px;background:#ddd;"><img src="' + p.HeadshotUrl + '" width="34" height="34" style="display:block;width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML=\'' + initials + '\';this.parentNode.style.cssText=\'display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1B4D2E;color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:700;vertical-align:middle;margin-right:10px;\'"></span>';
+        avatarHtml = '<span style="display:inline-block;width:34px;height:34px;border-radius:50%;overflow:hidden;vertical-align:middle;margin-right:10px;background:#ddd;"><img src="' + p.HeadshotUrl + '" width="34" height="34" loading="lazy" decoding="async" style="display:block;width:100%;height:100%;object-fit:cover;" onerror="this.parentNode.innerHTML=\'' + initials + '\';this.parentNode.style.cssText=\'display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1B4D2E;color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:700;vertical-align:middle;margin-right:10px;\'"></span>';
       } else {
         avatarHtml = '<span style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:#1B4D2E;color:#fff;font-family:Georgia,serif;font-size:11px;font-weight:700;vertical-align:middle;margin-right:10px;">' + initials + '</span>';
       }
@@ -3343,73 +3357,82 @@
 
   function loadLiveScores() {
     loadLiveSchedule();
+    // Paint from the persisted cache immediately so the tab never shows
+    // 'Loading…' on a returning visit. The network fetch below will
+    // overwrite it the moment fresh data is in.
+    if (lsCachedData) renderLiveScoresPayload(lsCachedData);
     fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/scores/current')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         lsCachedData = data;
-        var t = data.Tournament || {};
-        var players = data.Players || [];
-
-        // Hero
-        document.getElementById('ls-tournament-name').textContent = t.Name || 'Tournament';
-        document.getElementById('ls-tournament-course').textContent = (t.Venue || '') + (t.Location ? ' \u00B7 ' + t.Location : '');
-
-        var roundNum = t.CurrentRound || 1;
-        var roundNames = { 1: 'Round 1', 2: 'Round 2', 3: 'Round 3', 4: 'Final Round' };
-        if (t.IsInProgress) {
-          document.getElementById('ls-round-text').textContent = 'LIVE \u00B7 ' + (roundNames[roundNum] || 'Round ' + roundNum);
-          document.getElementById('ls-live-dot').style.background = '#4CAF50';
-        } else if (t.IsOver) {
-          document.getElementById('ls-round-text').textContent = 'FINAL';
-          document.getElementById('ls-live-dot').style.background = '#888';
-        } else {
-          document.getElementById('ls-round-text').textContent = 'Upcoming';
-          document.getElementById('ls-live-dot').style.background = '#888';
-        }
-
-        // Leader
-        if (players.length > 0) {
-          var leader = players[0];
-          document.getElementById('ls-leader-name').textContent = leader.Name || '';
-          var score = leader.TotalScore || 0;
-          var scoreStr = score < 0 ? score.toString() : (score === 0 ? 'E' : '+' + score);
-          document.getElementById('ls-leader-score').textContent = scoreStr;
-          document.getElementById('ls-leader-score').style.color = score < 0 ? '#C62828' : '#1a1a1a';
-          var thru = leader.TotalThrough;
-          document.getElementById('ls-leader-thru').textContent = thru ? 'THRU ' + thru : '';
-          // Avatar: headshot if available, else initials
-          var avatarEl = document.getElementById('ls-leader-avatar');
-          if (avatarEl && leader.Name) {
-            if (leader.HeadshotUrl) {
-              avatarEl.innerHTML = '<img src="' + leader.HeadshotUrl + '" alt="" style="width:100%;height:100%;object-fit:cover;" onerror="var n=this.parentNode;n.textContent=\'' + leader.Name.split(' ').map(function(x){return x.charAt(0);}).join('').substring(0,2).toUpperCase() + '\';">';
-              avatarEl.style.padding = '0';
-              avatarEl.style.overflow = 'hidden';
-            } else {
-              var ns = leader.Name.split(' ');
-              avatarEl.textContent = ns.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
-            }
-          }
-        }
-
-        // Leaderboard (uses the new renderLeaderboard with round-filter support)
-        renderLeaderboard(data);
-
-        // Timestamp
-        var now = new Date();
-        var h = now.getHours() % 12 || 12;
-        var m = now.getMinutes();
-        var ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-        document.getElementById('ls-last-updated').textContent = 'Updated ' + h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
-
-        // Auto refresh
-        if (t.IsInProgress && !lsInterval) {
-          lsInterval = setInterval(loadLiveScores, 60000);
-        }
+        persistLiveScoresCache(data);
+        renderLiveScoresPayload(data);
       })
       .catch(function(err) {
         console.error('Live scores error:', err);
-        document.getElementById('ls-leaderboard-body').innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;font-family:var(--font-ui);font-size:13px;color:#999;">Unable to load scores. <a href="/scores" style="color:var(--gold);">View standalone scoreboard</a></td></tr>';
+        // Only show the error state if we had nothing cached. If we already
+        // painted from cache above, the user keeps seeing valid data.
+        if (!lsCachedData) {
+          document.getElementById('ls-leaderboard-body').innerHTML = '<tr><td colspan="5" style="padding:32px;text-align:center;font-family:var(--font-ui);font-size:13px;color:#999;">Unable to load scores. <a href="/scores" style="color:var(--gold);">View standalone scoreboard</a></td></tr>';
+        }
       });
+  }
+
+  function renderLiveScoresPayload(data) {
+    var t = data.Tournament || {};
+    var players = data.Players || [];
+
+    // Hero
+    document.getElementById('ls-tournament-name').textContent = t.Name || 'Tournament';
+    document.getElementById('ls-tournament-course').textContent = (t.Venue || '') + (t.Location ? ' \u00B7 ' + t.Location : '');
+
+    var roundNum = t.CurrentRound || 1;
+    var roundNames = { 1: 'Round 1', 2: 'Round 2', 3: 'Round 3', 4: 'Final Round' };
+    if (t.IsInProgress) {
+      document.getElementById('ls-round-text').textContent = 'LIVE \u00B7 ' + (roundNames[roundNum] || 'Round ' + roundNum);
+      document.getElementById('ls-live-dot').style.background = '#4CAF50';
+    } else if (t.IsOver) {
+      document.getElementById('ls-round-text').textContent = 'FINAL';
+      document.getElementById('ls-live-dot').style.background = '#888';
+    } else {
+      document.getElementById('ls-round-text').textContent = 'Upcoming';
+      document.getElementById('ls-live-dot').style.background = '#888';
+    }
+
+    // Leader
+    if (players.length > 0) {
+      var leader = players[0];
+      document.getElementById('ls-leader-name').textContent = leader.Name || '';
+      var score = leader.TotalScore || 0;
+      var scoreStr = score < 0 ? score.toString() : (score === 0 ? 'E' : '+' + score);
+      document.getElementById('ls-leader-score').textContent = scoreStr;
+      document.getElementById('ls-leader-score').style.color = score < 0 ? '#C62828' : '#1a1a1a';
+      var thru = leader.TotalThrough;
+      document.getElementById('ls-leader-thru').textContent = thru ? 'THRU ' + thru : '';
+      var avatarEl = document.getElementById('ls-leader-avatar');
+      if (avatarEl && leader.Name) {
+        if (leader.HeadshotUrl) {
+          avatarEl.innerHTML = '<img src="' + leader.HeadshotUrl + '" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;" onerror="var n=this.parentNode;n.textContent=\'' + leader.Name.split(' ').map(function(x){return x.charAt(0);}).join('').substring(0,2).toUpperCase() + '\';">';
+          avatarEl.style.padding = '0';
+          avatarEl.style.overflow = 'hidden';
+        } else {
+          var ns = leader.Name.split(' ');
+          avatarEl.textContent = ns.map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
+        }
+      }
+    }
+
+    renderLeaderboard(data);
+
+    var now = new Date();
+    var h = now.getHours() % 12 || 12;
+    var m = now.getMinutes();
+    var ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+    document.getElementById('ls-last-updated').textContent = 'Updated ' + h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+
+    if (t.IsInProgress && !lsInterval) {
+      lsInterval = setInterval(loadLiveScores, 60000);
+    }
   }
 
   // Load scores/chat when switching tabs
