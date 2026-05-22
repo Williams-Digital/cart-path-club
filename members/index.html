@@ -1537,6 +1537,16 @@
       to { transform: scaleX(0); }
     }
 
+    /* Chat message detail bottom-sheet animations */
+    @keyframes cpFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes cpSheetUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
     @media (max-width: 640px) {
       .cp-toast-stack {
         top: auto; bottom: 16px; right: 16px; left: 16px;
@@ -2099,6 +2109,19 @@
         }
         .chat-pill .chat-pill-unread.show { visibility: visible; }
         /* Pending/failed message states (optimistic send UI) */
+        .chat-msg-wrap {
+          position: relative;
+          cursor: pointer;
+          padding: 6px 8px;
+          margin-left: -8px;
+          margin-right: -8px;
+          border-radius: 6px;
+          transition: background 0.12s;
+        }
+        .chat-msg-wrap:active { background: rgba(191,155,59,0.06); }
+        @media (hover: hover) {
+          .chat-msg-wrap:hover { background: rgba(191,155,59,0.04); }
+        }
         .chat-msg-wrap[data-pending="true"] { opacity: 0.55; }
         .chat-msg-wrap[data-failed="true"] { opacity: 0.85; }
         .chat-msg-wrap[data-failed="true"]::after {
@@ -2217,7 +2240,7 @@
           <div id="chatPinnedBar" style="display:none; padding: 12px 20px; border-bottom: 1px solid rgba(191,155,59,0.1); background: rgba(191,155,59,0.03); max-height: 150px; overflow-y: auto;"></div>
 
           <!-- Messages -->
-          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; position: relative;" onscroll="onChatScroll()">
+          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; position: relative; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; scroll-behavior: smooth;" onscroll="onChatScroll()">
             <div style="text-align:center;padding:40px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.2);">Select a channel to start chatting.</div>
           </div>
 
@@ -3792,6 +3815,78 @@
   function onChatScroll() {
     var el = document.getElementById('chatMessages');
     if (isNearBottom(el)) hideNewMsgPill();
+  }
+
+  // ── Tap a message to open a detail card ────────────────────────────
+  // We use one delegated listener instead of an onclick per message
+  // so the polling re-render doesn't have to re-wire handlers.
+  (function () {
+    var bound = false;
+    function bindChatMessageTapHandler() {
+      if (bound) return;
+      var root = document.getElementById('chatMessages');
+      if (!root) return;
+      bound = true;
+      root.addEventListener('click', function (ev) {
+        // Don't hijack taps on interactive children — buttons, reactions, links, photos
+        var t = ev.target;
+        while (t && t !== root) {
+          if (t.tagName === 'BUTTON' || t.tagName === 'A' || t.tagName === 'IMG' || t.classList.contains('chat-react-chip')) return;
+          t = t.parentNode;
+        }
+        var wrap = ev.target.closest && ev.target.closest('.chat-msg-wrap');
+        if (!wrap || wrap.getAttribute('data-pending') === 'true') return;
+        var msgId = wrap.getAttribute('data-msg-id');
+        openChatMessageDetail(msgId, wrap);
+      });
+    }
+    document.addEventListener('DOMContentLoaded', bindChatMessageTapHandler);
+    // Also call immediately in case DOMContentLoaded already fired
+    bindChatMessageTapHandler();
+  })();
+
+  function openChatMessageDetail(msgId, sourceWrap) {
+    // Pull the data we already have rendered — no extra API call needed.
+    if (!sourceWrap) return;
+    var nameEl = sourceWrap.querySelector('div > div:first-child span:first-child');
+    var tierEl = sourceWrap.querySelector('div > div:first-child span:nth-child(2)');
+    var timeEl = sourceWrap.querySelector('div > div:first-child span:nth-child(3)');
+    var bodyEl = sourceWrap.querySelector('div > div:nth-child(2)');
+    var avatarEl = sourceWrap.querySelector(':scope > img, :scope > div');
+
+    var existing = document.getElementById('chatMsgDetailOverlay');
+    if (existing) { existing.remove(); unlockBodyScroll(); }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'chatMsgDetailOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;display:flex;align-items:flex-end;justify-content:center;padding:0;animation:cpFadeIn 180ms ease-out;';
+    overlay.onclick = function (ev) { if (ev.target === overlay) closeChatMessageDetail(); };
+
+    // Sheet card (bottom-sheet style on mobile)
+    var sheet = document.createElement('div');
+    sheet.style.cssText = 'width:100%;max-width:560px;background:linear-gradient(180deg,#0F2820,#091D14);border-top:1px solid rgba(191,155,59,0.25);border-radius:18px 18px 0 0;padding:18px 22px calc(28px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,0.55);animation:cpSheetUp 240ms cubic-bezier(0.2,0.7,0.2,1);';
+
+    sheet.innerHTML =
+      '<div style="display:flex;justify-content:center;margin-bottom:14px;"><div style="width:38px;height:4px;border-radius:2px;background:rgba(245,240,225,0.18);"></div></div>'
+      + '<div style="display:flex;gap:14px;align-items:flex-start;">'
+      +   '<div style="flex-shrink:0;">' + (avatarEl ? avatarEl.outerHTML : '') + '</div>'
+      +   '<div style="flex:1;min-width:0;">'
+      +     '<div style="font-family:var(--font-display);font-size:1.1rem;color:var(--cream);font-weight:600;">' + (nameEl ? nameEl.textContent : '') + '</div>'
+      +     '<div style="font-family:var(--font-ui);font-size:10px;letter-spacing:0.1em;color:rgba(245,240,225,0.45);margin-top:2px;">' + (tierEl ? tierEl.textContent + ' · ' : '') + (timeEl ? timeEl.textContent : '') + '</div>'
+      +   '</div>'
+      +   '<button onclick="closeChatMessageDetail()" aria-label="Close" style="background:none;border:none;color:rgba(245,240,225,0.5);font-size:26px;line-height:1;cursor:pointer;padding:0 0 0 8px;">&times;</button>'
+      + '</div>'
+      + '<div style="margin-top:18px;padding-top:18px;border-top:1px solid rgba(191,155,59,0.1);font-family:var(--font-body);font-size:17px;line-height:1.65;color:var(--cream);">'
+      +   (bodyEl ? bodyEl.innerHTML : '')
+      + '</div>';
+    overlay.appendChild(sheet);
+    document.body.appendChild(overlay);
+    lockBodyScroll();
+  }
+
+  function closeChatMessageDetail() {
+    var ov = document.getElementById('chatMsgDetailOverlay');
+    if (ov) { ov.remove(); unlockBodyScroll(); }
   }
 
   // ── Reactions: open picker
