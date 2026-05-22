@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>CartPath — Member Portal</title>
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="CartPath Member Portal. Access your exclusive golf experiences, athlete roster, live scores, and account.">
@@ -46,7 +46,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; overflow-x: hidden; }
+    html { scroll-behavior: smooth; overflow-x: hidden; background: var(--green-deep); }
     body {
       font-family: var(--font-body);
       background: var(--green-deep);
@@ -210,7 +210,8 @@
       background: rgba(6,15,10,0.95);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid rgba(191,155,59,0.15);
-      padding: 0 24px;
+      padding: env(safe-area-inset-top) 24px 0;
+      box-sizing: content-box;
       height: 64px;
       display: flex;
       align-items: center;
@@ -342,8 +343,8 @@
 
     /* Portal Content */
     .portal-content {
-      padding-top: 88px;
-      padding-bottom: 60px;
+      padding-top: calc(88px + env(safe-area-inset-top));
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
       max-width: 1100px;
       margin: 0 auto;
       padding-left: 24px;
