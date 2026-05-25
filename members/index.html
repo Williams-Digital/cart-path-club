@@ -2531,10 +2531,9 @@
     var payload = parseJwt(idToken);
     if (!payload) return {};
     // Determine tier — check Cognito custom attribute or fall back to demo mapping
-    var tier = payload['custom:tier'] || '';
+    var tier = payload['custom:tier'] || payload['custom:custom:tier'] || '';
+    var email = String(payload.email || '').toLowerCase();
     if (!tier) {
-      // Demo tier mapping by email
-      var email = (payload.email || '').toLowerCase();
       if (email === 'hello@cartpathclub.com' || email === 'msowell@cartpathclub.com') {
         tier = 'chairman';
       } else {
@@ -2543,13 +2542,25 @@
     }
     sessionStorage.setItem('cartpath_member_tier', tier);
 
+    // First-name derivation: try given_name, then 'name' (first word), then the
+    // email local-part, then a constant. Each guarded so we don't crash if any
+    // is missing — historically a missing `email` blew up '.split' here.
+    var firstName = 'Member';
+    if (typeof payload.given_name === 'string' && payload.given_name.trim()) {
+      firstName = payload.given_name.trim();
+    } else if (typeof payload.name === 'string' && payload.name.trim()) {
+      firstName = payload.name.trim().split(/\s+/)[0];
+    } else if (email && email.indexOf('@') > 0) {
+      firstName = email.split('@')[0];
+    }
+
     return {
-      email: payload.email || '',
-      firstName: payload.given_name || payload.name || payload.email.split('@')[0] || 'Member',
-      lastName: payload.family_name || '',
-      phone: payload.phone_number || '',
-      company: payload['custom:company'] || '',
-      sub: payload.sub || '',
+      email: email,
+      firstName: firstName,
+      lastName: typeof payload.family_name === 'string' ? payload.family_name : '',
+      phone: typeof payload.phone_number === 'string' ? payload.phone_number : '',
+      company: typeof payload['custom:company'] === 'string' ? payload['custom:company'] : '',
+      sub: typeof payload.sub === 'string' ? payload.sub : '',
       tier: tier
     };
   }
