@@ -2714,8 +2714,16 @@
 
   function doLogout() {
     clearSession();
-    showLogin();
-    window.location.hash = '';
+    // Also wipe the localStorage mirror so a stale token doesn't auto-route
+    // the user back into the portal on next launch.
+    try {
+      ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry',
+       'cp_email','cp_name'].forEach(function(k){ localStorage.removeItem(k); });
+    } catch {}
+    // Send the user back to the unified login screen rather than the legacy
+    // fallback on /members. The iOS app should never see the legacy login
+    // form — it doesn't handle NEW_PASSWORD_REQUIRED or athlete routing.
+    window.location.replace('/app/login');
   }
 
   // ===================== TAB NAVIGATION =====================
@@ -3248,6 +3256,13 @@
 
     try {
       var result = await cognitoAuth(email, password);
+      // Cognito challenges (NEW_PASSWORD_REQUIRED, MFA, etc.) don't include
+      // AuthenticationResult. The legacy form can't handle those flows —
+      // bounce the user to /app/login which can.
+      if (!result || !result.AuthenticationResult) {
+        window.location.replace('/app/login');
+        return;
+      }
       storeSession(result);
       showPortal();
     } catch (err) {
