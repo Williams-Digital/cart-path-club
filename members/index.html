@@ -208,6 +208,28 @@
       display: none;
     }
 
+    /* Kill the document-level rubber-band on iOS. When the portal is showing,
+       the BODY is locked to the viewport and #portal-screen becomes the only
+       scroller. Because the document itself can no longer scroll or bounce,
+       the position:fixed nav + status-bar filler are truly immovable — the
+       header can never slide down on a pull-up overscroll. The chat tab layers
+       its own stricter lock on top of this (body.chat-active), which still
+       wins via its !important rules. */
+    body.portal-active {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    body.portal-active #portal-screen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+    }
+
     /* Status-bar filler. Pinned to the very top of the viewport, this opaque
        bar covers the safe-area inset region (notch/status bar) at all times.
        During an overscroll/pull-down rubber-band, the document bounces but
@@ -2071,6 +2093,12 @@
             width: 100%;
             height: 100dvh;
           }
+          /* When chat takes over, hand scrolling back to chat's own layout —
+             don't let the portal-active rule make #portal-screen a competing
+             scroller (the messages list scrolls instead). */
+          body.chat-active.portal-active #portal-screen {
+            overflow: hidden;
+          }
           body.chat-active .portal-content {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -2595,6 +2623,9 @@
   function showPortal() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('portal-screen').style.display = 'block';
+    // Lock the document so only #portal-screen scrolls — kills the iOS
+    // rubber-band that let the fixed header slide down on overscroll.
+    document.body.classList.add('portal-active');
 
     var user = getUserInfo();
     var firstName = user.firstName || 'Member';
@@ -2747,6 +2778,7 @@
   function showLogin() {
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('portal-screen').style.display = 'none';
+    document.body.classList.remove('portal-active');
   }
 
   function doLogout() {
