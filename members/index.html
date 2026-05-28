@@ -5761,11 +5761,24 @@
       return;
     }
 
+    // Resolve athlete_id from the loaded roster by name — the backend requires
+    // athlete_id, and the modal only carries the name. Fall back to sending the
+    // name (the backend also resolves athlete_name as a safety net).
+    var athleteId = null;
+    try {
+      var roster = window.allRosterAthletes_member || (typeof allRosterAthletes_member !== 'undefined' ? allRosterAthletes_member : []);
+      var matchA = (roster || []).find(function(a) {
+        return (a.name || '').trim().toLowerCase() === (athleteName || '').trim().toLowerCase();
+      });
+      if (matchA) athleteId = matchA.id;
+    } catch {}
+
     try {
       var res = await fetch(API_BASE + '/bookings', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          athlete_id: athleteId,
           athlete_name: athleteName,
           preferred_date: date,
           course: course,
