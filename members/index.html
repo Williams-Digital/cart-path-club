@@ -208,6 +208,24 @@
       display: none;
     }
 
+    /* Status-bar filler. Pinned to the very top of the viewport, this opaque
+       bar covers the safe-area inset region (notch/status bar) at all times.
+       During an overscroll/pull-down rubber-band, the document bounces but
+       this fixed element does not, so the top of the screen is always a solid
+       slab flush with the nav — the header never appears to "grow". */
+    .nav-safe-fill {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--safe-top, 0px);
+      background: #060F0A;
+      z-index: 1002;
+      pointer-events: none;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+
     /* Top Nav.
        env(safe-area-inset-top) can recompute mid-scroll on iOS (status bar
        transitions, address-bar resize), which made the header "grow" mid-
@@ -1611,6 +1629,10 @@
 <!-- ===================== PORTAL SCREEN ===================== -->
 <div id="portal-screen">
 
+  <!-- Opaque status-bar filler — stays pinned during overscroll so the top
+       never appears to grow on pull-down. -->
+  <div class="nav-safe-fill"></div>
+
   <!-- Top Nav -->
   <nav class="portal-nav">
     <button type="button" class="nav-left" onclick="switchTab('dashboard')" aria-label="Go to dashboard" style="background:none;border:none;cursor:pointer;padding:0;">
@@ -2255,10 +2277,14 @@
           <!-- @mention autocomplete dropdown -->
           <div id="chatMentionPopover" style="display: none; position: absolute; bottom: 70px; left: 20px; max-height: 220px; overflow-y: auto; min-width: 240px; background: var(--green-deep); border: 1px solid rgba(191,155,59,0.25); border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10;"></div>
 
+          <!-- Emoji picker popover -->
+          <div id="chatEmojiPicker" style="display:none; position:fixed; bottom:calc(76px + env(safe-area-inset-bottom)); right:14px; background:var(--green-deep); border:1px solid rgba(191,155,59,0.25); border-radius:10px; box-shadow:0 12px 32px rgba(0,0,0,0.55); padding:10px; z-index:1002; max-width:300px;"></div>
+
           <!-- Message Input -->
-          <div id="chatComposer" style="padding: 16px 20px; border-top: 1px solid rgba(191,155,59,0.06); display: flex; gap: 12px; align-items: center;">
-            <input type="text" id="chatInput" placeholder="Message" autocomplete="off" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 16px; padding: 12px 16px; border-radius: 4px; border: 1px solid rgba(191,155,59,0.08); outline: none;" onkeyup="onChatInputKeyup(event)" onkeydown="onChatInputKeydown(event)">
-            <button onclick="sendMessage()" style="background: var(--gold); color: var(--green-deep); border: none; width: 40px; height: 40px; border-radius: 4px; cursor: pointer; font-size: 16px; flex-shrink: 0;">&#8593;</button>
+          <div id="chatComposer" style="padding: 14px 16px; border-top: 1px solid rgba(191,155,59,0.06); display: flex; gap: 10px; align-items: flex-end;">
+            <button type="button" id="chatEmojiBtn" onclick="toggleEmojiPicker()" aria-label="Emoji" style="background: rgba(16,53,42,0.5); color: var(--cream); border: 1px solid rgba(191,155,59,0.08); width: 42px; height: 42px; border-radius: 21px; cursor: pointer; font-size: 19px; flex-shrink: 0; line-height: 1; padding:0;">&#128512;</button>
+            <textarea id="chatInput" placeholder="Message" autocomplete="off" rows="1" enterkeyhint="send" style="flex: 1; background: rgba(16,53,42,0.5); color: var(--cream); font-family: var(--font-ui); font-size: 16px; line-height: 1.4; padding: 11px 16px; border-radius: 21px; border: 1px solid rgba(191,155,59,0.08); outline: none; resize: none; max-height: 132px; overflow-y: auto; -webkit-overflow-scrolling: touch;" oninput="autoGrowChatInput()" onkeyup="onChatInputKeyup(event)" onkeydown="onChatInputKeydown(event)"></textarea>
+            <button onclick="sendMessage()" aria-label="Send" style="background: var(--gold); color: var(--green-deep); border: none; width: 42px; height: 42px; border-radius: 21px; cursor: pointer; font-size: 17px; flex-shrink: 0; line-height: 1; padding:0;">&#8593;</button>
           </div>
         </div>
       </div>
@@ -2705,6 +2731,17 @@
         document.getElementById('stat-since').textContent = monthNames[parseInt(parts[1])-1] + ' ' + parts[0];
       }
     } catch {}
+
+    // Persist email + name for chat/presence/push (chat code reads these keys)
+    try {
+      if (user.email) sessionStorage.setItem('cartpath_member_email', user.email);
+      sessionStorage.setItem('cartpath_member_name', fullName);
+    } catch {}
+
+    // Register for push notifications (no-ops on web; only runs in the iOS shell)
+    if (typeof initPushNotifications === 'function') {
+      setTimeout(function () { initPushNotifications('member'); }, 800);
+    }
   }
 
   function showLogin() {
@@ -3627,6 +3664,87 @@
   // ===================== CHAT =====================
 
   var CHAT_API = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat';
+
+  // ===================== PUSH NOTIFICATIONS =====================
+  // Native-only (iOS Capacitor shell). On web this is a complete no-op.
+  // Flow: request permission → register with APNs → receive the hex device
+  // token → POST it to the chat lambda keyed by the member's email. Taps on a
+  // delivered notification deep-link into the relevant chat channel.
+  var _pushInited = false;
+  function initPushNotifications(role) {
+    try {
+      var Cap = window.Capacitor;
+      var isNative = !!(Cap && (Cap.isNativePlatform ? Cap.isNativePlatform() : Cap.platform !== 'web'));
+      if (!isNative) return;
+      var Push = Cap.Plugins && Cap.Plugins.PushNotifications;
+      if (!Push) return;
+      if (_pushInited) return;
+      _pushInited = true;
+
+      // Token arrived from APNs — send to backend
+      Push.addListener('registration', function (token) {
+        var deviceToken = (token && token.value) ? token.value : '';
+        if (!deviceToken) return;
+        var email = (sessionStorage.getItem('cartpath_member_email') || '').toLowerCase();
+        var name = sessionStorage.getItem('cartpath_member_name') || '';
+        if (!email) return;
+        fetch(CHAT_API + '/push/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, token: deviceToken, platform: 'ios', name: name })
+        }).catch(function () {});
+        try { sessionStorage.setItem('cp_push_token', deviceToken); } catch {}
+      });
+
+      Push.addListener('registrationError', function (err) {
+        console.warn('Push registration error', err);
+      });
+
+      // Tapped a notification — route to the right place
+      Push.addListener('pushNotificationActionPerformed', function (action) {
+        var data = (action && action.notification && action.notification.data) || {};
+        routePushTap(data);
+      });
+
+      // Foreground delivery — bump the channel's unread dot so the UI reacts
+      // even though iOS suppresses the banner while the app is open.
+      Push.addListener('pushNotificationReceived', function (notification) {
+        var data = (notification && notification.data) || {};
+        if (data.channelId && typeof markChannelUnreadById === 'function') {
+          markChannelUnreadById(data.channelId);
+        }
+      });
+
+      Push.checkPermissions().then(function (perm) {
+        if (perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale') {
+          return Push.requestPermissions();
+        }
+        return perm;
+      }).then(function (perm) {
+        if (perm && perm.receive === 'granted') {
+          Push.register();
+        }
+      }).catch(function () {});
+    } catch (e) {
+      console.warn('initPushNotifications failed', e);
+    }
+  }
+
+  // Map a push payload's channelId back to a UI channel key and open it.
+  function routePushTap(data) {
+    try {
+      if (!data || !data.channelId) return;
+      var uiKey = null;
+      for (var k in chatChannelMap) {
+        if (chatChannelMap[k] === data.channelId) { uiKey = k; break; }
+      }
+      switchTab('chat');
+      if (uiKey && typeof selectChannel === 'function') {
+        setTimeout(function () { selectChannel(uiKey); }, 150);
+      }
+    } catch {}
+  }
+
   var chatChannelMap = {
     lounge: 'clubhouse-lounge',
     announcements: 'announcements',
@@ -4048,6 +4166,16 @@
     var pillDot = document.getElementById('pillUnread-' + channelId);
     if (pillDot) pillDot.classList.remove('show');
   }
+  // Show the unread dot for a backend roomId (used by foreground push delivery).
+  function markChannelUnreadById(roomId) {
+    var localId = null;
+    for (var k in chatChannelMap) { if (chatChannelMap[k] === roomId) { localId = k; break; } }
+    if (!localId || localId === currentChannel) return;
+    var dot = document.getElementById('unread-' + localId);
+    var pillDot = document.getElementById('pillUnread-' + localId);
+    if (dot) dot.classList.add('show');
+    if (pillDot) pillDot.classList.add('show');
+  }
   // Poll every 60s: ask each channel for its latest message and dot it if newer than last-seen
   function pollUnreadCounts() {
     var seen = getSeenMap();
@@ -4134,10 +4262,54 @@
       .catch(function(err) { console.error('pin failed:', err); });
   }
 
+  // Auto-grow the composer textarea up to its CSS max-height, then scroll.
+  function autoGrowChatInput() {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 132) + 'px';
+  }
+
+  var CHAT_EMOJIS = ['😀','😂','😅','😎','🥳','😮','😍','🤔','👍','👏','🙌','💪','🔥','⛳','🏌️','🏆','🎯','💯','☘️','🍀','🌧️','☀️','🍺','🥃','🤝','👀','❤️','😴'];
+  function toggleEmojiPicker() {
+    var p = document.getElementById('chatEmojiPicker');
+    if (!p) return;
+    if (p.style.display === 'block') { p.style.display = 'none'; return; }
+    if (!p._built) {
+      p.innerHTML = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">' +
+        CHAT_EMOJIS.map(function (e) {
+          return '<button type="button" onclick="insertEmoji(\'' + e + '\')" style="background:transparent;border:none;font-size:22px;cursor:pointer;padding:6px;border-radius:6px;line-height:1;">' + e + '</button>';
+        }).join('') + '</div>';
+      p._built = true;
+    }
+    p.style.display = 'block';
+  }
+  function insertEmoji(e) {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    var start = (typeof input.selectionStart === 'number') ? input.selectionStart : input.value.length;
+    var end = (typeof input.selectionEnd === 'number') ? input.selectionEnd : input.value.length;
+    input.value = input.value.substring(0, start) + e + input.value.substring(end);
+    var pos = start + e.length;
+    input.focus();
+    try { input.setSelectionRange(pos, pos); } catch {}
+    autoGrowChatInput();
+  }
+  // Tap anywhere outside to dismiss the emoji picker.
+  document.addEventListener('click', function (ev) {
+    var p = document.getElementById('chatEmojiPicker');
+    if (!p || p.style.display !== 'block') return;
+    var btn = document.getElementById('chatEmojiBtn');
+    if (p.contains(ev.target) || (btn && btn.contains(ev.target))) return;
+    p.style.display = 'none';
+  });
+
   function sendMessage() {
     var input = document.getElementById('chatInput');
     var msg = input.value.trim();
     if (!msg) return;
+    var picker = document.getElementById('chatEmojiPicker');
+    if (picker) picker.style.display = 'none';
 
     var userName = sessionStorage.getItem('cartpath_member_name') || 'Member';
     var initials = userName.split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2);
@@ -4168,6 +4340,7 @@
     appendPendingMessage(tempMsg);
 
     input.value = '';
+    input.style.height = 'auto';
     closeMentionPopover();
 
     fetch(CHAT_API + '/' + roomId + '/messages', {
@@ -4802,14 +4975,42 @@
     .then(function(d) { if (d.success) alert('Permissions updated.'); });
   }
 
-  // Poll for new messages every 3 seconds. Also polls unread + presence + heartbeat on a slower cadence.
+  // Adaptive message polling: fast (2s) while the chat is on-screen and the
+  // app is in the foreground, slow (10s) when backgrounded. This makes the
+  // room feel near-real-time without hammering the API when nobody's looking.
+  // It also re-polls instantly the moment the app regains focus, so returning
+  // to the app never shows a stale window.
   var chatHeartbeatInterval = null;
   var chatUnreadInterval = null;
   var chatPresenceInterval = null;
+  var chatPollActive = false;
+  var CHAT_POLL_FAST = 2000;
+  var CHAT_POLL_SLOW = 10000;
+
+  function scheduleChatPoll() {
+    if (chatPollInterval) clearTimeout(chatPollInterval);
+    if (!chatPollActive) return;
+    var delay = document.hidden ? CHAT_POLL_SLOW : CHAT_POLL_FAST;
+    chatPollInterval = setTimeout(function() {
+      loadMessages(true);
+      scheduleChatPoll();
+    }, delay);
+  }
+
+  function onChatVisibilityChange() {
+    if (!chatPollActive) return;
+    if (!document.hidden) {
+      // Came back to the foreground — refresh immediately, then resume fast.
+      loadMessages(true);
+      if (window.fetchChatPresence) window.fetchChatPresence();
+    }
+    scheduleChatPoll();
+  }
 
   function startChatPolling() {
-    if (chatPollInterval) clearInterval(chatPollInterval);
-    chatPollInterval = setInterval(function() { loadMessages(true); }, 3000);
+    chatPollActive = true;
+    scheduleChatPoll();
+    document.addEventListener('visibilitychange', onChatVisibilityChange);
 
     // Pre-load mentionables once
     loadMentionables();
@@ -4830,7 +5031,9 @@
   }
 
   function stopChatPolling() {
-    if (chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
+    chatPollActive = false;
+    document.removeEventListener('visibilitychange', onChatVisibilityChange);
+    if (chatPollInterval) { clearTimeout(chatPollInterval); chatPollInterval = null; }
     if (chatHeartbeatInterval) { clearInterval(chatHeartbeatInterval); chatHeartbeatInterval = null; }
     if (chatPresenceInterval) { clearInterval(chatPresenceInterval); chatPresenceInterval = null; }
     if (chatUnreadInterval) { clearInterval(chatUnreadInterval); chatUnreadInterval = null; }

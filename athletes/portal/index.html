@@ -887,6 +887,9 @@
         document.getElementById('loadingScreen').style.display = 'none';
         document.getElementById('portalContent').style.display = 'block';
 
+        // Register for push (iOS shell only; no-op on web)
+        setTimeout(function () { initAthletePush(); }, 800);
+
         if (athlete && athlete.onboarded !== true) {
           setTimeout(startAthleteOnboarding, 800);
         }
@@ -899,6 +902,33 @@
     function showError() {
       document.getElementById('loadingScreen').style.display = 'none';
       document.getElementById('errorScreen').style.display = 'flex';
+    }
+
+    // Push notifications for athletes — round-request alerts. iOS shell only.
+    var _athPushInited = false;
+    function initAthletePush() {
+      try {
+        var Cap = window.Capacitor;
+        var isNative = !!(Cap && (Cap.isNativePlatform ? Cap.isNativePlatform() : Cap.platform !== 'web'));
+        if (!isNative || _athPushInited) return;
+        var Push = Cap.Plugins && Cap.Plugins.PushNotifications;
+        if (!Push || !athlete || !athlete.email) return;
+        _athPushInited = true;
+        Push.addListener('registration', function (token) {
+          var dt = (token && token.value) ? token.value : '';
+          if (!dt) return;
+          fetch(CHAT_API + '/push/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: (athlete.email || '').toLowerCase(), token: dt, platform: 'ios', name: athlete.name || '' })
+          }).catch(function () {});
+        });
+        Push.addListener('registrationError', function (e) { console.warn('athlete push err', e); });
+        Push.checkPermissions().then(function (p) {
+          if (p.receive === 'prompt' || p.receive === 'prompt-with-rationale') return Push.requestPermissions();
+          return p;
+        }).then(function (p) { if (p && p.receive === 'granted') Push.register(); }).catch(function () {});
+      } catch (e) { console.warn('initAthletePush failed', e); }
     }
 
     async function loadEntries() {
