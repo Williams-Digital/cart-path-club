@@ -2062,13 +2062,35 @@
           }
           /* Pinned bar + header don't grow */
           #chatHeader, #chatPinnedBar { flex: 0 0 auto; }
-          /* Messages list flexes — leave room at the bottom for the fixed composer */
+          /* Messages list flexes — leave room at the bottom for the fixed
+             composer. Inline style on this element sets flex:1, but we add
+             min-height:0 and explicit overflow here for iOS. */
           #chatMessages {
-            flex: 1 1 auto !important;
+            flex: 1 1 0 !important;
             min-height: 0 !important;
-            padding: 14px 14px calc(80px + env(safe-area-inset-bottom)) !important;
-            -webkit-overflow-scrolling: touch;
+            height: auto !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
             overscroll-behavior: contain;
+            padding: 14px 14px calc(80px + env(safe-area-inset-bottom)) !important;
+          }
+          /* Force the chat-grid + its message column to have flex sizing
+             instead of the inline height:600px / display:grid that work on
+             desktop but make the iOS touch chain ambiguous. */
+          body.chat-active #chat-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
+            flex: 1 1 0 !important;
+          }
+          body.chat-active #chat-grid > div:last-child {
+            flex: 1 1 0 !important;
+            min-height: 0 !important;
+            height: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
           }
           /* Composer floats above everything, pinned to the viewport bottom.
              Use transform layer to keep it stable during keyboard show/hide. */
@@ -2300,7 +2322,7 @@
           <div id="chatPinnedBar" style="display:none; padding: 12px 20px; border-bottom: 1px solid rgba(191,155,59,0.1); background: rgba(191,155,59,0.03); max-height: 150px; overflow-y: auto;"></div>
 
           <!-- Messages -->
-          <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; position: relative; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; transform: translateZ(0);" onscroll="onChatScroll()">
+          <div id="chatMessages" style="flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 20px; position: relative; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;" onscroll="onChatScroll()">
             <div style="text-align:center;padding:40px;font-family:var(--font-ui);font-size:13px;color:rgba(245,240,225,0.2);">Select a channel to start chatting.</div>
           </div>
 
