@@ -2093,11 +2093,22 @@
             width: 100%;
             height: 100dvh;
           }
-          /* When chat takes over, hand scrolling back to chat's own layout —
-             don't let the portal-active rule make #portal-screen a competing
-             scroller (the messages list scrolls instead). */
+          /* When chat takes over, hand scrolling back to chat's own layout.
+             The chat tab uses position:fixed on .portal-content to lock itself
+             to the viewport, and #chatMessages is the only scroller. If we
+             leave portal-active's body-fixed + portal-screen-fixed rules in
+             effect at the same time, the nested fixed-on-fixed chain breaks
+             touch scrolling inside #chatMessages on iOS. So we fully release
+             the portal-active locks while chat is active. */
+          body.chat-active.portal-active {
+            position: static !important;
+            overflow: visible !important;
+            width: auto !important;
+          }
           body.chat-active.portal-active #portal-screen {
-            overflow: hidden;
+            position: static !important;
+            overflow: visible !important;
+            top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
           }
           body.chat-active .portal-content {
             position: fixed;
