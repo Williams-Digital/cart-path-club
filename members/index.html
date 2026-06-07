@@ -2463,6 +2463,16 @@
           </div>
         </div>
 
+        <!-- Notifications + Diagnostics -->
+        <div class="account-card full-width" style="padding: 24px;">
+          <div style="font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(245,240,225,0.4); margin-bottom: 14px;">Notifications</div>
+          <p style="font-family: var(--font-ui); font-size: 13px; color: rgba(245,240,225,0.7); margin-bottom: 14px; line-height: 1.55;">If you didn't get a permission prompt on first launch (or you tapped Don't Allow), tap below to retry. If push still doesn't work, tap Diagnostics and screenshot it.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+            <button onclick="retryPushRegistration && retryPushRegistration()" style="background: var(--gold); color: var(--green-deep); border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;">Enable Notifications</button>
+            <button onclick="showPushDiagnostics()" style="background: rgba(191,155,59,0.1); border: 1px solid rgba(191,155,59,0.25); color: var(--gold); padding: 10px 18px; border-radius: 4px; cursor: pointer; font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;">Diagnostics</button>
+          </div>
+        </div>
+
         <!-- Log Out -->
         <div class="account-card full-width" style="text-align: center; padding: 24px;">
           <button class="acct-btn danger" onclick="doLogout()" style="display: inline-block; width: auto; padding: 12px 48px;">Log Out</button>
@@ -3729,38 +3739,61 @@
   // Flow: request permission → register with APNs → receive the hex device
   // token → POST it to the chat lambda keyed by the member's email. Taps on a
   // delivered notification deep-link into the relevant chat channel.
+  //
+  // Diagnostics: we record every step into window._cpPushState so the
+  // Account-tab diagnostics panel can show the user what's happening on
+  // their device (since we can't see their console remotely).
+  window._cpPushState = window._cpPushState || {
+    log: [],
+    isNative: null,
+    pluginAvailable: null,
+    permission: null,
+    registered: false,
+    token: null,
+    lastError: null,
+    backendStatus: null,
+  };
+  function _pushLog(msg) {
+    try {
+      window._cpPushState.log.push((new Date().toISOString().slice(11,19)) + ' ' + msg);
+      if (window._cpPushState.log.length > 30) window._cpPushState.log.shift();
+      console.log('[push]', msg);
+    } catch {}
+  }
   var _pushInited = false;
   function initPushNotifications(role) {
     try {
       var Cap = window.Capacitor;
       var isNative = !!(Cap && (Cap.isNativePlatform ? Cap.isNativePlatform() : Cap.platform !== 'web'));
-      if (!isNative) return;
+      window._cpPushState.isNative = isNative;
+      _pushLog('init called (native=' + isNative + ')');
+      if (!isNative) { _pushLog('not native — bailing'); return; }
       var Push = Cap.Plugins && Cap.Plugins.PushNotifications;
-      if (!Push) return;
-      if (_pushInited) return;
+      window._cpPushState.pluginAvailable = !!Push;
+      if (!Push) { _pushLog('PushNotifications plugin missing!'); return; }
+      if (_pushInited) { _pushLog('already inited, skipping'); return; }
       _pushInited = true;
 
       // Token arrived from APNs — send to backend
       Push.addListener('registration', function (token) {
         var deviceToken = (token && token.value) ? token.value : '';
-        if (!deviceToken) return;
-        var email = (sessionStorage.getItem('cartpath_member_email') || '').toLowerCase();
-        var name = sessionStorage.getItem('cartpath_member_name') || '';
-        if (!email) return;
-        fetch(CHAT_API + '/push/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email, token: deviceToken, platform: 'ios', name: name })
-        }).catch(function () {});
+        _pushLog('registration event — token len=' + (deviceToken ? deviceToken.length : 0));
+        if (!deviceToken) { _pushLog('empty token, bailing'); return; }
+        window._cpPushState.token = deviceToken;
+        window._cpPushState.registered = true;
         try { sessionStorage.setItem('cp_push_token', deviceToken); } catch {}
+        sendPushTokenToBackend(deviceToken);
       });
 
       Push.addListener('registrationError', function (err) {
-        console.warn('Push registration error', err);
+        var msg = (err && (err.error || err.message)) || JSON.stringify(err);
+        _pushLog('registrationError: ' + msg);
+        window._cpPushState.lastError = 'registration: ' + msg;
       });
 
       // Tapped a notification — route to the right place
       Push.addListener('pushNotificationActionPerformed', function (action) {
+        _pushLog('notif tapped');
         var data = (action && action.notification && action.notification.data) || {};
         routePushTap(data);
       });
@@ -3768,6 +3801,7 @@
       // Foreground delivery — bump the channel's unread dot so the UI reacts
       // even though iOS suppresses the banner while the app is open.
       Push.addListener('pushNotificationReceived', function (notification) {
+        _pushLog('notif received (foreground)');
         var data = (notification && notification.data) || {};
         if (data.channelId && typeof markChannelUnreadById === 'function') {
           markChannelUnreadById(data.channelId);
@@ -3775,18 +3809,129 @@
       });
 
       Push.checkPermissions().then(function (perm) {
+        _pushLog('checkPermissions → ' + (perm && perm.receive));
+        window._cpPushState.permission = perm && perm.receive;
         if (perm.receive === 'prompt' || perm.receive === 'prompt-with-rationale') {
+          _pushLog('prompting user…');
           return Push.requestPermissions();
         }
         return perm;
       }).then(function (perm) {
+        _pushLog('after prompt → ' + (perm && perm.receive));
+        window._cpPushState.permission = perm && perm.receive;
         if (perm && perm.receive === 'granted') {
+          _pushLog('calling Push.register()');
           Push.register();
+        } else {
+          _pushLog('permission not granted, no register');
         }
-      }).catch(function () {});
+      }).catch(function (e) {
+        var msg = (e && (e.message || e.error)) || JSON.stringify(e);
+        _pushLog('permission flow error: ' + msg);
+        window._cpPushState.lastError = 'permission: ' + msg;
+      });
     } catch (e) {
-      console.warn('initPushNotifications failed', e);
+      var msg = (e && (e.message || e.toString())) || JSON.stringify(e);
+      _pushLog('initPushNotifications threw: ' + msg);
+      window._cpPushState.lastError = 'init: ' + msg;
     }
+  }
+
+  // POST the device token to the chat lambda. Retries with backoff if email
+  // isn't yet in sessionStorage (race: token can arrive before showPortal
+  // finished persisting the email).
+  function sendPushTokenToBackend(deviceToken, attempt) {
+    attempt = attempt || 0;
+    var email = (sessionStorage.getItem('cartpath_member_email') || '').toLowerCase();
+    var name = sessionStorage.getItem('cartpath_member_name') || '';
+    if (!email) {
+      if (attempt < 5) {
+        _pushLog('email not yet in session (attempt ' + attempt + '), retrying in 1s');
+        setTimeout(function () { sendPushTokenToBackend(deviceToken, attempt + 1); }, 1000);
+      } else {
+        _pushLog('email never appeared after 5 retries — giving up');
+        window._cpPushState.lastError = 'no email after 5 retries';
+      }
+      return;
+    }
+    _pushLog('POSTing token to backend for ' + email);
+    fetch(CHAT_API + '/push/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, token: deviceToken, platform: 'ios', name: name })
+    })
+    .then(function (r) {
+      window._cpPushState.backendStatus = r.status;
+      _pushLog('backend responded ' + r.status);
+      if (!r.ok) {
+        return r.text().then(function (t) { window._cpPushState.lastError = 'backend ' + r.status + ': ' + t.substring(0,120); });
+      }
+    })
+    .catch(function (e) {
+      var msg = (e && (e.message || e.toString())) || 'unknown';
+      _pushLog('backend POST failed: ' + msg);
+      window._cpPushState.lastError = 'backend POST: ' + msg;
+    });
+  }
+
+  // Public: user-triggered re-attempt (from the Account tab "Enable
+  // Notifications" button). Resets the inited flag so we can retry cleanly.
+  function retryPushRegistration() {
+    _pushInited = false;
+    window._cpPushState.lastError = null;
+    initPushNotifications('member');
+  }
+
+  // Show diagnostics in a simple modal so the user can read and screenshot.
+  function showPushDiagnostics() {
+    var text = getPushDiagnosticsText();
+    var existing = document.getElementById('pushDiagModal');
+    if (existing) existing.remove();
+    var modal = document.createElement('div');
+    modal.id = 'pushDiagModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100001;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML =
+      '<div style="background:#091D14;border:1px solid rgba(191,155,59,0.25);border-radius:8px;max-width:560px;width:100%;max-height:85vh;display:flex;flex-direction:column;">' +
+        '<div style="padding:18px 22px;border-bottom:1px solid rgba(191,155,59,0.12);display:flex;justify-content:space-between;align-items:center;">' +
+          '<div style="font-family:var(--font-display);font-size:1.1rem;color:var(--cream);">Push Diagnostics</div>' +
+          '<button onclick="document.getElementById(\'pushDiagModal\').remove()" style="background:none;border:none;color:rgba(245,240,225,0.5);font-size:22px;cursor:pointer;line-height:1;padding:0 6px;">&times;</button>' +
+        '</div>' +
+        '<pre style="margin:0;padding:18px 22px;color:rgba(245,240,225,0.85);font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow:auto;flex:1;">' +
+          (text || '(no data)').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+        '</pre>' +
+        '<div style="padding:14px 22px;border-top:1px solid rgba(191,155,59,0.12);text-align:right;">' +
+          '<button onclick="(function(){var t=getPushDiagnosticsText();try{navigator.clipboard.writeText(t);}catch(e){}showToast&&showToast(\'Copied\');})()" style="background:rgba(191,155,59,0.15);border:1px solid rgba(191,155,59,0.3);color:var(--gold);padding:8px 14px;border-radius:3px;cursor:pointer;font-family:var(--font-ui);font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;">Copy</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+  }
+
+  // Render the diagnostics text the Account tab can show.
+  function getPushDiagnosticsText() {
+    var s = window._cpPushState || {};
+    var token = s.token ? (s.token.substring(0, 16) + '… (len ' + s.token.length + ')') : '(none)';
+    var sessEmail = (function(){ try { return sessionStorage.getItem('cartpath_member_email') || '(empty)'; } catch { return '(error)'; }})();
+    var sessName = (function(){ try { return sessionStorage.getItem('cartpath_member_name') || '(empty)'; } catch { return '(error)'; }})();
+    return [
+      '— Push —',
+      'Native shell: ' + (s.isNative === null ? 'unknown' : s.isNative),
+      'Plugin available: ' + (s.pluginAvailable === null ? 'unknown' : s.pluginAvailable),
+      'Permission: ' + (s.permission || '(not checked)'),
+      'Registered with APNs: ' + (s.registered ? 'yes' : 'no'),
+      'Device token: ' + token,
+      'Backend status: ' + (s.backendStatus == null ? '(no POST yet)' : s.backendStatus),
+      'Last push error: ' + (s.lastError || '(none)'),
+      '',
+      '— Session —',
+      'Email: ' + sessEmail,
+      'Name: ' + sessName,
+      '',
+      '— Request a Round —',
+      'Last booking error: ' + (window._cpLastBookingError || '(none)'),
+      '',
+      '— Event log —',
+      (s.log || []).join('\n') || '(empty)',
+    ].join('\n');
   }
 
   // Map a push payload's channelId back to a UI channel key and open it.
@@ -5816,15 +5961,25 @@
       });
 
       if (!res.ok) {
-        var err = await res.json().catch(function() { return {}; });
-        throw new Error(err.error || 'Request failed');
+        var rawText = await res.text().catch(function() { return ''; });
+        var serverErr = '';
+        try { serverErr = (JSON.parse(rawText) || {}).error || ''; } catch {}
+        var detail = serverErr || rawText.substring(0, 160) || res.statusText || 'no body';
+        // Persist so diagnostics can show it later
+        window._cpLastBookingError = res.status + ' — ' + detail;
+        throw new Error('HTTP ' + res.status + ' — ' + detail);
       }
 
       closeMatchRequestModal();
       showToast('Request sent! Our team will review and respond within 24 hours.');
       if (typeof loadMyRequests === 'function') loadMyRequests();
     } catch (err) {
-      showToast('Error: ' + err.message, 'error');
+      // showToast caps long messages; for the user's benefit, log full detail
+      // and store it so diagnostics can show it.
+      console.error('submitMatchRequest failed:', err);
+      window._cpLastBookingError = window._cpLastBookingError || (err && err.message);
+      var msg = (err && err.message) || 'unknown error';
+      showToast('Request failed: ' + msg.substring(0, 140), 'error');
       submitBtn.disabled = false;
       submitBtn.textContent = 'Submit Request';
     }
