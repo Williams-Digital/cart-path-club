@@ -1118,6 +1118,12 @@
 </head>
 <body>
 
+    <!-- Sample-data notice: shown only when the live API is unreachable and the
+         page is displaying placeholder scores, so they're never passed off as live. -->
+    <div id="sampleDataBanner" style="display:none;position:relative;z-index:50;background:rgba(191,155,59,0.14);border-bottom:1px solid rgba(191,155,59,0.35);color:#BF9B3B;font-family:'Inter',-apple-system,sans-serif;font-size:12px;letter-spacing:0.04em;text-align:center;padding:9px 16px;">
+        Live scoring is temporarily unavailable — showing sample data for layout only.
+    </div>
+
     <!-- NAV -->
     <nav class="nav">
         <div class="nav-inner">
@@ -1671,6 +1677,8 @@
                 .then(function(data) {
                     showLoading(false);
                     isFirstLoad = false;
+                    var sb = document.getElementById('sampleDataBanner');
+                    if (sb) sb.style.display = 'none';
 
                     var tournament = data.Tournament || {};
                     var players = data.Players || [];
@@ -1706,7 +1714,9 @@
                     showLoading(false);
                     isFirstLoad = false;
 
-                    // Render fallback mock data
+                    // Render fallback mock data — flag it as sample, not live.
+                    var sb = document.getElementById('sampleDataBanner');
+                    if (sb) sb.style.display = 'block';
                     renderFallback();
                     updateTimestamp();
 

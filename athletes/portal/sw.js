@@ -2,7 +2,7 @@
 // Network-first for the portal HTML so updates roll out instantly;
 // cache-first for static assets and fonts.
 
-const CACHE = 'cartpath-portal-v1';
+const CACHE = 'cartpath-portal-v2';
 const STATIC = [
   '/assets/cartpath-shield.png',
   '/assets/favicon.png',
@@ -28,14 +28,17 @@ self.addEventListener('fetch', (e) => {
   // Don't cache API calls — always fresh
   if (url.hostname.includes('execute-api')) return;
 
-  // Network-first for HTML
+  // Network-first for HTML. Cache the document under a token-stripped key so a
+  // single stale entry can't pin one ?token= URL, and ignore the query string
+  // when matching the fallback. The token is never persisted in the cache.
   if (req.mode === 'navigate' || req.destination === 'document') {
+    const docKey = new Request(url.origin + url.pathname);
     e.respondWith(
       fetch(req).then((res) => {
         const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
+        caches.open(CACHE).then((c) => c.put(docKey, copy));
         return res;
-      }).catch(() => caches.match(req))
+      }).catch(() => caches.match(docKey, { ignoreSearch: true }))
     );
     return;
   }

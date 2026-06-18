@@ -756,7 +756,7 @@
 
   <!-- Multi-Step Form -->
   <div class="form-wrapper" id="formWrapper">
-    <form id="applicationForm" action="https://formspree.io/f/xaqlkklg" method="POST">
+    <form id="applicationForm" novalidate>
 
       <input type="hidden" name="_subject" value="New CartPath Membership Application">
       <input type="hidden" name="_source" id="sourceField" value="direct">
@@ -1157,26 +1157,25 @@
       submitBtn.disabled = true;
       submitBtn.textContent = 'SUBMITTING...';
 
-      // Collect form data as JSON for Resend Lambda
-      var selectedAthletes = [];
-      document.querySelectorAll('.athlete-select-card.selected').forEach(function(card) {
-        selectedAthletes.push(card.getAttribute('data-name'));
-      });
+      // Collect form data as JSON for Resend Lambda.
+      // Read the by-name fields off the form (they have name= but no id=),
+      // and reuse the module-level selectedAthletes the cards already maintain.
+      function fieldVal(n) { var el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; }
 
       var jsonData = {
         name: document.getElementById('fieldName').value.trim(),
         email: document.getElementById('fieldEmail').value.trim(),
         phone: document.getElementById('fieldPhone').value.trim(),
         company: document.getElementById('fieldCompany').value.trim(),
-        title: (document.getElementById('fieldTitle') || {}).value || '',
-        city: (document.getElementById('fieldCity') || {}).value || '',
-        handicap: (document.getElementById('fieldHandicap') || {}).value || '',
-        frequency: (document.getElementById('fieldFrequency') || {}).value || '',
-        home_course: (document.getElementById('fieldCourse') || {}).value || '',
-        tier: document.querySelector('input[name="tier"]').value || '',
-        athletes: selectedAthletes,
-        referral: (document.getElementById('fieldReferral') || {}).value || '',
-        notes: (document.getElementById('fieldNotes') || {}).value || '',
+        title: fieldVal('title'),
+        city: fieldVal('city'),
+        handicap: fieldVal('handicap'),
+        frequency: fieldVal('frequency'),
+        home_course: fieldVal('home_course'),
+        tier: (document.querySelector('input[name="tier"]') || {}).value || '',
+        athletes: selectedAthletes.slice(),
+        referral: fieldVal('referral'),
+        notes: fieldVal('notes'),
         _source: document.getElementById('sourceField').value,
         agreed_to_terms: document.getElementById('termsCheckbox').checked,
         terms_agreed_at: new Date().toISOString()

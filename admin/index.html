@@ -1419,11 +1419,6 @@
 
   <script>
     const API = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
-    const ADMINS = {
-      'dylan@williamsdigital.io': 'CartPath2026!',
-      'dylan@cartpathclub.com': 'CartPath2026!',
-      'msowell@cartpathclub.com': 'CartPath2026!'
-    };
 
     let currentFilter = 'all';
     let currentDateFilter = 'all';
@@ -2250,7 +2245,7 @@
 
     async function confirmBookingAction(bookingId, action) {
       if (action === 'decline') {
-        var reason = prompt('Decline reason (optional, internal-only):');
+        var reason = await cpPrompt('Decline reason (optional, internal-only):', { multiline: true, placeholder: 'Internal note…', okLabel: 'Decline' });
         if (reason === null) return; // cancelled
         try {
           var res = await fetch(API + '/admin/bookings/' + bookingId + '/decline', {
@@ -2302,7 +2297,7 @@
     }
 
     async function rerouteAfterDecline(bookingId) {
-      var newAthleteId = prompt('Reroute to a different athlete? Paste their athlete ID, or leave blank to retry the same athlete:');
+      var newAthleteId = await cpPrompt('Reroute to a different athlete? Paste their athlete ID, or leave blank to retry the same athlete:', { placeholder: 'athlete ID (optional)', okLabel: 'Reroute' });
       if (newAthleteId === null) return; // cancelled
       try {
         var res = await fetch(API + '/admin/bookings/' + bookingId + '/reroute', {
@@ -2345,14 +2340,13 @@
     })();
 
     function getToken() {
-      // Cognito ID token if we have one, else fall back to the legacy admin password
-      return localStorage.getItem('cp_id_token') || sessionStorage.getItem('cartpath_admin_token') || '';
+      // Cognito ID token only. The legacy shared-password path was removed —
+      // admin access is enforced server-side via custom:role=admin on the JWT.
+      return localStorage.getItem('cp_id_token') || '';
     }
 
     function getEmail() {
-      return localStorage.getItem('cp_email')
-          || sessionStorage.getItem('cartpath_admin_email')
-          || '';
+      return localStorage.getItem('cp_email') || '';
     }
 
     async function cognitoCall(target, body) {
@@ -2379,21 +2373,7 @@
       const errEl = document.getElementById('loginError');
       errEl.style.display = 'none';
 
-      // Fallback path: if user typed the legacy shared password, keep working
-      // until everyone is on Cognito. Allow-list email check still applies.
-      const LEGACY_ADMINS = {
-        'dylan@williamsdigital.io': 'CartPath2026!',
-        'dylan@cartpathclub.com': 'CartPath2026!',
-        'msowell@cartpathclub.com': 'CartPath2026!',
-      };
-      if (LEGACY_ADMINS[email] && LEGACY_ADMINS[email] === pw) {
-        sessionStorage.setItem('cartpath_admin_token', pw);
-        sessionStorage.setItem('cartpath_admin_email', email);
-        showDashboard();
-        return false;
-      }
-
-      // Cognito sign-in
+      // Cognito sign-in (legacy shared-password path removed)
       try {
         const data = await cognitoCall('InitiateAuth', {
           AuthFlow: 'USER_PASSWORD_AUTH',
@@ -2457,9 +2437,6 @@
     }
 
     function handleLogout() {
-      // Clear both legacy + new auth storage
-      sessionStorage.removeItem('cartpath_admin_token');
-      sessionStorage.removeItem('cartpath_admin_email');
       ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry','cp_email'].forEach(k => localStorage.removeItem(k));
       if (pollInterval) clearInterval(pollInterval);
       document.getElementById('dashboard').classList.remove('active');
@@ -2476,17 +2453,13 @@
       startPolling();
     }
 
-    // Auto-dashboard if we already have a valid JWT or legacy password in storage
+    // Auto-dashboard if we already have a Cognito JWT in storage.
     (function autoEnterDashboard() {
       var t = getToken();
       if (!t) return;
-      // If it's a JWT (3 dot-separated parts), trust it for now — the API will
-      // reject calls if it's stale and the user will get bounced back to login.
-      if (t.split('.').length === 3 || Object.values({
-        'dylan@williamsdigital.io': 'CartPath2026!',
-        'dylan@cartpathclub.com': 'CartPath2026!',
-        'msowell@cartpathclub.com': 'CartPath2026!',
-      }).includes(t)) {
+      // Only a real JWT (3 dot-separated parts) enters. The API enforces
+      // custom:role=admin, so a stale/non-admin token gets bounced on first call.
+      if (t.split('.').length === 3) {
         showDashboard();
       }
     })();
@@ -2588,21 +2561,24 @@
       var approved = sourceData.filter(function(a) { return a.status === 'approved'; }).length;
       var declined = sourceData.filter(function(a) { return a.status === 'declined'; }).length;
 
+      var removed = sourceData.filter(function(a) { return a.status === 'removed'; }).length;
+
       document.getElementById('statTotal').textContent = total;
       document.getElementById('statPending').textContent = pending;
       document.getElementById('statApproved').textContent = approved;
       document.getElementById('statDeclined').textContent = declined;
 
       const pendingCard = document.getElementById('statPendingCard');
-      if (stats.pending > 0) {
+      if (pending > 0) {
         pendingCard.classList.add('pending');
       } else {
         pendingCard.classList.remove('pending');
       }
 
-      // Tier breakdown
+      // Tier breakdown — only meaningful for member applications; the API's
+      // byTier reflects members, so hide it entirely on the Athletes tab.
       const tierDiv = document.getElementById('tierBreakdown');
-      if (stats.byTier && stats.byTier.length > 0) {
+      if (currentAppType !== 'athletes' && stats.byTier && stats.byTier.length > 0) {
         let html = '<span class="tier-breakdown-label">By Tier:</span>';
         stats.byTier.forEach(function(t) {
           const tierName = t.tier || 'Unknown';
@@ -2618,11 +2594,13 @@
         tierDiv.style.display = 'none';
       }
 
-      document.getElementById('badgeAll').textContent = stats.total;
-      document.getElementById('badgePending').textContent = stats.pending;
-      document.getElementById('badgeApproved').textContent = stats.approved;
-      document.getElementById('badgeDeclined').textContent = stats.declined;
-      document.getElementById('badgeRemoved').textContent = stats.removed;
+      // Tab badges reflect whichever list is currently shown (members OR
+      // athletes), computed from sourceData rather than the member-only stats.
+      document.getElementById('badgeAll').textContent = total;
+      document.getElementById('badgePending').textContent = pending;
+      document.getElementById('badgeApproved').textContent = approved;
+      document.getElementById('badgeDeclined').textContent = declined;
+      document.getElementById('badgeRemoved').textContent = removed;
     }
 
     // CHART
@@ -2818,7 +2796,19 @@
     }
 
     function escapeAttr(str) {
-      return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      // Hardened: these values flow into both HTML attributes and inline
+      // onclick="...('VALUE')" handlers from applicant/athlete-supplied data.
+      // Escape &, <, >, quotes and backslash so a name can't break out of the
+      // handler or inject markup.
+      return String(str == null ? '' : str)
+        .replace(/\\/g, '\\\\')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        // Apostrophe: ' survives HTML attribute parsing as a literal
+        // backslash-escape, so the JS single-quoted string arg stays intact.
+        .replace(/'/g, '\\u0027');
     }
 
     // INTERNAL NOTES (localStorage)
@@ -3406,6 +3396,43 @@
         return '"' + str.replace(/"/g, '""') + '"';
       }
       return str;
+    }
+
+    // Styled prompt — replaces native prompt(), which is blocked in iOS WKWebView.
+    // Returns a Promise that resolves to the entered string, or null if cancelled.
+    function cpPrompt(message, opts) {
+      opts = opts || {};
+      return new Promise(function(resolve) {
+        var ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(6,15,10,0.72);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);';
+        var box = document.createElement('div');
+        box.style.cssText = 'width:100%;max-width:420px;background:#10352A;border:1px solid rgba(191,155,59,0.25);border-radius:14px;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+        var msg = document.createElement('div');
+        msg.style.cssText = 'font-family:Inter,-apple-system,sans-serif;font-size:14px;line-height:1.5;color:#F5F0E1;margin-bottom:14px;white-space:pre-line;';
+        msg.textContent = message;
+        var input = document.createElement(opts.multiline ? 'textarea' : 'input');
+        input.style.cssText = 'width:100%;background:rgba(9,29,20,0.55);border:1px solid rgba(191,155,59,0.25);border-radius:8px;padding:12px 13px;color:#F5F0E1;font-family:Inter,sans-serif;font-size:16px;outline:none;' + (opts.multiline ? 'min-height:80px;resize:vertical;' : '');
+        if (opts.placeholder) input.setAttribute('placeholder', opts.placeholder);
+        if (opts.value) input.value = opts.value;
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:16px;';
+        var cancel = document.createElement('button');
+        cancel.type = 'button'; cancel.textContent = opts.cancelLabel || 'Cancel';
+        cancel.style.cssText = 'padding:11px 18px;background:transparent;border:1px solid rgba(245,240,225,0.2);border-radius:8px;color:rgba(245,240,225,0.7);font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;';
+        var ok = document.createElement('button');
+        ok.type = 'button'; ok.textContent = opts.okLabel || 'OK';
+        ok.style.cssText = 'padding:11px 18px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:8px;color:#091D14;font-family:Inter,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+        function close(val) { document.removeEventListener('keydown', onKey); ov.remove(); resolve(val); }
+        function onKey(e) { if (e.key === 'Escape') close(null); else if (e.key === 'Enter' && !opts.multiline) { e.preventDefault(); close(input.value); } }
+        cancel.onclick = function() { close(null); };
+        ok.onclick = function() { close(input.value); };
+        ov.onclick = function(e) { if (e.target === ov) close(null); };
+        document.addEventListener('keydown', onKey);
+        row.appendChild(cancel); row.appendChild(ok);
+        box.appendChild(msg); box.appendChild(input); box.appendChild(row);
+        ov.appendChild(box); document.body.appendChild(ov);
+        setTimeout(function() { input.focus(); }, 50);
+      });
     }
 
     // Luxury toast — same component across all portals

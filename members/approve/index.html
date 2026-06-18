@@ -214,8 +214,51 @@
 <script>
   var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
 
+  // Styled prompt — native prompt() is blocked in iOS WKWebView.
+  function cpPrompt(message, opts) {
+    opts = opts || {};
+    return new Promise(function(resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(6,15,10,0.72);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);';
+      var box = document.createElement('div');
+      box.style.cssText = 'width:100%;max-width:420px;background:#10352A;border:1px solid rgba(191,155,59,0.25);border-radius:14px;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      var msg = document.createElement('div');
+      msg.style.cssText = 'font-family:Inter,-apple-system,sans-serif;font-size:14px;line-height:1.5;color:#F5F0E1;margin-bottom:14px;';
+      msg.textContent = message;
+      var input = document.createElement('textarea');
+      input.style.cssText = 'width:100%;background:rgba(9,29,20,0.55);border:1px solid rgba(191,155,59,0.25);border-radius:8px;padding:12px 13px;color:#F5F0E1;font-family:Inter,sans-serif;font-size:16px;outline:none;min-height:72px;resize:vertical;';
+      if (opts.placeholder) input.setAttribute('placeholder', opts.placeholder);
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:16px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = 'Cancel';
+      cancel.style.cssText = 'padding:11px 18px;background:transparent;border:1px solid rgba(245,240,225,0.2);border-radius:8px;color:rgba(245,240,225,0.7);font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;';
+      var ok = document.createElement('button');
+      ok.type = 'button'; ok.textContent = opts.okLabel || 'OK';
+      ok.style.cssText = 'padding:11px 18px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:8px;color:#091D14;font-family:Inter,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+      function close(val) { ov.remove(); resolve(val); }
+      cancel.onclick = function() { close(null); };
+      ok.onclick = function() { close(input.value); };
+      ov.onclick = function(e) { if (e.target === ov) close(null); };
+      row.appendChild(cancel); row.appendChild(ok);
+      box.appendChild(msg); box.appendChild(input); box.appendChild(row);
+      ov.appendChild(box); document.body.appendChild(ov);
+      setTimeout(function() { input.focus(); }, 50);
+    });
+  }
+
   function getIdToken() {
-    return sessionStorage.getItem('cartpath_id_token') || sessionStorage.getItem('cartpath_access_token') || '';
+    // Check the canonical cp_* keys in BOTH storages. When this page opens from
+    // an email link (fresh tab/webview), sessionStorage is empty — localStorage
+    // (where login persists the session) is the one that survives.
+    return localStorage.getItem('cp_id_token')
+        || sessionStorage.getItem('cp_id_token')
+        || localStorage.getItem('cp_access_token')
+        || sessionStorage.getItem('cp_access_token')
+        // legacy fallbacks (older builds used these key names)
+        || sessionStorage.getItem('cartpath_id_token')
+        || sessionStorage.getItem('cartpath_access_token')
+        || '';
   }
 
   function getBookingId() {
@@ -332,7 +375,9 @@
   }
 
   async function rejectQuote() {
-    var reason = prompt('Why are you declining? (optional)') || null;
+    var reason = await cpPrompt('Why are you declining? (optional)', { placeholder: 'Reason (optional)…', okLabel: 'Decline' });
+    if (reason === null) return; // cancelled
+    reason = reason || null;
     var approveBtn = document.getElementById('approveBtn');
     var declineBtn = document.getElementById('declineBtn');
     approveBtn.disabled = true; declineBtn.disabled = true;

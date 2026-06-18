@@ -1699,8 +1699,8 @@
       <div class="welcome-banner">
         <h1 id="welcome-heading">Welcome back</h1>
         <div class="member-meta">
-          <span class="tier-badge clubhouse" id="banner-badge">Chairman</span>
-          <span id="member-since-text">Member since Apr 2026</span>
+          <span class="tier-badge executive" id="banner-badge">Member</span>
+          <span id="member-since-text"></span>
         </div>
       </div>
 
@@ -2035,7 +2035,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="width:8px;height:8px;border-radius:50%;background:#6DC86D;display:inline-block;"></span>
-          <span style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35);">8 members online</span>
+          <span id="chatHeaderPresence" style="font-family: var(--font-ui); font-size: 11px; color: rgba(245,240,225,0.35);">— online</span>
         </div>
       </div>
 
@@ -2675,6 +2675,18 @@
     // Dashboard welcome
     document.getElementById('welcome-heading').textContent = 'Welcome back, ' + firstName;
 
+    // Tier badges — drive every badge off the member's REAL tier, not a hardcoded
+    // "Chairman". (switchViewAs may later override these for admins previewing tiers.)
+    var TIER_LABELS = { executive: 'Executive', chairman: 'Chairman', founder: 'Founders', founders: 'Founders', clubhouse: 'Clubhouse' };
+    var realTier = (user.tier || 'clubhouse').toLowerCase();
+    var tierLabel = TIER_LABELS[realTier] || (realTier.charAt(0).toUpperCase() + realTier.slice(1));
+    var tierClass = (realTier === 'founders') ? 'founder' : realTier;
+    var tierBadgeClass = (TIER_LABELS[realTier] && realTier !== 'clubhouse') ? tierClass : 'executive';
+    ['nav-badge', 'mobile-badge', 'banner-badge', 'acct-tier-badge'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) { el.textContent = tierLabel; el.className = 'tier-badge ' + tierBadgeClass; }
+    });
+
     // Account tab — Profile header
     document.getElementById('acct-name').textContent = fullName;
     document.getElementById('acct-email').textContent = user.email || '--';
@@ -2734,8 +2746,10 @@
     document.getElementById('acct-tier-name').textContent = ti.name;
     document.getElementById('acct-tier-price').textContent = ti.price;
     document.getElementById('acct-rounds-remaining').textContent = ti.rounds;
-    document.getElementById('acct-since').textContent = 'Apr 2026';
-    document.getElementById('acct-renewal').textContent = 'Apr 2027';
+    // Real membership dates are populated by loadBillingInfo() from the backend;
+    // leave a neutral placeholder rather than asserting fabricated dates.
+    document.getElementById('acct-since').textContent = user.memberSince || '—';
+    document.getElementById('acct-renewal').textContent = user.renewal || '—';
 
     // Referral link
     var refId = user.sub ? user.sub.substring(0, 8).toUpperCase() : 'MEMBER';
@@ -3390,7 +3404,7 @@
   // ===================== HASH CHANGE HANDLER =====================
   window.addEventListener('hashchange', function() {
     var hash = window.location.hash.replace('#', '');
-    if (['dashboard', 'roster', 'scores', 'account'].indexOf(hash) !== -1) {
+    if (['dashboard', 'roster', 'livescores', 'myrounds', 'chat', 'courses', 'account'].indexOf(hash) !== -1) {
       switchTab(hash);
     }
   });
@@ -3734,6 +3748,19 @@
 
   var CHAT_API = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat';
 
+  // Every /chat/* call must carry the Cognito JWT — the backend authenticates
+  // and derives identity/tier from the token, NOT from the request body.
+  function chatAuthHeaders(extra) {
+    var h = { 'Authorization': 'Bearer ' + getCognitoIdToken() };
+    if (extra) { for (var k in extra) { if (extra.hasOwnProperty(k)) h[k] = extra[k]; } }
+    return h;
+  }
+  function chatFetch(url, opts) {
+    opts = opts || {};
+    opts.headers = chatAuthHeaders(opts.headers);
+    return fetch(url, opts);
+  }
+
   // ===================== PUSH NOTIFICATIONS =====================
   // Native-only (iOS Capacitor shell). On web this is a complete no-op.
   // Flow: request permission → register with APNs → receive the hex device
@@ -3855,7 +3882,7 @@
       return;
     }
     _pushLog('POSTing token to backend for ' + email);
-    fetch(CHAT_API + '/push/register', {
+    chatFetch(CHAT_API + '/push/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, token: deviceToken, platform: 'ios', name: name })
@@ -4024,7 +4051,7 @@
     // Refresh pinned messages every poll so a freshly pinned message appears
     loadPinnedMessages(roomId);
 
-    fetch(url)
+    chatFetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var messages = data.messages || [];
@@ -4292,10 +4319,10 @@
     // Optimistic: toggle the chip in-place so the user sees feedback now.
     // The next 3s poll reconciles with the server's truth.
     optimisticToggleReactionChip(messageId, emoji, userName);
-    fetch(CHAT_API + '/' + roomId + '/messages/' + messageId + '/react', {
+    chatFetch(CHAT_API + '/' + roomId + '/messages/' + messageId + '/react', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ emoji: emoji, userName: userName }),
+      body: JSON.stringify({ emoji: emoji }),
     }).catch(function(err) { console.error('Reaction error:', err); });
   }
 
@@ -4386,7 +4413,7 @@
     Object.keys(chatChannelMap).forEach(function(localId) {
       if (localId === currentChannel) return;
       var roomId = chatChannelMap[localId];
-      fetch(CHAT_API + '/' + roomId + '/messages?limit=1')
+      chatFetch(CHAT_API + '/' + roomId + '/messages?limit=1')
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var latest = (data.messages || [])[0];
@@ -4429,7 +4456,7 @@
   // Load pinned messages for the current channel and render them in a sticky bar
   // above the scrolling messages area.
   function loadPinnedMessages(roomId) {
-    fetch(CHAT_API + '/' + roomId + '/pinned')
+    chatFetch(CHAT_API + '/' + roomId + '/pinned')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var pinned = data.pinned || [];
@@ -4547,7 +4574,7 @@
     input.style.height = 'auto';
     closeMentionPopover();
 
-    fetch(CHAT_API + '/' + roomId + '/messages', {
+    chatFetch(CHAT_API + '/' + roomId + '/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4753,12 +4780,14 @@
 
   // ── Presence heartbeat ──
   window.fetchChatPresence = function() {
-    fetch(CHAT_API + '/presence?role=member')
+    chatFetch(CHAT_API + '/presence?role=member')
       .then(function(r) { return r.json(); })
       .then(function(d) {
         window.chatOnlineCount = d.online;
         var el = document.getElementById('chatPresenceCount');
         if (el) el.textContent = d.online + ' online';
+        var hdr = document.getElementById('chatHeaderPresence');
+        if (hdr) hdr.textContent = d.online + ' online';
       })
       .catch(function() {});
   };
@@ -4767,7 +4796,7 @@
     var email = sessionStorage.getItem('cartpath_member_email') || '';
     var name = sessionStorage.getItem('cartpath_member_name') || '';
     if (!email) return;
-    fetch(CHAT_API + '/presence', {
+    chatFetch(CHAT_API + '/presence', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: email, name: name, role: 'member' }),
@@ -5140,8 +5169,7 @@
     var tier = document.getElementById('newChTier').value;
     if (!name) { alert('Enter a channel name'); return; }
     var chId = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    var email = (getUserInfo().email || '').toLowerCase();
-    fetch(CHAT_ADMIN_API + '/channels', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + email }, body: JSON.stringify({ channelId: chId, name: '#' + chId, desc: desc, category: cat, minTier: tier, locked: tier === 'chairman' }) })
+    chatFetch(CHAT_ADMIN_API + '/channels', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ channelId: chId, name: '#' + chId, desc: desc, category: cat, minTier: tier, locked: tier === 'chairman' }) })
     .then(function(r) { return r.json(); })
     .then(function(d) { if (d.success) { alert('Channel #' + chId + ' created! Refresh to see it.'); document.getElementById('newChName').value = ''; document.getElementById('newChDesc').value = ''; } else { alert('Error: ' + (d.error || 'Unknown')); } });
   }
@@ -5149,8 +5177,7 @@
   function adminDeleteChannel() {
     var roomId = chatChannelMap[currentChannel] || currentChannel;
     if (!confirm('Delete #' + roomId + ' and all messages? Cannot be undone.')) return;
-    var email = (getUserInfo().email || '').toLowerCase();
-    fetch(CHAT_ADMIN_API + '/channels/' + roomId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + email } })
+    chatFetch(CHAT_ADMIN_API + '/channels/' + roomId, { method: 'DELETE' })
     .then(function(r) { return r.json(); })
     .then(function(d) { if (d.success) alert('Deleted. Refresh the page.'); });
   }
@@ -5158,23 +5185,23 @@
   function adminClearMessages() {
     if (!confirm('Clear all messages in this channel?')) return;
     var roomId = chatChannelMap[currentChannel] || currentChannel;
-    var email = (getUserInfo().email || '').toLowerCase();
-    fetch('https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod/chat/' + roomId + '/messages?limit=200')
+    chatFetch(CHAT_API + '/' + roomId + '/messages?limit=200')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       return Promise.all((data.messages || []).map(function(m) {
-        return fetch(CHAT_ADMIN_API + '/messages/' + roomId + '/' + m.timestamp, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + email } });
+        return chatFetch(CHAT_ADMIN_API + '/messages/' + roomId + '/' + m.timestamp, { method: 'DELETE' });
       }));
     })
     .then(function() { alert('Messages cleared.'); loadMessages(); });
   }
 
-  function adminToggleLock() {
+  async function adminToggleLock() {
     var roomId = chatChannelMap[currentChannel] || currentChannel;
-    var tier = prompt('Set minimum tier:\n"executive" = all members\n"chairman" = chairman only');
+    var tier = await cpPrompt('Set minimum tier:\n"executive" = all members\n"chairman" = chairman only', { placeholder: 'executive or chairman', value: 'executive', okLabel: 'Update' });
     if (!tier) return;
-    var email = (getUserInfo().email || '').toLowerCase();
-    fetch(CHAT_ADMIN_API + '/channels/' + roomId, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + email }, body: JSON.stringify({ minTier: tier, locked: tier === 'chairman' }) })
+    tier = tier.trim().toLowerCase();
+    if (tier !== 'executive' && tier !== 'chairman') { showToast('Enter "executive" or "chairman".', 'error'); return; }
+    chatFetch(CHAT_ADMIN_API + '/channels/' + roomId, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ minTier: tier, locked: tier === 'chairman' }) })
     .then(function(r) { return r.json(); })
     .then(function(d) { if (d.success) alert('Permissions updated.'); });
   }
@@ -5745,6 +5772,43 @@
       document.body.style.width = '';
       window.scrollTo(0, __bodyLockScrollY);
     }
+  }
+
+  // Styled prompt — replaces native prompt(), blocked in iOS WKWebView.
+  // Returns a Promise resolving to the entered string, or null if cancelled.
+  function cpPrompt(message, opts) {
+    opts = opts || {};
+    return new Promise(function(resolve) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(6,15,10,0.72);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px);';
+      var box = document.createElement('div');
+      box.style.cssText = 'width:100%;max-width:420px;background:#10352A;border:1px solid rgba(191,155,59,0.25);border-radius:14px;padding:22px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+      var msg = document.createElement('div');
+      msg.style.cssText = 'font-family:Inter,-apple-system,sans-serif;font-size:14px;line-height:1.5;color:#F5F0E1;margin-bottom:14px;white-space:pre-line;';
+      msg.textContent = message;
+      var input = document.createElement(opts.multiline ? 'textarea' : 'input');
+      input.style.cssText = 'width:100%;background:rgba(9,29,20,0.55);border:1px solid rgba(191,155,59,0.25);border-radius:8px;padding:12px 13px;color:#F5F0E1;font-family:Inter,sans-serif;font-size:16px;outline:none;' + (opts.multiline ? 'min-height:80px;resize:vertical;' : '');
+      if (opts.placeholder) input.setAttribute('placeholder', opts.placeholder);
+      if (opts.value) input.value = opts.value;
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:16px;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = opts.cancelLabel || 'Cancel';
+      cancel.style.cssText = 'padding:11px 18px;background:transparent;border:1px solid rgba(245,240,225,0.2);border-radius:8px;color:rgba(245,240,225,0.7);font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;';
+      var ok = document.createElement('button');
+      ok.type = 'button'; ok.textContent = opts.okLabel || 'OK';
+      ok.style.cssText = 'padding:11px 18px;background:linear-gradient(135deg,#A88630,#BF9B3B);border:none;border-radius:8px;color:#091D14;font-family:Inter,sans-serif;font-size:13px;font-weight:700;cursor:pointer;';
+      function close(val) { document.removeEventListener('keydown', onKey); ov.remove(); resolve(val); }
+      function onKey(e) { if (e.key === 'Escape') close(null); else if (e.key === 'Enter' && !opts.multiline) { e.preventDefault(); close(input.value); } }
+      cancel.onclick = function() { close(null); };
+      ok.onclick = function() { close(input.value); };
+      ov.onclick = function(e) { if (e.target === ov) close(null); };
+      document.addEventListener('keydown', onKey);
+      row.appendChild(cancel); row.appendChild(ok);
+      box.appendChild(msg); box.appendChild(input); box.appendChild(row);
+      ov.appendChild(box); document.body.appendChild(ov);
+      setTimeout(function() { input.focus(); }, 50);
+    });
   }
 
   // Luxury toast — deep green card, gold left bar, shield icon, slide-in stack.
@@ -6381,7 +6445,9 @@
   }
 
   async function rejectPrice(bookingId) {
-    var reason = prompt('Why are you declining this quote? (optional)') || null;
+    var reason = await cpPrompt('Why are you declining this quote? (optional)', { multiline: true, placeholder: 'Reason (optional)…', okLabel: 'Decline quote' });
+    if (reason === null) return; // cancelled
+    reason = reason || null;
     var token = getCognitoIdToken();
     try {
       var res = await fetch(API_BASE + '/bookings/' + bookingId + '/reject-price', {

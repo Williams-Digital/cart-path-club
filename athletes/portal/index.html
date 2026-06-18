@@ -440,7 +440,9 @@
         <img src="/assets/cartpath-shield.png" alt="CartPath">
         <span class="portal-brand-text">Athlete Portal</span>
       </div>
-      <div class="portal-athlete">Welcome, <strong id="athleteName"></strong></div>
+      <div class="portal-athlete">Welcome, <strong id="athleteName"></strong>
+        <button type="button" onclick="signOut()" style="margin-left:14px;padding:7px 14px;background:transparent;border:1px solid rgba(191,155,59,0.35);border-radius:7px;color:#BF9B3B;font-family:Inter,-apple-system,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">Sign Out</button>
+      </div>
     </header>
 
     <main class="portal-main">
@@ -757,6 +759,18 @@
 
     // Either an athlete-access-token (in URL) or a Cognito ID token (in localStorage)
     var token = new URLSearchParams(window.location.search).get('token');
+
+    // Scrub the long-lived ?token= out of the address bar so it isn't left
+    // visible / re-shared / re-read on reload. It stays in the in-memory `token`
+    // var for API calls this session.
+    if (token) {
+      try {
+        var sp = new URLSearchParams(window.location.search);
+        sp.delete('token');
+        var qs = sp.toString();
+        history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+      } catch (e) {}
+    }
     var idToken = localStorage.getItem('cp_id_token');
 
     // If we have a Cognito ID token but no URL token, transparently inject the
@@ -766,7 +780,11 @@
       var __nativeFetch = window.fetch.bind(window);
       window.fetch = function(input, init) {
         var url = typeof input === 'string' ? input : (input && input.url) || '';
-        if (url.indexOf('/athletes/portal') !== -1 || url.indexOf('/auth/whoami') !== -1) {
+        // Attach the athlete's Bearer token to every authenticated CartPath API
+        // call — portal endpoints, whoami, AND chat/push (which live under /chat).
+        // S3 presigned PUTs and other hosts are deliberately excluded.
+        if (url.indexOf('/athletes/portal') !== -1 || url.indexOf('/auth/whoami') !== -1
+            || url.indexOf('/prod/chat') !== -1 || url.indexOf('/push/register') !== -1) {
           init = init || {};
           init.headers = init.headers || {};
           var hasAuth = false;
@@ -784,6 +802,17 @@
       // we send a Bearer header.
       token = '';
     }
+
+    // Fully sign the athlete out: clear the Cognito session, drop the in-memory
+    // magic-link token, and return to the login screen.
+    function signOut() {
+      try {
+        ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry','cp_email','cp_name'].forEach(function(k) { localStorage.removeItem(k); });
+      } catch (e) {}
+      token = '';
+      window.location.replace('/app/login');
+    }
+    window.signOut = signOut;
 
     var athlete = null;
     var entries = [];
@@ -917,7 +946,7 @@
         Push.addListener('registration', function (token) {
           var dt = (token && token.value) ? token.value : '';
           if (!dt) return;
-          fetch(CHAT_API + '/push/register', {
+          fetch(CHAT_API + '/push/register' + (token ? '?token=' + encodeURIComponent(token) : ''), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: (athlete.email || '').toLowerCase(), token: dt, platform: 'ios', name: athlete.name || '' })
@@ -1108,7 +1137,9 @@
       });
     }
 
-    document.addEventListener('mouseup', function() {
+    // Commit the current drag/tap selection. Shared by mouse (mouseup) and
+    // touch (touchend) so the calendar works on iPhone, not just desktop.
+    function commitDragSelection() {
       if (!isDragging) return;
       isDragging = false;
       var startCell = dragStart, endCell = dragEnd;
@@ -1122,7 +1153,7 @@
         var from = startCell < endCell ? startCell : endCell;
         var to = startCell < endCell ? endCell : startCell;
 
-        // Single-day click on an existing entry → open it for edit
+        // Single-day tap on an existing entry → open it for edit
         if (from === to) {
           var cell = document.querySelector('.calendar-day[data-date="' + from + '"]');
           if (cell && cell._entries && cell._entries.length > 0) {
@@ -1135,6 +1166,31 @@
         openModalForNew(from, from === to ? '' : to);
       }
       dragStart = null; dragEnd = null;
+    }
+
+    document.addEventListener('mouseup', commitDragSelection);
+
+    // Touch equivalents: track the finger across day cells via elementFromPoint
+    // (touchmove targets stay pinned to the first element otherwise), then commit
+    // on touchend. Without these, drag-select and tap-to-edit do nothing on iOS.
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      var t = e.touches[0];
+      if (!t) return;
+      var el = document.elementFromPoint(t.clientX, t.clientY);
+      var cell = el && el.closest ? el.closest('.calendar-day[data-date]') : null;
+      if (cell) {
+        var ds = cell.getAttribute('data-date');
+        if (ds && ds !== dragEnd) { dragEnd = ds; updateDragVisuals(); }
+        e.preventDefault(); // stop the page scrolling while selecting a range
+      }
+    }, { passive: false });
+    document.addEventListener('touchend', commitDragSelection);
+    document.addEventListener('touchcancel', function() {
+      isDragging = false; dragStart = null; dragEnd = null;
+      document.querySelectorAll('.calendar-day[data-date]').forEach(function(c) {
+        c.style.background = ''; c.style.boxShadow = '';
+      });
     });
 
     // ── Modal ──
@@ -1489,6 +1545,7 @@
       try {
         var url = CHAT_API + '/' + CLUBHOUSE + '/messages?role=athlete&limit=100';
         if (append && chatLastTimestamp) url += '&since=' + chatLastTimestamp;
+        if (token) url += '&token=' + encodeURIComponent(token);
         var res = await fetch(url);
         if (!res.ok) return;
         var data = await res.json();
@@ -1536,7 +1593,8 @@
       input.value = '';
       var initials = (athlete.name || '').split(' ').map(function(n) { return n.charAt(0); }).join('').substring(0, 2).toUpperCase();
       try {
-        var res = await fetch(CHAT_API + '/' + CLUBHOUSE + '/messages', {
+        var sendUrl = CHAT_API + '/' + CLUBHOUSE + '/messages' + (token ? '?token=' + encodeURIComponent(token) : '');
+        var res = await fetch(sendUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
