@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#091D14">
+  <title>CartPath — Accept Invitation</title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png">
+  <link rel="apple-touch-icon" href="/assets/cartpath-shield.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--green-deep:#091D14;--green-dark:#10352A;--gold:#BF9B3B;--gold-dark:#A88630;--cream:#F5F0E1;--cream-muted:rgba(245,240,225,0.55);--error:#E57373;--font-display:'Playfair Display',Georgia,serif;--font-ui:'Inter',-apple-system,sans-serif;}
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html{height:100%;}
+    body{background:var(--green-deep);color:var(--cream);font-family:var(--font-ui);min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);overflow-x:hidden;}
+    .wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;max-width:440px;width:100%;margin:0 auto;}
+    .hero{text-align:center;margin-bottom:30px;}
+    .shield{width:64px;height:64px;margin:0 auto 18px;filter:drop-shadow(0 4px 16px rgba(191,155,59,0.25));}
+    .wordmark{font-family:var(--font-display);font-size:20px;letter-spacing:0.45em;color:var(--gold);font-weight:500;padding-left:0.45em;}
+    .card{width:100%;background:rgba(16,53,42,0.45);border:1px solid rgba(191,155,59,0.18);border-radius:14px;padding:28px 24px;backdrop-filter:blur(20px);}
+    h2{font-family:var(--font-display);font-size:22px;font-weight:500;margin-bottom:8px;}
+    .sub{font-size:13px;color:var(--cream-muted);line-height:1.6;margin-bottom:22px;}
+    .sub strong{color:var(--gold);}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px;}
+    .field input{width:100%;background:rgba(9,29,20,0.55);border:1px solid rgba(191,155,59,0.18);border-radius:8px;padding:13px 14px;color:var(--cream);font-family:var(--font-ui);font-size:16px;outline:none;transition:border-color .18s;-webkit-appearance:none;}
+    .field input:focus{border-color:var(--gold);}
+    .field input:disabled{opacity:0.6;}
+    .hint{font-size:12px;color:var(--cream-muted);line-height:1.5;margin:-4px 0 16px;}
+    .btn{width:100%;padding:14px 16px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:var(--green-deep);border:none;border-radius:8px;font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;margin-top:10px;box-shadow:0 4px 16px rgba(191,155,59,0.18);}
+    .btn:active{transform:translateY(1px);}
+    .btn:disabled{opacity:0.55;cursor:not-allowed;}
+    .msg{display:none;border-radius:6px;padding:10px 12px;font-size:13px;line-height:1.45;margin-bottom:14px;}
+    .msg.error{display:block;background:rgba(229,115,115,0.08);border:1px solid rgba(229,115,115,0.3);color:var(--error);}
+    .msg.ok{display:block;background:rgba(191,155,59,0.08);border:1px solid rgba(191,155,59,0.3);color:var(--gold);}
+    .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(9,29,20,0.3);border-top-color:var(--green-deep);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .center{text-align:center;}
+    .loading-state,.done-state{text-align:center;color:var(--cream-muted);font-size:14px;line-height:1.7;}
+    .done-state a{display:inline-block;margin-top:18px;color:var(--gold);font-weight:600;text-decoration:none;border:1px solid rgba(191,155,59,0.4);border-radius:8px;padding:12px 26px;letter-spacing:0.1em;text-transform:uppercase;font-size:12px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <img class="shield" src="/assets/cartpath-shield.png" alt="CartPath">
+      <div class="wordmark">CARTPATH</div>
+    </div>
+
+    <div class="card">
+      <!-- Loading invite -->
+      <div id="loadingView" class="loading-state">Checking your invitation…</div>
+
+      <!-- Invalid / expired -->
+      <div id="errorView" style="display:none;">
+        <h2>This link can't be used</h2>
+        <div class="msg error" id="errorMsg" style="display:block;"></div>
+        <div class="sub">Need a hand? Email <strong>hello@cartpathclub.com</strong>.</div>
+      </div>
+
+      <!-- Accept form -->
+      <div id="formView" style="display:none;">
+        <h2>You've been invited.</h2>
+        <div class="sub" id="introText"></div>
+        <div class="msg error" id="formError"></div>
+        <div class="field">
+          <label for="emailField">Your Email</label>
+          <input type="email" id="emailField" disabled>
+        </div>
+        <div class="field">
+          <label for="pw">Create Password</label>
+          <input type="password" id="pw" autocomplete="new-password">
+        </div>
+        <div class="hint">At least 8 characters, with a number and a symbol.</div>
+        <div class="field">
+          <label for="pw2">Confirm Password</label>
+          <input type="password" id="pw2" autocomplete="new-password">
+        </div>
+        <button class="btn" id="acceptBtn" type="button">Create Account</button>
+      </div>
+
+      <!-- Success -->
+      <div id="doneView" class="done-state" style="display:none;">
+        <h2 style="margin-bottom:10px;">You're all set.</h2>
+        Your assistant account is ready. Sign in with the password you just created.
+        <br><a href="/app/login">Go to Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var API_BASE = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
+    var token = new URLSearchParams(window.location.search).get('token') || '';
+
+    function show(id){['loadingView','errorView','formView','doneView'].forEach(function(v){document.getElementById(v).style.display = (v===id)?'block':'none';});}
+    function fail(msg){document.getElementById('errorMsg').textContent = msg; show('errorView');}
+
+    function loadInvite(){
+      if(!token){ fail('This invitation link is missing its token. Use the link from your email.'); return; }
+      fetch(API_BASE + '/assistant/invite/' + encodeURIComponent(token))
+        .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, status:r.status, d:d}; }); })
+        .then(function(res){
+          if(!res.ok){ fail(res.d.error || 'This invitation is no longer valid.'); return; }
+          document.getElementById('introText').innerHTML = 'You’re joining as the executive assistant for <strong>' + escapeHtml(res.d.for_name) + '</strong>. Create your own password below — it’s separate from their login.';
+          document.getElementById('emailField').value = res.d.assistant_email || '';
+          show('formView');
+        })
+        .catch(function(){ fail('We couldn’t reach the server. Check your connection and try again.'); });
+    }
+
+    function escapeHtml(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+    function accept(){
+      var err = document.getElementById('formError');
+      err.style.display='none';
+      var pw = document.getElementById('pw').value;
+      var pw2 = document.getElementById('pw2').value;
+      if(pw.length < 8 || !/[0-9]/.test(pw) || !/[^A-Za-z0-9]/.test(pw)){
+        err.textContent='Password must be at least 8 characters and include a number and a symbol.'; err.style.display='block'; return;
+      }
+      if(pw !== pw2){ err.textContent='Passwords don’t match.'; err.style.display='block'; return; }
+
+      var btn = document.getElementById('acceptBtn');
+      btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Creating…';
+      fetch(API_BASE + '/assistant/accept', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ token: token, password: pw })
+      })
+        .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+        .then(function(res){
+          if(!res.ok){ err.textContent = res.d.error || 'Something went wrong. Please try again.'; err.style.display='block'; btn.disabled=false; btn.textContent='Create Account'; return; }
+          show('doneView');
+        })
+        .catch(function(){ err.textContent='We couldn’t reach the server. Please try again.'; err.style.display='block'; btn.disabled=false; btn.textContent='Create Account'; });
+    }
+
+    document.getElementById('acceptBtn').addEventListener('click', accept);
+    document.getElementById('pw2').addEventListener('keydown', function(e){ if(e.key==='Enter') accept(); });
+    loadInvite();
+  </script>
+</body>
+</html>
