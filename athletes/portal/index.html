@@ -757,13 +757,23 @@
       } catch {}
     })();
 
-    // Either an athlete-access-token (in URL) or a Cognito ID token (in localStorage)
-    var token = new URLSearchParams(window.location.search).get('token');
+    var API_ROOT = 'https://ha2sinzpu3.execute-api.us-east-1.amazonaws.com/prod';
 
-    // Scrub the long-lived ?token= out of the address bar so it isn't left
-    // visible / re-shared / re-read on reload. It stays in the in-memory `token`
-    // var for API calls this session.
-    if (token) {
+    // Auth sources, in order of preference:
+    //   1. Cognito ID token (localStorage) — app athletes
+    //   2. A short-lived session token (sessionStorage) — exchanged from a magic link
+    //   3. A magic-link ?token= in the URL — exchanged ONCE, then dropped
+    var idToken = localStorage.getItem('cp_id_token');
+    var urlToken = new URLSearchParams(window.location.search).get('token');
+    var sessionToken = sessionStorage.getItem('cp_athlete_session');
+
+    // `token` stays for legacy URL-builders (`'?token=' + token`); we keep it
+    // EMPTY so the long-lived token never rides in a request URL again — auth
+    // travels in the Authorization header via the fetch override below.
+    var token = '';
+
+    // Scrub any ?token= out of the address bar immediately.
+    if (urlToken) {
       try {
         var sp = new URLSearchParams(window.location.search);
         sp.delete('token');
@@ -771,36 +781,55 @@
         history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
       } catch (e) {}
     }
-    var idToken = localStorage.getItem('cp_id_token');
 
-    // If we have a Cognito ID token but no URL token, transparently inject the
-    // Bearer header into every API call to athletes/portal endpoints. The rest
-    // of the page can keep building URLs the way it always has.
-    if (!token && idToken) {
-      var __nativeFetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        var url = typeof input === 'string' ? input : (input && input.url) || '';
-        // Attach the athlete's Bearer token to every authenticated CartPath API
-        // call — portal endpoints, whoami, AND chat/push (which live under /chat).
-        // S3 presigned PUTs and other hosts are deliberately excluded.
-        if (url.indexOf('/athletes/portal') !== -1 || url.indexOf('/auth/whoami') !== -1
-            || url.indexOf('/prod/chat') !== -1 || url.indexOf('/push/register') !== -1) {
-          init = init || {};
-          init.headers = init.headers || {};
-          var hasAuth = false;
-          if (init.headers instanceof Headers) hasAuth = init.headers.has('Authorization');
-          else hasAuth = !!(init.headers['Authorization'] || init.headers['authorization']);
-          if (!hasAuth) {
-            if (init.headers instanceof Headers) init.headers.set('Authorization', 'Bearer ' + idToken);
-            else init.headers['Authorization'] = 'Bearer ' + idToken;
-          }
+    // The bearer the fetch override injects: Cognito id token, else the session
+    // token. (Resolved now; updated after the magic-link exchange completes.)
+    var authBearer = idToken || sessionToken || '';
+
+    var __nativeFetch = window.fetch.bind(window);
+    window.fetch = function(input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url) || '';
+      // Attach auth to every authenticated CartPath API call — portal endpoints,
+      // whoami, and chat/push. S3 presigned PUTs / other hosts are excluded.
+      if (authBearer && (url.indexOf('/athletes/portal') !== -1 || url.indexOf('/auth/whoami') !== -1
+          || url.indexOf('/prod/chat') !== -1 || url.indexOf('/push/register') !== -1)) {
+        init = init || {};
+        init.headers = init.headers || {};
+        var hasAuth = (init.headers instanceof Headers)
+          ? init.headers.has('Authorization')
+          : !!(init.headers['Authorization'] || init.headers['authorization']);
+        if (!hasAuth) {
+          if (init.headers instanceof Headers) init.headers.set('Authorization', 'Bearer ' + authBearer);
+          else init.headers['Authorization'] = 'Bearer ' + authBearer;
         }
-        return __nativeFetch(input, init);
-      };
-      // Set a sentinel so existing `'?token=' + token` URL building doesn't break —
-      // the empty string still produces a valid URL; backend ignores it now that
-      // we send a Bearer header.
-      token = '';
+      }
+      return __nativeFetch(input, init);
+    };
+
+    // If we arrived on a magic link (no Cognito token), exchange it for a
+    // short-lived session token BEFORE the app boots, so no long-lived token
+    // is ever stored or sent. Returns a promise the bootstrap awaits.
+    function ensureAthleteSession() {
+      if (idToken) return Promise.resolve();              // Cognito path — nothing to do
+      if (sessionToken) { authBearer = sessionToken; return Promise.resolve(); } // already have a session
+      if (!urlToken) return Promise.resolve();            // no credential — app will show its error screen
+      return __nativeFetch(API_ROOT + '/athletes/portal/session', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + urlToken },
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && d.session_token) {
+            sessionToken = d.session_token;
+            authBearer = d.session_token;
+            try { sessionStorage.setItem('cp_athlete_session', d.session_token); } catch (e) {}
+          } else {
+            // Exchange failed — fall back to using the magic-link token directly
+            // for this session so the athlete isn't locked out.
+            authBearer = urlToken;
+          }
+        })
+        .catch(function () { authBearer = urlToken; });
     }
 
     // Fully sign the athlete out: clear the Cognito session, drop the in-memory
@@ -808,8 +837,9 @@
     function signOut() {
       try {
         ['cp_id_token','cp_access_token','cp_refresh_token','cp_token_expiry','cp_email','cp_name'].forEach(function(k) { localStorage.removeItem(k); });
+        sessionStorage.removeItem('cp_athlete_session');
       } catch (e) {}
-      token = '';
+      token = ''; authBearer = '';
       window.location.replace('/app/login');
     }
     window.signOut = signOut;
@@ -895,9 +925,14 @@
 
     // ── Init ──
     (async function init() {
-      if (!token) return showError();
+      // Exchange a magic link for a short-lived session token (if applicable),
+      // then confirm we actually have a credential to send.
+      await ensureAthleteSession();
+      if (!authBearer) return showError();
       try {
-        var meRes = await fetch(API_BASE + '/athletes/portal/me?token=' + token);
+        // Auth now travels in the Authorization header (injected by the fetch
+        // override); the trailing ?token= is intentionally empty.
+        var meRes = await fetch(API_BASE + '/athletes/portal/me');
         if (!meRes.ok) return showError();
         var meData = await meRes.json();
         athlete = meData.athlete;
