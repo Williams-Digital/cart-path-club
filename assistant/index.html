@@ -69,6 +69,8 @@
     <div class="main">
       <div class="acting" id="actingLine"></div>
 
+      <!-- ════ MEMBER-assistant view: request rounds on the member's behalf ════ -->
+      <div id="memberAsstView" style="display:none;">
       <!-- Submit a round request -->
       <div class="card">
         <h2>Request a Round</h2>
@@ -105,6 +107,50 @@
         <div class="desc">Round requests for your member.</div>
         <div id="reqList"><div class="empty">Loading…</div></div>
       </div>
+      </div><!-- /memberAsstView -->
+
+      <!-- ════ ATHLETE-assistant view: manage the athlete's availability + view rounds ════ -->
+      <div id="athleteAsstView" style="display:none;">
+      <!-- Add availability -->
+      <div class="card">
+        <h2>Add Availability</h2>
+        <div class="desc">Mark dates your athlete is open for bookings, or block dates they’re unavailable. The CartPath team sees these; members just see that the athlete is bookable.</div>
+        <div class="msg" id="avMsg"></div>
+        <div class="row2">
+          <div class="field">
+            <label for="avType">Type</label>
+            <select id="avType"><option value="open">Open for bookings</option><option value="blocked">Blocked / unavailable</option></select>
+          </div>
+          <div class="field">
+            <label for="avStart">Start Date</label>
+            <input type="date" id="avStart">
+          </div>
+        </div>
+        <div class="field">
+          <label for="avEnd">End Date <span style="opacity:.5;text-transform:none;letter-spacing:0;font-weight:400;">(optional — single day if blank)</span></label>
+          <input type="date" id="avEnd">
+        </div>
+        <div class="field">
+          <label for="avNotes">Notes</label>
+          <input type="text" id="avNotes" placeholder="Optional — e.g. mornings only">
+        </div>
+        <button class="btn" id="avBtn" type="button">Add Entry</button>
+      </div>
+
+      <!-- Current availability -->
+      <div class="card">
+        <h2>Availability</h2>
+        <div class="desc">Upcoming open and blocked dates.</div>
+        <div id="avList"><div class="empty">Loading…</div></div>
+      </div>
+
+      <!-- Booked rounds (read-only — accept/decline is the athlete's call) -->
+      <div class="card">
+        <h2>Booked Rounds</h2>
+        <div class="desc">Rounds on your athlete’s calendar. Accepting or declining a request is reserved for the athlete.</div>
+        <div id="athBookings"><div class="empty">Loading…</div></div>
+      </div>
+      </div><!-- /athleteAsstView -->
     </div>
   </div>
 
@@ -148,13 +194,96 @@
             window.location.replace(me.default_route || '/app/login');
             return;
           }
-          document.getElementById('actingLine').innerHTML = 'Signed in as <strong>' + escapeHtml(me.name || me.email || 'Assistant') + '</strong> — acting on behalf of your member.';
           document.getElementById('bootView').style.display='none';
           document.getElementById('appView').style.display='block';
-          loadRoster();
-          loadRequests();
+
+          var isAthleteAsst = !!(me.assistant && me.assistant.acts_for_athlete_id);
+          if(isAthleteAsst){
+            document.getElementById('actingLine').innerHTML = 'Signed in as <strong>' + escapeHtml(me.name || me.email || 'Assistant') + '</strong> — managing your athlete’s schedule.';
+            document.getElementById('athleteAsstView').style.display='block';
+            loadAvailability();
+            loadAthBookings();
+          } else {
+            document.getElementById('actingLine').innerHTML = 'Signed in as <strong>' + escapeHtml(me.name || me.email || 'Assistant') + '</strong> — acting on behalf of your member.';
+            document.getElementById('memberAsstView').style.display='block';
+            loadRoster();
+            loadRequests();
+          }
         })
         .catch(function(){ bootError(); });
+    }
+
+    // ════════ ATHLETE-ASSISTANT: availability + booked rounds ════════
+    // These call the same /athletes/portal/* endpoints the athlete uses; the
+    // backend resolves this assistant's JWT to the athlete they serve.
+    function loadAvailability(){
+      fetch(API_BASE + '/athletes/portal/availability', { headers: authHeaders() })
+        .then(function(r){ return r.ok ? r.json() : {availability:[]}; })
+        .then(function(data){
+          var list = (data.availability || []);
+          var box = document.getElementById('avList');
+          if(!list.length){ box.innerHTML='<div class="empty">No availability set yet.</div>'; return; }
+          box.innerHTML = list.map(function(e){
+            var s = e.start_date ? new Date(e.start_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+            var en = e.end_date && e.end_date!==e.start_date ? ' – ' + new Date(e.end_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+            var open = (e.type==='open');
+            return '<div class="req"><div class="top"><span class="ath">'+s+en+'</span>'+
+              '<span class="status '+(open?'st-approved':'st-declined')+'">'+(open?'Open':'Blocked')+'</span></div>'+
+              (e.notes?('<div class="meta">'+escapeHtml(e.notes)+'</div>'):'')+
+              '<div class="meta" style="margin-top:6px;"><a href="#" data-id="'+escapeHtml(e.id)+'" class="rm-av" style="color:var(--error);text-decoration:none;font-size:11px;">Remove</a></div></div>';
+          }).join('');
+          Array.prototype.forEach.call(box.querySelectorAll('.rm-av'), function(a){
+            a.addEventListener('click', function(ev){ ev.preventDefault(); removeAvailability(a.getAttribute('data-id')); });
+          });
+        })
+        .catch(function(){ document.getElementById('avList').innerHTML='<div class="empty">Couldn’t load availability.</div>'; });
+    }
+
+    function addAvailability(){
+      var msg=document.getElementById('avMsg'); msg.className='msg'; msg.style.display='none';
+      var type=document.getElementById('avType').value;
+      var start=document.getElementById('avStart').value;
+      var end=document.getElementById('avEnd').value;
+      var notes=document.getElementById('avNotes').value.trim();
+      if(!start){ msg.textContent='Pick a start date.'; msg.className='msg error'; msg.style.display='block'; return; }
+      var btn=document.getElementById('avBtn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>Saving…';
+      fetch(API_BASE + '/athletes/portal/availability', {
+        method:'POST', headers: authHeaders({'Content-Type':'application/json'}),
+        body: JSON.stringify({ type:type, start_date:start, end_date:end||start, notes:notes||null })
+      })
+        .then(function(r){ return r.text().then(function(t){ return {ok:r.ok,status:r.status,t:t}; }); })
+        .then(function(res){
+          btn.disabled=false; btn.textContent='Add Entry';
+          if(!res.ok){ var e=''; try{e=(JSON.parse(res.t)||{}).error||'';}catch(_){} msg.textContent='Couldn’t add: '+(e||('HTTP '+res.status)); msg.className='msg error'; msg.style.display='block'; return; }
+          msg.textContent='Availability added.'; msg.className='msg ok'; msg.style.display='block';
+          document.getElementById('avNotes').value=''; document.getElementById('avEnd').value='';
+          loadAvailability();
+        })
+        .catch(function(){ btn.disabled=false; btn.textContent='Add Entry'; msg.textContent='Couldn’t reach the server.'; msg.className='msg error'; msg.style.display='block'; });
+    }
+
+    function removeAvailability(id){
+      fetch(API_BASE + '/athletes/portal/availability/' + encodeURIComponent(id), { method:'DELETE', headers: authHeaders() })
+        .then(function(){ loadAvailability(); })
+        .catch(function(){});
+    }
+
+    function loadAthBookings(){
+      fetch(API_BASE + '/athletes/portal/bookings', { headers: authHeaders() })
+        .then(function(r){ return r.ok ? r.json() : {bookings:[]}; })
+        .then(function(data){
+          var list = Array.isArray(data) ? data : (data.bookings || []);
+          var box = document.getElementById('athBookings');
+          if(!list.length){ box.innerHTML='<div class="empty">No booked rounds yet.</div>'; return; }
+          box.innerHTML = list.map(function(b){
+            var st=(b.workflow_state||b.status||'pending').toLowerCase().replace(/_/g,' ');
+            var date=b.preferred_date ? new Date(b.preferred_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+            return '<div class="req"><div class="top"><span class="ath">'+escapeHtml(b.member_name||'Member')+'</span>'+
+              '<span class="status st-pending">'+escapeHtml(st)+'</span></div>'+
+              '<div class="meta">'+escapeHtml(b.course||'')+' · '+date+(b.group_size?(' · party of '+b.group_size):'')+'</div></div>';
+          }).join('');
+        })
+        .catch(function(){ document.getElementById('athBookings').innerHTML='<div class="empty">Couldn’t load rounds.</div>'; });
     }
 
     // ── Roster (athletes the member can request) ──
@@ -226,7 +355,8 @@
         .catch(function(){ document.getElementById('reqList').innerHTML='<div class="empty">Couldn’t load requests.</div>'; });
     }
 
-    document.getElementById('submitBtn') && document.getElementById('submitBtn').addEventListener('click', submitRequest);
+    var _sb = document.getElementById('submitBtn'); if(_sb) _sb.addEventListener('click', submitRequest);
+    var _av = document.getElementById('avBtn'); if(_av) _av.addEventListener('click', addAvailability);
     window.signOut = signOut;
     init();
   </script>
