@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>CartPath — Access &amp; Permissions Reference</title>
+  <link rel="icon" href="/assets/cartpath-shield.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #060F0A;
+      --green-dark: #091D14;
+      --green-mid: #10352A;
+      --gold: #BF9B3B;
+      --gold-dim: rgba(191,155,59,0.6);
+      --cream: #F5F0E1;
+      --muted: rgba(245,240,225,0.5);
+      --yes: #6DC86D;
+      --no: rgba(245,240,225,0.22);
+      --partial: #CFA63B;
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-ui: 'Inter', system-ui, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--green-deep);
+      color: var(--cream);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 1040px; margin: 0 auto; padding: 40px 22px 120px; }
+
+    .page-header {
+      text-align: center;
+      padding: 36px 0 40px;
+      border-bottom: 1px solid rgba(191,155,59,0.15);
+      margin-bottom: 40px;
+    }
+    .page-header img { height: 46px; margin-bottom: 14px; }
+    .page-header h1 { font-family: var(--font-display); font-size: 30px; font-weight: 400; margin-bottom: 8px; }
+    .page-header .subtitle { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+    .private-badge {
+      display: inline-block; margin-top: 16px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold); border: 1px solid rgba(191,155,59,0.35); border-radius: 20px; padding: 4px 14px;
+    }
+
+    h2 {
+      font-family: var(--font-display); font-size: 22px; font-weight: 500; color: var(--cream);
+      margin: 48px 0 6px; padding-top: 8px;
+    }
+    h2:first-of-type { margin-top: 16px; }
+    .section-note { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+    /* Role cards */
+    .roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-bottom: 16px; }
+    .role-card {
+      background: var(--green-dark); border: 1px solid rgba(191,155,59,0.16); border-radius: 12px; padding: 18px 18px 16px;
+    }
+    .role-card .role-name { font-family: var(--font-display); font-size: 18px; color: var(--gold); margin-bottom: 2px; }
+    .role-card .role-who { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+    .role-card .role-desc { font-size: 13px; color: rgba(245,240,225,0.78); }
+    .role-card .role-login { font-size: 11.5px; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(191,155,59,0.1); }
+    .role-card .role-login b { color: rgba(245,240,225,0.7); font-weight: 600; }
+
+    /* Matrix */
+    .matrix-wrap { overflow-x: auto; border: 1px solid rgba(191,155,59,0.16); border-radius: 12px; }
+    table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 13px; }
+    thead th {
+      background: var(--green-mid); color: var(--gold); font-weight: 600; text-align: center;
+      padding: 13px 10px; font-size: 11.5px; letter-spacing: 0.5px; text-transform: uppercase;
+      border-bottom: 1px solid rgba(191,155,59,0.2); position: sticky; top: 0;
+    }
+    thead th:first-child { text-align: left; width: 38%; }
+    tbody td { padding: 11px 10px; text-align: center; border-bottom: 1px solid rgba(191,155,59,0.07); }
+    tbody td:first-child { text-align: left; color: rgba(245,240,225,0.85); }
+    tbody tr:hover { background: rgba(191,155,59,0.04); }
+    .group-row td {
+      background: rgba(16,53,42,0.5); color: var(--gold-dim); font-size: 11px; letter-spacing: 1px;
+      text-transform: uppercase; font-weight: 600; text-align: left; padding: 9px 10px;
+    }
+    .y { color: var(--yes); font-weight: 700; }
+    .n { color: var(--no); }
+    .p { color: var(--partial); font-weight: 700; cursor: help; }
+    .cap-sub { display: block; font-size: 11px; color: var(--muted); }
+
+    .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin: 16px 2px 0; }
+    .legend span b { font-size: 14px; }
+
+    .callout {
+      background: rgba(191,155,59,0.06); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0;
+      padding: 14px 16px; margin: 18px 0; font-size: 13px; color: rgba(245,240,225,0.82);
+    }
+    .callout b { color: var(--gold); }
+    ul.tight { margin: 8px 0 0 18px; font-size: 13px; color: rgba(245,240,225,0.8); }
+    ul.tight li { margin-bottom: 5px; }
+    .footer { text-align: center; font-size: 11px; color: rgba(245,240,225,0.3); margin-top: 56px; letter-spacing: 0.5px; }
+    code { background: rgba(191,155,59,0.1); padding: 1px 6px; border-radius: 4px; font-size: 12px; color: var(--gold); font-family: ui-monospace, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="page-header">
+      <img src="/assets/cartpath-shield.png" alt="CartPath">
+      <h1>Access &amp; Permissions Reference</h1>
+      <div class="subtitle">Who can do what · internal use only</div>
+      <div class="private-badge">Confidential — Mayo &amp; Dylan</div>
+    </div>
+
+    <p class="section-note">
+      Everyone signs in at the same screen (<code>cartpathclub.com/app/login</code>). After login the app
+      automatically routes each person to the right place based on their account type. This page is the
+      source of truth for what each type can — and can't — do. Permissions are enforced on the server, not
+      just hidden in the app.
+    </p>
+
+    <!-- ─────────── ROLE OVERVIEW ─────────── -->
+    <h2>The five account types</h2>
+    <div class="roles">
+      <div class="role-card">
+        <div class="role-name">Admin</div>
+        <div class="role-who">You &amp; Mayo</div>
+        <div class="role-desc">Runs the club. Approves applications, manages the roster, quotes &amp; manages every booking, sees revenue and at-risk members.</div>
+        <div class="role-login">Lands on <b>/admin</b></div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Member</div>
+        <div class="role-who">Paying members</div>
+        <div class="role-desc">Requests rounds with athletes, follows live scores, logs their own rounds, uses the clubhouse chat, manages their billing.</div>
+        <div class="role-login">Lands on <b>/members</b></div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Athlete</div>
+        <div class="role-who">Pros &amp; coaches</div>
+        <div class="role-desc">Sets their availability, accepts/declines round requests, logs scores, sees their earnings, uses the athlete clubhouse.</div>
+        <div class="role-login">Lands on <b>/athletes/portal</b></div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Member Assistant</div>
+        <div class="role-who">A member's EA</div>
+        <div class="role-desc">Acts <i>for</i> a member: requests rounds and tracks their bookings. Never sees the member's payment method or personal billing.</div>
+        <div class="role-login">Lands on <b>/assistant</b></div>
+      </div>
+      <div class="role-card">
+        <div class="role-name">Athlete Assistant</div>
+        <div class="role-who">An athlete's EA</div>
+        <div class="role-desc">Acts <i>for</i> an athlete: manages their availability calendar and views booked rounds. Can't accept/decline or submit scores.</div>
+        <div class="role-login">Lands on <b>/assistant</b></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>How assistants are created:</b> a member or athlete invites them by email from their own portal.
+      The assistant gets a link, sets their own password, and from then on has a <b>separate login</b> —
+      they never use the member's/athlete's credentials, and every action they take is tied to their own account.
+    </div>
+
+    <!-- ─────────── THE MATRIX ─────────── -->
+    <h2>What each type can do</h2>
+    <p class="section-note">A capability-by-capability breakdown. ● = full access · ◐ = limited (hover for detail) · — = no access.</p>
+
+    <div class="matrix-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Admin<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;">You / Mayo</span></th>
+            <th>Member</th>
+            <th>Athlete</th>
+            <th>Member<br>Assistant</th>
+            <th>Athlete<br>Assistant</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="group-row"><td colspan="6">Club administration</td></tr>
+          <tr><td>Approve / decline membership &amp; athlete applications</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>Add / edit / remove athletes on the roster</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>Quote, forward, confirm, complete &amp; reroute bookings</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>View revenue, payouts &amp; at-risk members</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>Manage chat channels (create / delete / lock / clear)</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>Read member reviews</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+
+          <tr class="group-row"><td colspan="6">Booking a round</td></tr>
+          <tr><td>Browse the athlete roster</td><td class="y">●</td><td class="y">●</td><td class="n">—</td><td class="y">●</td><td class="n">—</td></tr>
+          <tr><td>Submit a round request</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="y">●</td><td class="n">—</td></tr>
+          <tr><td>View / track their own round requests</td><td class="y">●</td><td class="y">●</td><td class="n">—</td><td class="p" title="Sees the requests for the member they assist.">◐</td><td class="n">—</td></tr>
+          <tr><td>Approve / reject a price quote</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Only if the member grants booking permission; large quotes route back to the member for approval.">◐</td><td class="n">—</td></tr>
+
+          <tr class="group-row"><td colspan="6">Athlete side</td></tr>
+          <tr><td>Set / edit availability (open &amp; blocked dates)</td><td class="p" title="Admin can view any athlete's availability, read-only.">◐</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="y">●</td></tr>
+          <tr><td>Accept / decline a round request</td><td class="n">—</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Reserved for the athlete — the assistant cannot accept or decline.">—</td></tr>
+          <tr><td>View the athlete's booked rounds</td><td class="y">●</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="y">●</td></tr>
+          <tr><td>Submit a score for a round</td><td class="n">—</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Reserved for the athlete — the assistant cannot submit scores.">—</td></tr>
+          <tr><td>View the athlete's earnings</td><td class="y">●</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Not exposed to athlete assistants.">—</td></tr>
+
+          <tr class="group-row"><td colspan="6">Member side</td></tr>
+          <tr><td>Log their own rounds &amp; track handicap</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>View live PGA scores</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td><td class="y">●</td></tr>
+          <tr><td>Manage their own billing / subscription</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Member assistants explicitly cannot see or touch the member's payment method or billing.">—</td><td class="n">—</td></tr>
+
+          <tr class="group-row"><td colspan="6">Clubhouse chat</td></tr>
+          <tr><td>Read &amp; post in member clubhouse channels</td><td class="y">●</td><td class="y">●</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><td>Read &amp; post in the athlete clubhouse</td><td class="y">●</td><td class="n">—</td><td class="y">●</td><td class="n">—</td><td class="p" title="Reserved for the athlete; assistants don't chat as them.">—</td></tr>
+          <tr><td>Chairman-only channels</td><td class="y">●</td><td class="p" title="Only members on the Chairman/Founders tier.">◐</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+
+          <tr class="group-row"><td colspan="6">Managing assistants</td></tr>
+          <tr><td>Invite / revoke their own assistant</td><td class="n">—</td><td class="y">●</td><td class="y">●</td><td class="n">—</td><td class="n">—</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="legend">
+      <span><b class="y">●</b> Full access</span>
+      <span><b class="p">◐</b> Limited (hover the symbol)</span>
+      <span><b class="n">—</b> No access</span>
+    </div>
+
+    <!-- ─────────── KEY GUARANTEES ─────────── -->
+    <h2>Things worth knowing</h2>
+    <ul class="tight">
+      <li><b>Assistants never have the keys.</b> A member assistant can request rounds but can <i>never</i> see the member's payment method, personal profile, or billing. An athlete assistant can manage the calendar but can <i>never</i> accept/decline rounds, submit scores, or see earnings.</li>
+      <li><b>Everything is logged to the person.</b> Because assistants have their own logins, every action is attributable — you always know whether the member or their assistant did something.</li>
+      <li><b>Tiers matter for members.</b> Executive members see general channels; Chairman/Founders members also get the chairman-only channels. The app enforces this on the server.</li>
+      <li><b>Admin is locked to a short list.</b> Only the approved admin emails (you &amp; Mayo) can reach the admin dashboard or admin API — a regular member or athlete who somehow opened <code>/admin</code> would be turned away.</li>
+      <li><b>Big quotes bounce back to the member.</b> If a member assistant requests a round above the member's approval threshold, the member has to approve the price before it proceeds.</li>
+    </ul>
+
+    <div class="footer">CartPath · Internal Permissions Reference · Confidential</div>
+  </div>
+</body>
+</html>
